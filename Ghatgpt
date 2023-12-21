@@ -1,21 +1,22 @@
-hh<script>
-    function fetchQuestions(buttonElement) {
-        var courseId = buttonElement.getAttribute("data-courseid");
-
-        fetch('/YourController/FetchQuestions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ courseId: courseId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Handle the fetched data
-            // For example, display questions in the UI
-        })
-        .catch(error => {
-            // Handle any errors
-        });
-    }
-</script>
+CREATE PROCEDURE GetQuestions 
+    @CourseID INT
+AS
+BEGIN
+    SELECT 
+        q.questionid, 
+        q.questiontext,
+        -- Creating an options array with indication of the correct answer
+        (SELECT 
+            value AS optionText,
+            CASE 
+                WHEN value = q.correctanswer THEN 1
+                ELSE 0 
+            END AS isTrue
+         FROM STRING_SPLIT(q.options, ';')
+         FOR JSON PATH) AS optionsArray
+    FROM 
+        YourQuestionsTable q
+    WHERE 
+        q.courseid = @CourseID
+    FOR JSON PATH; -- Optional, for JSON output
+END
