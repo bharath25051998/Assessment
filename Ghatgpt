@@ -1,0 +1,21 @@
+hh<script>
+    function fetchQuestions(buttonElement) {
+        var courseId = buttonElement.getAttribute("data-courseid");
+
+        fetch('/YourController/FetchQuestions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ courseId: courseId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle the fetched data
+            // For example, display questions in the UI
+        })
+        .catch(error => {
+            // Handle any errors
+        });
+    }
+</script>
