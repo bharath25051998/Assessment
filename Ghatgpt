@@ -1,46 +1,30 @@
-public List<Question> MapDataSetToQuestions(DataSet dataSet)
+@model List<YourNamespace.Models.Question>
+
+@foreach (var question in Model)
 {
-    var questions = new List<Question>();
-
-    if (dataSet?.Tables.Count > 0)
-    {
-        DataTable table = dataSet.Tables[0];
-        foreach (DataRow row in table.Rows)
+    <div>
+        <h2>@question.QuestionText</h2>
+        @if (question.QuestionType == 1) // Single-choice question
         {
-            var question = new Question
+            foreach (var option in question.Options)
             {
-                CourseID = Convert.ToInt32(row["CourseID"]),
-                AssessmentQuestionID = Convert.ToInt32(row["AssessmentQuestionID"]),
-                QuestionType = Convert.ToInt32(row["QuestionType"]),
-                QuestionText = row["QuestionText"].ToString().Trim(),
-                Options = new List<Option>(),
-                CorrectAnswers = new List<string>()
-            };
-
-            var optionsText = row["OptionText"].ToString().Split(';');
-            var correctAnswers = row["QuestionType"].ToString() == "1"
-                ? new List<string> { row["answer"].ToString().Trim() }
-                : row["answer"].ToString().Split(';').Select(a => a.Trim()).ToList();
-
-            foreach (var optionText in optionsText)
-            {
-                var trimmedOptionText = optionText.Trim();
-                var isCorrectAnswer = correctAnswers.Contains(trimmedOptionText);
-                question.Options.Add(new Option
-                {
-                    Text = trimmedOptionText,
-                    IsCorrect = isCorrectAnswer
-                });
-
-                if (isCorrectAnswer)
-                {
-                    question.CorrectAnswers.Add(trimmedOptionText);
-                }
+                <label>
+                    <input type="radio" name="question_@question.AssessmentQuestionID" value="@option.Id" />
+                    @option.Text
+                </label>
             }
-
-            questions.Add(question);
         }
-    }
-
-    return questions;
+        else if (question.QuestionType == 2) // Multiple-choice question
+        {
+            foreach (var option in question.Options)
+            {
+                <label>
+                    <input type="checkbox" name="question_@question.AssessmentQuestionID" value="@option.Id" />
+                    @option.Text
+                </label>
+            }
+        }
+    </div>
 }
+
+<button type="submit">Submit Assessment</button>
