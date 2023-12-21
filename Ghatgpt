@@ -1,22 +1,40 @@
-CREATE PROCEDURE GetQuestions 
-    @CourseID INT
-AS
-BEGIN
-    SELECT 
-        q.questionid, 
-        q.questiontext,
-        -- Creating an options array with indication of the correct answer
-        (SELECT 
-            value AS optionText,
-            CASE 
-                WHEN value = q.correctanswer THEN 1
-                ELSE 0 
-            END AS isTrue
-         FROM STRING_SPLIT(q.options, ';')
-         FOR JSON PATH) AS optionsArray
-    FROM 
-        YourQuestionsTable q
-    WHERE 
-        q.courseid = @CourseID
-    FOR JSON PATH; -- Optional, for JSON output
-END
+public List<Question> MapDataSetToQuestions(DataSet dataSet)
+{
+    var questions = new List<Question>();
+
+    if (dataSet.Tables.Count > 0)
+    {
+        foreach (DataRow row in dataSet.Tables[0].Rows)
+        {
+            var question = new Question
+            {
+                CourseID = Convert.ToInt32(row["CourseID"]),
+                AssessmentQuestionID = Convert.ToInt32(row["AssessmentQuestionID"]),
+                QuestionType = Convert.ToInt32(row["QuestionType"]),
+                QuestionText = row["QuestionText"].ToString(),
+                Options = row["OptionText"].ToString().Split(';').Select(option => new Option
+                {
+                    Text = option,
+                    IsCorrect = false // Initially set to false, will determine correctness later
+                }).ToList(),
+                CorrectAnswers = new List<string>()
+            };
+
+            // Split the correct answers and set the IsCorrect flag for the options
+            var correctAnswers = row["answer"].ToString().Split(';');
+            foreach (var answer in correctAnswers)
+            {
+                question.CorrectAnswers.Add(answer);
+                var matchingOption = question.Options.FirstOrDefault(o => o.Text == answer);
+                if (matchingOption != null)
+                {
+                    matchingOption.IsCorrect = true;
+                }
+            }
+
+            questions.Add(question);
+        }
+    }
+
+    return questions;
+}
