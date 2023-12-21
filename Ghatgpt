@@ -2,33 +2,39 @@ public List<Question> MapDataSetToQuestions(DataSet dataSet)
 {
     var questions = new List<Question>();
 
-    if (dataSet.Tables.Count > 0)
+    if (dataSet?.Tables.Count > 0)
     {
-        foreach (DataRow row in dataSet.Tables[0].Rows)
+        DataTable table = dataSet.Tables[0];
+        foreach (DataRow row in table.Rows)
         {
             var question = new Question
             {
                 CourseID = Convert.ToInt32(row["CourseID"]),
                 AssessmentQuestionID = Convert.ToInt32(row["AssessmentQuestionID"]),
                 QuestionType = Convert.ToInt32(row["QuestionType"]),
-                QuestionText = row["QuestionText"].ToString(),
-                Options = row["OptionText"].ToString().Split(';').Select(option => new Option
-                {
-                    Text = option,
-                    IsCorrect = false // Initially set to false, will determine correctness later
-                }).ToList(),
+                QuestionText = row["QuestionText"].ToString().Trim(),
+                Options = new List<Option>(),
                 CorrectAnswers = new List<string>()
             };
 
-            // Split the correct answers and set the IsCorrect flag for the options
-            var correctAnswers = row["answer"].ToString().Split(';');
-            foreach (var answer in correctAnswers)
+            var optionsText = row["OptionText"].ToString().Split(';');
+            var correctAnswers = row["QuestionType"].ToString() == "1"
+                ? new List<string> { row["answer"].ToString().Trim() }
+                : row["answer"].ToString().Split(';').Select(a => a.Trim()).ToList();
+
+            foreach (var optionText in optionsText)
             {
-                question.CorrectAnswers.Add(answer);
-                var matchingOption = question.Options.FirstOrDefault(o => o.Text == answer);
-                if (matchingOption != null)
+                var trimmedOptionText = optionText.Trim();
+                var isCorrectAnswer = correctAnswers.Contains(trimmedOptionText);
+                question.Options.Add(new Option
                 {
-                    matchingOption.IsCorrect = true;
+                    Text = trimmedOptionText,
+                    IsCorrect = isCorrectAnswer
+                });
+
+                if (isCorrectAnswer)
+                {
+                    question.CorrectAnswers.Add(trimmedOptionText);
                 }
             }
 
