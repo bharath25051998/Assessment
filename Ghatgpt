@@ -1,43 +1,57 @@
-function calculateScore() {
+function calculateScore(questions) {
     var score = 0;
-    var totalQuestions = model.length; // 'model' is assumed to be an array of question objects
 
-    for (var i = 0; i < totalQuestions; i++) {
-        var question = model[i];
-        var questionType = question.questionType; // The type of question (1 for single, 2 for multiple choice)
-        
-        if (questionType === 1) {
-            // Single choice question
-            var userSelectedOptionId = $('input[name="Questions[' + i + '].SelectedOption"]:checked').val();
-            // Find the option with this ID in the question's OptionsText and check if it is correct
-            var isCorrect = question.OptionsText.some(option => option.Id == userSelectedOptionId && option.IsCorrect);
-            if (isCorrect) {
+    questions.forEach(function(question, index) {
+        // For single-choice questions
+        if (question.QuestionType === 1) {
+            var userSelectedOptionId = $('input[name="Questions[' + index + '].SelectedOption"]:checked').val();
+            // Find the selected option and check if it's correct
+            var selectedOption = question.OptionsText.find(option => option.Id.toString() === userSelectedOptionId);
+            if (selectedOption && selectedOption.IsCorrect) {
                 score++;
             }
-        } else if (questionType === 2) {
-            // Multiple choice question
-            var selectedOptionIds = $('input[name="Questions[' + i + '].SelectedOption"]:checked').map(function() {
+        }
+
+        // For multiple-choice questions
+        else if (question.QuestionType === 2) {
+            var selectedOptionIds = $('input[name="Questions[' + index + '].SelectedOption"]:checked').map(function() {
                 return $(this).val();
             }).get();
-            // Check each selected option ID and count it if it's correct
+            // Check each selected option and increment score if correct
             selectedOptionIds.forEach(function(id) {
-                var isCorrect = question.OptionsText.some(option => option.Id == id && option.IsCorrect);
-                if (isCorrect) {
+                var option = question.OptionsText.find(option => option.Id.toString() === id);
+                if (option && option.IsCorrect) {
                     score++;
                 }
             });
         }
-    }
+    });
+
     return score;
 }
 
 $('#finishBtn').on('click', function() {
-    var finalScore = calculateScore();
-    // Do something with the finalScore, such as displaying it or sending it to the server
+    // Assuming 'questions' is the variable that holds your questions data
+    var finalScore = calculateScore(questions);
     alert('Your final score is: ' + finalScore);
 });
 
-// Initialize the quiz
+// You need to fetch 'questions' data from the server and then initialize the quiz
+// This can be done through an AJAX call or by embedding the data into the page
+// Here's a conceptual example of fetching it through AJAX:
+
+var questions = []; // This will hold the fetched questions data
+
 $(document).ready(function() {
-    // ... rest of your initialization code
+    $.ajax({
+        url: '/path/to/your/questions/data', // Update with the correct URL
+        type: 'GET',
+        success: function(response) {
+            questions = response; // Assuming the response is the array of questions
+            // Now you can initialize your quiz because 'questions' is populated
+        },
+        error: function(error) {
+            console.error('Error fetching questions:', error);
+        }
+    });
 });
