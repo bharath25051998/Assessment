@@ -1,25 +1,30 @@
 function calculateScore() {
     var score = 0;
-    var totalQuestions = model.length; // Assuming 'model' is accessible and contains all questions and answers
+    var totalQuestions = model.length; // Ensure 'model' is accessible and properly populated
 
     for (var i = 0; i < totalQuestions; i++) {
         var question = model[i];
         var questionType = question.questionType; // The type of question (1 for single, 2 for multiple choice)
-
+        
         if (questionType === 1) {
             // Single choice question
-            var userAnswer = $('input[name="Questions[' + i + '].SelectedOption"]:checked').val();
-            if (userAnswer === question.correctAnswer) {
+            var userAnswerText = $('input[name="Questions[' + i + '].SelectedOption"]:checked')
+                                 .next('label').text().trim();
+            var correctAnswerText = question.correctAnswer; // The correct answer text
+            if (userAnswerText === correctAnswerText) {
                 score++;
             }
         } else if (questionType === 2) {
             // Multiple choice question
-            var selectedAnswers = $('input[name="Questions[' + i + '].SelectedOption"]:checked').map(function() {
-                return this.value;
-            }).get();
-            var correctAnswers = question.correctAnswers;
-            // Check if selectedAnswers has the same elements as correctAnswers regardless of order
-            if ($(correctAnswers).not(selectedAnswers).length === 0 && $(selectedAnswers).not(correctAnswers).length === 0) {
+            var selectedAnswersTexts = $('input[name="Questions[' + i + '].SelectedOption"]:checked')
+                                       .next('label').map(function() {
+                                           return $(this).text().trim();
+                                       }).get();
+            var correctAnswersTexts = question.correctAnswers; // This should be an array of correct answer texts
+            // Check if selectedAnswersTexts contains all elements in correctAnswersTexts and vice versa
+            var isCorrect = $(correctAnswersTexts).not(selectedAnswersTexts).length === 0 &&
+                            $(selectedAnswersTexts).not(correctAnswersTexts).length === 0;
+            if (isCorrect) {
                 score++;
             }
         }
@@ -29,7 +34,7 @@ function calculateScore() {
 
 $('#finishBtn').on('click', function() {
     var finalScore = calculateScore();
-    // Do something with finalScore, like displaying it to the user or sending it to the server
+    // Do something with the finalScore, such as displaying it or sending it to the server
     alert('Your final score is: ' + finalScore);
 });
 
