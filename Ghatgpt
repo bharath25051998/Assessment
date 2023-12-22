@@ -65,7 +65,7 @@
     });
 
     $('#nextBtn').click(function() {
-        if (currentIndex < totalQuestions - 1) {
+        if (currentIndex < totalQuestions - 1 && answers[currentIndex]) {
             currentIndex++;
             showQuestion(currentIndex);
             updateButtons();
@@ -79,7 +79,7 @@
 
     function updateButtons() {
         $('#prevBtn').prop('disabled', currentIndex === 0);
-        $('#nextBtn').prop('disabled', !answers[currentIndex]);
+        $('#nextBtn').prop('disabled', currentIndex === totalQuestions - 1 || !answers[currentIndex]);
         $('#finishBtn').toggle(currentIndex === totalQuestions - 1);
     }
 
