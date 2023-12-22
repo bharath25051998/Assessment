@@ -12,27 +12,28 @@
 <div id="questionContainer">
     @for (int i = 0; i < Model.Count; i++)
     {
+        var question = Model[i];
         <div class="question" style="display: @(i == initialQuestionIndex ? "block" : "none")" data-index="@i">
-            <h2>@Model[i].QuestionText</h2>
-            @if (Model[i].QuestionType == 1) <!-- Single-choice question -->
+            <h2>@question.QuestionText</h2>
+            @if (question.QuestionType == 1) <!-- Single-choice question -->
             {
-                foreach (var option in Model[i].Options)
+                foreach (var option in question.Options)
                 {
                     <div>
                         <label>
-                            <input type="radio" name="Questions[@i].SelectedOption" value="@option.Id" />
+                            <input type="radio" name="Question@i" value="@option.Id" />
                             @option.Text
                         </label>
                     </div>
                 }
             }
-            else if (Model[i].QuestionType == 2) <!-- Multiple-choice question -->
+            else if (question.QuestionType == 2) <!-- Multiple-choice question -->
             {
-                foreach (var option in Model[i].Options)
+                foreach (var option in question.Options)
                 {
                     <div>
                         <label>
-                            <input type="checkbox" name="Questions[@i].SelectedOptions" value="@option.Id" />
+                            <input type="checkbox" name="Question@i" value="@option.Id" />
                             @option.Text
                         </label>
                     </div>
@@ -85,9 +86,10 @@
         $('#finishBtn').toggle(currentIndex === totalQuestions - 1);
     }
 
-    // Handle option selection
+    // Handle option selection and unselection
     $('input[type="radio"], input[type="checkbox"]').change(function() {
-        answers[currentIndex] = true;
+        var selectedOptions = $('input[name="Question' + currentIndex + '"]:checked');
+        answers[currentIndex] = selectedOptions.length > 0;
         updateButtons();
     });
 
