@@ -54,7 +54,8 @@
     var answers = new Array(totalQuestions).fill(false); // Initialize an array to track answered questions
 
     function showQuestion(index) {
-        $('.question').removeClass('active').eq(index).addClass('active');
+        $('.question').removeClass('active');
+        $('.question[data-index="' + index + '"]').addClass('active');
     }
 
     $('#prevBtn').click(function() {
