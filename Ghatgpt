@@ -10,38 +10,41 @@
 </style>
 
 <div id="questionContainer">
-    <div class="question active" data-index="@initialQuestionIndex">
-        <h2>@Model[initialQuestionIndex].QuestionText</h2>
-        @if (Model[initialQuestionIndex].QuestionType == 1) <!-- Single-choice question -->
-        {
-            foreach (var option in Model[initialQuestionIndex].Options)
+    @for (int i = 0; i < Model.Count; i++)
+    {
+        <div class="question @(i == initialQuestionIndex ? "active" : "")" data-index="@i">
+            <h2>@Model[i].QuestionText</h2>
+            @if (Model[i].QuestionType == 1) <!-- Single-choice question -->
             {
-                <div>
-                    <label>
-                        <input type="radio" name="Questions[@initialQuestionIndex].SelectedOption" value="@option.Id" />
-                        @option.Text
-                    </label>
-                </div>
+                foreach (var option in Model[i].Options)
+                {
+                    <div>
+                        <label>
+                            <input type="radio" name="Questions[@i].SelectedOption" value="@option.Id" />
+                            @option.Text
+                        </label>
+                    </div>
+                }
             }
-        }
-        else if (Model[initialQuestionIndex].QuestionType == 2) <!-- Multiple-choice question -->
-        {
-            foreach (var option in Model[initialQuestionIndex].Options)
+            else if (Model[i].QuestionType == 2) <!-- Multiple-choice question -->
             {
-                <div>
-                    <label>
-                        <input type="checkbox" name="Questions[@initialQuestionIndex].SelectedOptions" value="@option.Id" />
-                        @option.Text
-                    </label>
-                </div>
+                foreach (var option in Model[i].Options)
+                {
+                    <div>
+                        <label>
+                            <input type="checkbox" name="Questions[@i].SelectedOptions" value="@option.Id" />
+                            @option.Text
+                        </label>
+                    </div>
+                }
             }
-        }
-    </div>
+        </div>
+    }
 </div>
 
 <div style="text-align: center; margin-top: 20px;"> <!-- Center-align the buttons and add margin -->
-    <button id="prevBtn" disabled>Previous</button>
-    <button id="nextBtn">Next</button>
+    <button id="prevBtn" @(initialQuestionIndex == 0 ? "disabled" : "")>Previous</button>
+    <button id="nextBtn" @(initialQuestionIndex == Model.Count - 1 ? "disabled" : "")>Next</button>
     <button id="finishBtn" style="display: none;">Finish</button>
 </div>
 
@@ -87,7 +90,7 @@
         updateButtons();
     });
 
-    // Display the first question immediately
+    // Display the initial question immediately
     showQuestion(currentIndex);
     updateButtons();
 </script>
