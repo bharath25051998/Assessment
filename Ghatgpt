@@ -17,27 +17,27 @@
             <h2>@question.QuestionText</h2>
             @if (question.QuestionType == 1) // Single-choice question
             {
-                foreach (var option in question.Options)
-                {
-                    <div>
+                <div class="options">
+                    @foreach (var option in question.Options)
+                    {
                         <label>
                             <input type="radio" name="Question@i" value="@option.Id" />
                             @option.Text
                         </label>
-                    </div>
-                }
+                    }
+                </div>
             }
             else if (question.QuestionType == 2) // Multiple-choice question
             {
-                foreach (var option in question.Options)
-                {
-                    <div>
+                <div class="options">
+                    @foreach (var option in question.Options)
+                    {
                         <label>
                             <input type="checkbox" name="Question@i" value="@option.Id" />
                             @option.Text
                         </label>
-                    </div>
-                }
+                    }
+                </div>
             }
         </div>
     }
@@ -52,8 +52,8 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
-        var currentIndex = @initialQuestionIndex;
-        var totalQuestions = @Model.Count;
+        var currentIndex = @Html.Raw(Json.Encode(initialQuestionIndex));
+        var totalQuestions = @Html.Raw(Json.Encode(Model.Count));
 
         function showQuestion(index) {
             $('.question').hide();
@@ -62,13 +62,12 @@
 
         function isQuestionAnswered(index) {
             var selectedOptions = $('input[name="Question' + index + '"]:checked');
-            console.log('Question ' + index + ' answered: ' + (selectedOptions.length > 0));
             return selectedOptions.length > 0;
         }
 
         function updateButtons() {
             $('#prevBtn').prop('disabled', currentIndex === 0);
-            $('#nextBtn').prop('disabled', !isQuestionAnswered(currentIndex));
+            $('#nextBtn').prop('disabled', currentIndex >= totalQuestions - 1 || !isQuestionAnswered(currentIndex));
             $('#finishBtn').toggle(currentIndex === totalQuestions - 1);
         }
 
@@ -93,8 +92,8 @@
             alert('Form submission logic goes here.');
         });
 
-        $('input[type="radio"], input[type="checkbox"]').change(function() {
-            console.log('Option changed for question ' + currentIndex);
+        // Use event delegation for dynamically loaded content
+        $(document).on('change', '.options input', function() {
             updateButtons();
         });
 
