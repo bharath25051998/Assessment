@@ -49,10 +49,10 @@
     <button id="finishBtn" style="display: none;">Finish</button>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     var currentIndex = @initialQuestionIndex;
     var totalQuestions = @Model.Count;
-    var answers = new Array(totalQuestions).fill(false); // Initialize an array to track answered questions
 
     $('#prevBtn').click(function() {
         if (currentIndex > 0) {
@@ -63,13 +63,12 @@
     });
 
     $('#nextBtn').click(function() {
-    if (answers[currentIndex] && currentIndex < totalQuestions - 1) {
-        currentIndex++;
-        showQuestion(currentIndex);
-        updateButtons();
-    }
-});
-
+        if (currentIndex < totalQuestions - 1) {
+            currentIndex++;
+            showQuestion(currentIndex);
+            updateButtons();
+        }
+    });
 
     $('#finishBtn').click(function() {
         // Handle form submission here
@@ -83,18 +82,21 @@
 
     function updateButtons() {
         $('#prevBtn').prop('disabled', currentIndex === 0);
-        $('#nextBtn').prop('disabled', !answers[currentIndex]);
+        $('#nextBtn').prop('disabled', !isQuestionAnswered(currentIndex));
         $('#finishBtn').toggle(currentIndex === totalQuestions - 1);
     }
 
-    // Handle option selection and unselection
-    $('input[type="radio"], input[type="checkbox"]').change(function() {
-        var selectedOptions = $('input[name="Question' + currentIndex + '"]:checked');
-        answers[currentIndex] = selectedOptions.length > 0;
-        updateButtons();
-    });
+    function isQuestionAnswered(index) {
+        var selectedOptions = $('input[name="Question' + index + '"]:checked');
+        return selectedOptions.length > 0;
+    }
 
     // Display the initial question immediately
     showQuestion(currentIndex);
     updateButtons();
+
+    // Listen for option selection
+    $('input[type="radio"], input[type="checkbox"]').change(function() {
+        updateButtons();
+    });
 </script>
