@@ -12,7 +12,7 @@
 <div id="questionContainer">
     @for (int i = 0; i < Model.Count; i++)
     {
-        <div class="question @(i == initialQuestionIndex ? "active" : "")" data-index="@i">
+        <div class="question" style="display: @(i == initialQuestionIndex ? "block" : "none")" data-index="@i">
             <h2>@Model[i].QuestionText</h2>
             @if (Model[i].QuestionType == 1) <!-- Single-choice question -->
             {
@@ -53,11 +53,6 @@
     var totalQuestions = @Model.Count;
     var answers = new Array(totalQuestions).fill(false); // Initialize an array to track answered questions
 
-    function showQuestion(index) {
-        $('.question').removeClass('active');
-        $('.question[data-index="' + index + '"]').addClass('active');
-    }
-
     $('#prevBtn').click(function() {
         if (currentIndex > 0) {
             currentIndex--;
@@ -78,6 +73,11 @@
         // Handle form submission here
         alert('Form submission logic goes here.');
     });
+
+    function showQuestion(index) {
+        $('.question').hide();
+        $('.question[data-index="' + index + '"]').show();
+    }
 
     function updateButtons() {
         $('#prevBtn').prop('disabled', currentIndex === 0);
