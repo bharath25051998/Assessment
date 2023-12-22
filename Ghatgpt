@@ -1,6 +1,6 @@
 function calculateScore() {
     var score = 0;
-    var totalQuestions = model.length; // Ensure 'model' is accessible and properly populated
+    var totalQuestions = model.length; // 'model' is assumed to be an array of question objects
 
     for (var i = 0; i < totalQuestions; i++) {
         var question = model[i];
@@ -8,25 +8,24 @@ function calculateScore() {
         
         if (questionType === 1) {
             // Single choice question
-            var userAnswerText = $('input[name="Questions[' + i + '].SelectedOption"]:checked')
-                                 .next('label').text().trim();
-            var correctAnswerText = question.correctAnswer; // The correct answer text
-            if (userAnswerText === correctAnswerText) {
+            var userSelectedOptionId = $('input[name="Questions[' + i + '].SelectedOption"]:checked').val();
+            // Find the option with this ID in the question's OptionsText and check if it is correct
+            var isCorrect = question.OptionsText.some(option => option.Id == userSelectedOptionId && option.IsCorrect);
+            if (isCorrect) {
                 score++;
             }
         } else if (questionType === 2) {
             // Multiple choice question
-            var selectedAnswersTexts = $('input[name="Questions[' + i + '].SelectedOption"]:checked')
-                                       .next('label').map(function() {
-                                           return $(this).text().trim();
-                                       }).get();
-            var correctAnswersTexts = question.correctAnswers; // This should be an array of correct answer texts
-            // Check if selectedAnswersTexts contains all elements in correctAnswersTexts and vice versa
-            var isCorrect = $(correctAnswersTexts).not(selectedAnswersTexts).length === 0 &&
-                            $(selectedAnswersTexts).not(correctAnswersTexts).length === 0;
-            if (isCorrect) {
-                score++;
-            }
+            var selectedOptionIds = $('input[name="Questions[' + i + '].SelectedOption"]:checked').map(function() {
+                return $(this).val();
+            }).get();
+            // Check each selected option ID and count it if it's correct
+            selectedOptionIds.forEach(function(id) {
+                var isCorrect = question.OptionsText.some(option => option.Id == id && option.IsCorrect);
+                if (isCorrect) {
+                    score++;
+                }
+            });
         }
     }
     return score;
