@@ -2,6 +2,7 @@
 
 @{
     ViewBag.Title = "Assessment";
+    var initialQuestionIndex = 0; // Set the initial question index here
 }
 
 <style>
@@ -9,36 +10,33 @@
 </style>
 
 <div id="questionContainer">
-    @for (int i = 0; i < Model.Count; i++)
-    {
-        <div class="question @(i == 0 ? "active" : "")" data-index="@i">
-            <h2>@Model[i].QuestionText</h2>
-            @if (Model[i].QuestionType == 1) <!-- Single-choice question -->
+    <div class="question active" data-index="@initialQuestionIndex">
+        <h2>@Model[initialQuestionIndex].QuestionText</h2>
+        @if (Model[initialQuestionIndex].QuestionType == 1) <!-- Single-choice question -->
+        {
+            foreach (var option in Model[initialQuestionIndex].Options)
             {
-                foreach (var option in Model[i].Options)
-                {
-                    <div>
-                        <label>
-                            <input type="radio" name="Questions[@i].SelectedOption" value="@option.Id" />
-                            @option.Text
-                        </label>
-                    </div>
-                }
+                <div>
+                    <label>
+                        <input type="radio" name="Questions[@initialQuestionIndex].SelectedOption" value="@option.Id" />
+                        @option.Text
+                    </label>
+                </div>
             }
-            else if (Model[i].QuestionType == 2) <!-- Multiple-choice question -->
+        }
+        else if (Model[initialQuestionIndex].QuestionType == 2) <!-- Multiple-choice question -->
+        {
+            foreach (var option in Model[initialQuestionIndex].Options)
             {
-                foreach (var option in Model[i].Options)
-                {
-                    <div>
-                        <label>
-                            <input type="checkbox" name="Questions[@i].SelectedOptions" value="@option.Id" />
-                            @option.Text
-                        </label>
-                    </div>
-                }
+                <div>
+                    <label>
+                        <input type="checkbox" name="Questions[@initialQuestionIndex].SelectedOptions" value="@option.Id" />
+                        @option.Text
+                    </label>
+                </div>
             }
-        </div>
-    }
+        }
+    </div>
 </div>
 
 <div style="text-align: center; margin-top: 20px;"> <!-- Center-align the buttons and add margin -->
@@ -48,7 +46,7 @@
 </div>
 
 <script>
-    var currentIndex = 0;
+    var currentIndex = @initialQuestionIndex;
     var totalQuestions = @Model.Count;
     var answers = new Array(totalQuestions).fill(false); // Initialize an array to track answered questions
 
