@@ -1,118 +1,32 @@
-@model List<QuestionViewModel> <!-- Replace with your actual model -->
+@model List<Question> <!-- Replace with the actual type of your model -->
 
 @{
     ViewBag.Title = "Assessment";
 }
 
-<style>
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f8f8f8;
-        margin: 0;
-        padding: 0;
-    }
-
-    #questionContainer {
-        width: 80%;
-        margin: 30px auto;
-        padding: 20px;
-        background-color: #fff;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-    }
-
-    .question {
-        display: none;
-        margin-bottom: 15px;
-    }
-
-    .question.active {
-        display: block;
-    }
-
-    .question h2 {
-        color: #333;
-        background-color: #f4f4f4;
-        padding: 15px;
-        border-radius: 4px;
-        border: 1px solid #ddd;
-    }
-
-    label {
-        display: block;
-        background: #e9e9e9;
-        padding: 10px;
-        margin-top: 8px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    label:hover {
-        background-color: #d9d9d9;
-    }
-
-    input[type="radio"], input[type="checkbox"] {
-        margin-right: 10px;
-    }
-
-    .navigation-buttons {
-        text-align: center;
-        margin-top: 20px;
-    }
-
-    button {
-        background-color: #5cb85c;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        margin: 5px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 16px;
-        transition: background-color 0.3s;
-    }
-
-    button:hover:not(:disabled) {
-        background-color: #4cae4c;
-    }
-
-    button:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-    }
-
-    button#finishBtn {
-        background-color: #428bca;
-    }
-
-    button#finishBtn:hover {
-        background-color: #3071a9;
-    }
-</style>
-
 <div id="questionContainer">
     @for (int i = 0; i < Model.Count; i++)
     {
-        <div class="question @(i == 0 ? "active" : "")" id="question-@i">
+        <div class="question @(i == 0 ? "active" : "")" data-index="@i">
             <h2>@Model[i].QuestionText</h2>
-            if (Model[i].QuestionType == 1) // Single-choice question
+            <!-- Assuming QuestionType: 1 is single-choice, 2 is multi-choice -->
+            if (Model[i].QuestionType == 1)
             {
                 foreach (var option in Model[i].Options)
                 {
                     <label>
-                        <input type="radio" name="questions[@i].Answer" value="@option.Id" />
-                        @option.Text
+                        <input type="radio" name="Questions[@i].SelectedOption" value="@option.OptionId" />
+                        @option.OptionText
                     </label>
                 }
             }
-            else if (Model[i].QuestionType == 2) // Multiple-choice question
+            else if (Model[i].QuestionType == 2)
             {
                 foreach (var option in Model[i].Options)
                 {
                     <label>
-                        <input type="checkbox" name="questions[@i].Answer" value="@option.Id" />
-                        @option.Text
+                        <input type="checkbox" name="Questions[@i].SelectedOptions" value="@option.OptionId" />
+                        @option.OptionText
                     </label>
                 }
             }
@@ -120,11 +34,9 @@
     }
 </div>
 
-<div class="navigation-buttons">
-    <button id="prevBtn" disabled>Previous</button>
-    <button id="nextBtn">Next</button>
-    <button id="finishBtn" style="display: none;">Finish</button>
-</div>
+<button id="prevBtn" disabled>Previous</button>
+<button id="nextBtn">Next</button>
+<button id="finishBtn" style="display: none;">Finish</button>
 
 @section Scripts {
     <script>
@@ -132,7 +44,8 @@
         var totalQuestions = @Model.Count;
 
         function showQuestion(index) {
-            $('.question').removeClass('active').eq(index).addClass('active');
+            $('.question').hide().removeClass('active');
+            $('.question[data-index="' + index + '"]').show().addClass('active');
         }
 
         $('#prevBtn').click(function() {
@@ -147,15 +60,13 @@
             if (currentIndex < totalQuestions - 1) {
                 currentIndex++;
                 showQuestion(currentIndex);
-            } else {
-                // You might want to trigger form submission here.
             }
             updateButtons();
         });
 
         $('#finishBtn').click(function() {
-            // Handle form submission here.
-            alert('Form submission logic goes here.');
+            // Submit the form
+            $('form').submit();
         });
 
         function updateButtons() {
@@ -164,4 +75,6 @@
             $('#finishBtn').toggle(currentIndex === totalQuestions - 1);
         }
 
-        showQuestion(currentIndex);
+        showQuestion(currentIndex); // Initialize the view with the first question
+    </script>
+}
