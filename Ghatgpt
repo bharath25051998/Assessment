@@ -63,12 +63,13 @@
     });
 
     $('#nextBtn').click(function() {
-        if (currentIndex < totalQuestions - 1) {
-            currentIndex++;
-            showQuestion(currentIndex);
-            updateButtons();
-        }
-    });
+    if (answers[currentIndex] && currentIndex < totalQuestions - 1) {
+        currentIndex++;
+        showQuestion(currentIndex);
+        updateButtons();
+    }
+});
+
 
     $('#finishBtn').click(function() {
         // Handle form submission here
