@@ -1,22 +1,42 @@
-$('#finishBtn').click(function() {
-    // Show confirm dialog
-    if (confirm("Are you sure you want to finish the assessment and see your score?")) {
-        // Serialize the form data
-        var formData = $('form').serialize();
+public class QuizController : Controller
+{
+    // POST: Quiz/CalculateScore
+    [HttpPost]
+    public ActionResult CalculateScore(AnswerSubmission submission)
+    {
+        if (submission == null || submission.Answers == null)
+        {
+            // Handle the case where no data is submitted
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "No answers submitted.");
+        }
 
-        // AJAX request to the CalculateScore action
-        $.ajax({
-            url: '@Url.Action("CalculateScore", "YourControllerName")', // Replace with your controller and action
-            type: 'POST',
-            data: formData,
-            success: function(response) {
-                // Handle the response here. For example:
-                // You might want to redirect to a new page with the score
-                // Or update the current page to show the score
-            },
-            error: function(error) {
-                // Handle any errors
+        int totalQuestions = GetTotalNumberOfQuestions(); // Implement this method based on your data
+        int correctAnswers = 0;
+
+        foreach (var answer in submission.Answers)
+        {
+            if (IsAnswerCorrect(answer.QuestionId, answer.SelectedOptionId)) // Implement your answer checking logic
+            {
+                correctAnswers++;
             }
-        });
+        }
+
+        double scorePercentage = (double)correctAnswers / totalQuestions * 100;
+
+        // You can redirect to a different view or return JSON data
+        // return Json(new { Score = scorePercentage });
+        return View("ScoreView", scorePercentage); // Assuming you have a view named 'ScoreView' to display the score
     }
-});
+
+    private bool IsAnswerCorrect(int questionId, int selectedOptionId)
+    {
+        // Implement the logic to check if the answer is correct
+        // This typically involves checking your database or data source
+    }
+
+    private int GetTotalNumberOfQuestions()
+    {
+        // Implement the logic to get the total number of questions
+        // This typically involves querying your database or data source
+    }
+}
