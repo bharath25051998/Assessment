@@ -1,39 +1,20 @@
-$('#finishBtn').on('click', function() {
-    // ... calculation of the score
-    // Show the confirmation modal
-    $('#confirmSubmitModal').modal('show');
-});
-
-
-$('#confirmSubmit').on('click', function() {
-    // Assuming 'questions' is defined and has data before calculating the score
-    if (typeof questions !== 'undefined' && questions.length > 0) {
-        var finalScore = calculateScore(questions);
-        var totalQuestions = questions.length;
-        var courseId = /* Retrieve your course ID from the relevant element or variable */;
-        
-        // AJAX call to submit the data to the server without page refresh
-        $.ajax({
-            url: '/YourController/YourAction',
-            type: 'POST',
-            data: {
-                score: finalScore,
-                totalQuestions: totalQuestions,
-                courseId: courseId
-            },
-            success: function(response) {
-                // Handle success, maybe redirect to a result page or show a message
-                window.location.href = response.redirectUrl; // if the response includes a URL to redirect to
-            },
-            error: function(xhr, status, error) {
-                // Handle error
-                console.error(error);
-            }
-        });
-
-        // Hide the modal after submission
-        $('#confirmSubmitModal').modal('hide');
-    } else {
-        alert('Quiz data is not available.');
-    }
-});
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmSubmitModal" tabindex="-1" role="dialog" aria-labelledby="confirmSubmitModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmSubmitModalLabel">Submit Test</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Do you want to submit the test?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" id="confirmSubmit">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
