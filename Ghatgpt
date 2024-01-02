@@ -1,63 +1,29 @@
 $(document).ready(function() {
     var $carousel = $('#moduleCarousel');
-    var $nextControl = $('.carousel-control-next');
-    var courseId = ...; // The ID of the current course
+    var $finishButton = $('.finish-course'); // The 'Finish' button
 
-    // Initially disable the 'Next' button
-    $nextControl.prop('disabled', true);
+    // Initially hide or disable the 'Finish' button
+    $finishButton.hide();
 
     // Event handler for checkbox change
     $('.module-complete-checkbox').change(function() {
-        var isChecked = $(this).is(':checked');
-        // Enable the 'Next' button if the checkbox is checked
-        $nextControl.prop('disabled', !isChecked);
-    });
-
-    // Event handler for 'Next' button click
-    $nextControl.click(function(e) {
         var $activeItem = $('.carousel-item.active');
-        var $checkbox = $activeItem.find('.module-complete-checkbox');
-        var moduleId = $activeItem.data('module-id');
-        var isCompleted = $checkbox.is(':checked');
-        var isPreviouslyCompleted = $checkbox.is(':disabled');
+        var isLastItem = ($activeItem.index() === $carousel.find('.carousel-item').length - 1);
+        var isChecked = $(this).is(':checked');
 
-        if (isCompleted && !isPreviouslyCompleted) {
-            // Save the module completion only if it's newly completed
-            saveModuleCompletion(courseId, moduleId, $checkbox, $nextControl);
-        } else if (!isCompleted) {
-            e.preventDefault(); // Prevent moving to the next module if it's not completed
-            alert('Please complete the current module before proceeding.');
+        // Show and enable the 'Finish' button only if on the last slide and the checkbox is checked
+        if (isLastItem && isChecked) {
+            $finishButton.show();
+        } else {
+            $finishButton.hide();
         }
-        // If the module was already completed (checkbox disabled), allow the carousel to move to the next slide
     });
 
-    function saveModuleCompletion(courseId, moduleId, $checkbox, $nextControl) {
-        // Perform AJAX call to save the completion
-        $.ajax({
-            url: '@Url.Action("MarkModuleComplete", "Courses")',
-            type: 'POST',
-            data: { courseId: courseId, moduleId: moduleId },
-            beforeSend: function() {
-                // Optionally, disable the checkbox while the request is processed
-                $checkbox.prop('disabled', true);
-            },
-            success: function(response) {
-                if(response.success) {
-                    // Move to the next slide upon successful save
-                    $carousel.carousel('next');
-                } else {
-                    // If save failed, re-enable the checkbox for user to try again
-                    $checkbox.prop('disabled', false).prop('checked', false);
-                    $nextControl.prop('disabled', true);
-                    alert('Error saving module completion. Please try again.');
-                }
-            },
-            error: function() {
-                // Handle AJAX error
-                $checkbox.prop('disabled', false).prop('checked', false);
-                $nextControl.prop('disabled', true);
-                alert('Error saving module completion.');
-            }
-        });
-    }
+    // Event handler for 'Finish' button click
+    $finishButton.click(function() {
+        // Logic to handle the final action
+        console.log('Finish button clicked. Implement final save logic here.');
+    });
+
+    // Rest of the carousel logic...
 });
