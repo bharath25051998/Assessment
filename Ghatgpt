@@ -1,108 +1,45 @@
-@model List<CourseModule>
-
-<div id="moduleCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
-    <div class="carousel-inner">
-        @for (int i = 0; i < Model.Count; i++)
-        {
-            var module = Model[i];
-            <div class="carousel-item @(i == 0 ? "active" : "")" data-module-id="@module.ModuleID">
-                <div class="module-content-box">
-                    <h1>@module.ModuleName</h1>
-                    <div class="module-content">
-                        <p>@module.ModuleContent</p>
-                    </div>
-                    <div class="module-footer">
-                        <input type="checkbox" class="module-complete-checkbox" 
-                               id="moduleCheckbox-@module.ModuleID"
-                               @(module.ModuleID <= module.LastCompletedModuleId ? "checked disabled" : "") 
-                               data-module-id="@module.ModuleID">
-                        <label for="moduleCheckbox-@module.ModuleID">Complete Module</label>
-                    </div>
-                </div>
-                @if (i == Model.Count - 1)
-                {
-                    <button class="btn btn-success finish-course" style="display:none;">Finish Course</button>
-                }
-            </div>
-        }
-    </div>
-    <a class="carousel-control-prev" href="#moduleCarousel" role="button" data-slide="prev">
-        <!-- Control Icon -->
-    </a>
-    <a class="carousel-control-next" href="#moduleCarousel" role="button" data-slide="next">
-        <!-- Control Icon -->
-    </a>
-</div>
-
 @section Scripts {
     <script>
         $(document).ready(function() {
+            var courseId = @Model.FirstOrDefault()?.CourseID ?? 0; 
             var $carousel = $('#moduleCarousel');
-            var $nextControl = $('.carousel-control-next');
-            $nextControl.prop('disabled', true);
+            var lastCompletedModuleId = @Model.LastOrDefault(m => m.ModuleID <= m.LastCompletedModuleId)?.ModuleID ?? 0;
 
-            $('.module-complete-checkbox').on('change', function() {
-                var $checkbox = $(this);
-                var isChecked = $checkbox.is(':checked');
-                var isDisabled = $checkbox.is(':disabled');
-                $nextControl.prop('disabled', !(isChecked && !isDisabled));
-            });
+            // Initialize carousel to the next module after the last completed one
+            var startIndex = Model.findIndex(m => m.ModuleID === lastCompletedModuleId) + 1;
+            $carousel.carousel(startIndex);
 
-            $carousel.on('slide.bs.carousel', function(e) {
-                var $activeItem = $(e.relatedTarget);
+            $('.carousel-control-next, .carousel-control-prev').click(function(e) {
+                var $activeItem = $('.carousel-item.active');
+                var moduleId = $activeItem.data('module-id');
                 var $checkbox = $activeItem.find('.module-complete-checkbox');
-                if (!$checkbox.is(':checked') || $checkbox.is(':disabled')) {
-                    e.preventDefault();
-                } else {
-                    saveModuleCompletion($checkbox.data('module-id'));
+
+                if (!$checkbox.is(':checked')) {
+                    e.preventDefault(); // Prevent moving to the next module if the current one is not completed
+                    alert('Please complete the current module before proceeding.');
                 }
             });
 
-            $carousel.on('slid.bs.carousel', function () {
-                var isLastItem = $('.carousel-item').last().hasClass('active');
-                $nextControl.prop('disabled', isLastItem);
-                $('.finish-course').toggle(isLastItem);
+            $('.module-complete-checkbox').on('change', function() {
+                var $checkbox = $(this);
+                var moduleId = $checkbox.data('module-id');
+                if ($checkbox.is(':checked')) {
+                    // Save the module completion
+                    saveModuleCompletion(courseId, moduleId);
+                }
             });
 
-            function saveModuleCompletion(moduleId) {
-                // AJAX call to save the module completion
-                // Replace with your server URL and data requirements
-                $.post('@Url.Action("MarkModuleComplete", "Courses")', { moduleId: moduleId }, function(response) {
-                    // Handle response
+            function saveModuleCompletion(courseId, moduleId) {
+                $.post('@Url.Action("MarkModuleComplete", "Courses")', { courseId: courseId, moduleId: moduleId }, function(response) {
+                    if(!response.success) {
+                        alert('Error saving module completion.');
+                    }
                 });
             }
 
             $('.finish-course').on('click', function() {
-                // Implement course completion logic here
+                // Finish course logic here
             });
         });
     </script>
 }
-
-<style>
-    .module-content-box {
-        padding: 20px;
-        border: 1px solid #ccc;
-        height: 400px;
-        overflow-y: auto;
-        position: relative;
-    }
-    .module-footer {
-        position: absolute;
-        bottom: 10px;
-        width: 100%;
-        text-align: center;
-    }
-    .finish-course {
-        position: absolute;
-        right: 15px;
-        bottom: 10px;
-    }
-    .carousel-control-prev, .carousel-control-next {
-        width: 5%;
-    }
-    .carousel-control-next.disabled {
-        pointer-events: none;
-        opacity: 0.5;
-    }
-</style>
