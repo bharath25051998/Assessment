@@ -1,35 +1,69 @@
-$(document).ready(function() {
-    var $carousel = $('#moduleCarousel');
-    var $nextControl = $('.carousel-control-next');
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var courseId = @Model.FirstOrDefault()?.CourseID ?? 0; 
+            var $carousel = $('#moduleCarousel');
+            var $nextControl = $('.carousel-control-next');
+            var lastCompletedModuleId = @Model.LastOrDefault(m => m.ModuleID <= m.LastCompletedModuleId)?.ModuleID ?? 0;
 
-    // Disable the 'Next' button by default
-    $nextControl.prop('disabled', true);
-
-    // Event handler for when a checkbox is changed
-    $('.module-complete-checkbox').change(function() {
-        // Check if the checkbox is checked
-        var isChecked = $(this).is(':checked');
-
-        // Enable the 'Next' button if the checkbox is checked
-        $nextControl.prop('disabled', !isChecked);
-        
-        // If the checkbox is unchecked or the module is already completed (checkbox disabled), keep 'Next' disabled
-        if (!isChecked || $(this).is(':disabled')) {
+            // Disable 'Next' by default
             $nextControl.prop('disabled', true);
-        }
-    });
 
-    // Event handler for the 'Next' button click
-    $nextControl.click(function(e) {
-        // Move to the next slide if enabled, otherwise do nothing
-        if ($nextControl.is(':disabled')) {
-            e.preventDefault();
-        } else {
-            // Save the completion of the current module before moving to the next slide
-            // Make sure to handle the saving process here
-        }
-    });
+            // Initialize carousel to the module after the last completed module
+            var startIndex = Model.findIndex(m => m.ModuleID === lastCompletedModuleId) + 1;
+            $carousel.carousel(startIndex >= 0 ? startIndex : 0);
 
-    // Initialize carousel to the correct starting index
-    // ... (rest of the carousel initialization logic) ...
-});
+            // Event handler for checkbox change
+            $('.module-complete-checkbox').change(function() {
+                var isChecked = $(this).is(':checked');
+                // Enable 'Next' if the checkbox is checked
+                $nextControl.prop('disabled', !isChecked);
+            });
+
+            // Event handler for 'Next' button click
+            $nextControl.click(function(e) {
+                var $activeItem = $('.carousel-item.active');
+                var moduleId = $activeItem.data('module-id');
+                var $checkbox = $activeItem.find('.module-complete-checkbox');
+                var isCompleted = $checkbox.is(':checked') && !$checkbox.is(':disabled');
+
+                if (!isCompleted) {
+                    e.preventDefault(); // Prevent sliding if the module is not completed
+                    alert('Please complete the current module before proceeding.');
+                } else {
+                    // Save only if the checkbox is checked and not already saved
+                    saveModuleCompletion(courseId, moduleId, $checkbox, $nextControl);
+                }
+            });
+
+            // Function to handle module completion saving
+            function saveModuleCompletion(courseId, moduleId, $checkbox, $nextControl) {
+                if(!$checkbox.is(':disabled')) {
+                    $.post('@Url.Action("MarkModuleComplete", "Courses")', { courseId: courseId, moduleId: moduleId }, function(response) {
+                        if(response.success) {
+                            $checkbox.prop('disabled', true); // Disable the checkbox
+                            $nextControl.prop('disabled', true); // Disable 'Next' until the next checkbox is checked
+                        } else {
+                            alert('Error saving module completion. Please try again.');
+                        }
+                    }).fail(function() {
+                        alert('Error saving module completion.');
+                    });
+                }
+            }
+
+            // Event handler when the carousel slides to a new item
+            $carousel.on('slid.bs.carousel', function() {
+                var isLastItem = $('.carousel-item').last().hasClass('active');
+                $nextControl.prop('disabled', isLastItem); // Disable 'Next' if on last item
+                $('.finish-course').toggle(isLastItem); // Show 'Finish' button on last item
+            });
+
+            // Finish course button handler
+            $('.finish-course').on('click', function() {
+                // Finish course logic here
+                // ...
+            });
+        });
+    </script>
+}
