@@ -1,28 +1,28 @@
 @model List<CourseModule>
 
-<div id="moduleCarousel" class="carousel slide" data-ride="carousel">
+<div id="moduleCarousel" class="carousel slide" data-interval="false"> <!-- Disable auto-sliding -->
     <div class="carousel-inner">
         @for (int i = 0; i < Model.Count; i++)
         {
-            <div class="carousel-item @(i == 0 ? "active" : "")">
-                <div class="module-content">
+            var isModuleCompleted = Model[i].ModuleID <= Model[i].LastCompletedModuleId;
+            <div class="carousel-item @(i == 0 ? "active" : "")" data-module-id="@Model[i].ModuleID">
+                <div class="module-content-box">
                     <h1>@Model[i].ModuleName</h1>
-                    <p>@Model[i].ModuleContent</p>
-                    <div class="text-center">
+                    <div class="module-content">
+                        <p>@Model[i].ModuleContent</p>
+                    </div>
+                    @if (i == Model.Count - 1)
+                    {
+                        <!-- Finish button only on the last module -->
+                        <button class="btn btn-success finish-course">Finish Course</button>
+                    }
+                    <div class="text-center module-footer">
                         <label>
-                            <input type="checkbox" class="module-complete-checkbox" @(Model[i].ModuleID <= Model[i].LastCompletedModuleId ? "checked disabled" : "") data-module-id="@Model[i].ModuleID">
+                            <input type="checkbox" class="module-complete-checkbox" @(isModuleCompleted ? "checked disabled" : "") data-module-id="@Model[i].ModuleID">
                             Complete Module
                         </label>
                     </div>
                 </div>
-                @if (i == Model.Count - 1)
-                {
-                    <button class="btn btn-success finish-course">Finish Course</button>
-                }
-                else
-                {
-                    <button class="btn btn-primary next-module" data-module-id="@Model[i].ModuleID">Next</button>
-                }
             </div>
         }
     </div>
@@ -48,8 +48,12 @@
                         data: { moduleId: moduleId },
                         success: function(response) {
                             if(response.success) {
-                                // Enable 'Next' button
-                                $('.next-module[data-module-id="' + moduleId + '"]').prop('disabled', false);
+                                // Automatically move to the next module if this is not the last
+                                var $currentItem = $('#moduleCarousel .carousel-item.active');
+                                var $nextItem = $currentItem.next('.carousel-item');
+                                if($nextItem.length) {
+                                    $('#moduleCarousel').carousel('next');
+                                }
                             } else {
                                 // Handle error, uncheck the checkbox
                                 $('input[data-module-id="' + moduleId + '"]').prop('checked', false);
@@ -63,11 +67,6 @@
                 }
             });
 
-            $('.next-module').on('click', function() {
-                // Move to the next module in the carousel
-                $('#moduleCarousel').carousel('next');
-            });
-
             $('.finish-course').on('click', function() {
                 // Implement course completion logic
                 alert('Course completed!');
@@ -75,3 +74,26 @@
         });
     </script>
 }
+
+<style>
+    /* ... your previous styles here ... */
+    .module-content-box {
+        padding: 20px;
+        border: 1px solid #ccc;
+        height: 400px;
+        overflow-y: auto;
+        margin: 20px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        position: relative; /* Required for absolute positioning inside */
+    }
+    .module-footer {
+        position: absolute;
+        bottom: 20px;
+        width: 100%;
+    }
+    .finish-course {
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+    }
+</style>
