@@ -1,28 +1,26 @@
 @model List<CourseModule>
 
-<div id="moduleCarousel" class="carousel slide" data-interval="false"> <!-- Disable auto-sliding -->
+<div id="moduleCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
     <div class="carousel-inner">
         @for (int i = 0; i < Model.Count; i++)
         {
-            var isModuleCompleted = Model[i].ModuleID <= Model[i].LastCompletedModuleId;
             <div class="carousel-item @(i == 0 ? "active" : "")" data-module-id="@Model[i].ModuleID">
                 <div class="module-content-box">
                     <h1>@Model[i].ModuleName</h1>
-                    <div class="module-content">
+                    <div class="module-content" style="overflow-y: auto; max-height: 300px;">
                         <p>@Model[i].ModuleContent</p>
                     </div>
-                    @if (i == Model.Count - 1)
-                    {
-                        <!-- Finish button only on the last module -->
-                        <button class="btn btn-success finish-course">Finish Course</button>
-                    }
-                    <div class="text-center module-footer">
-                        <label>
-                            <input type="checkbox" class="module-complete-checkbox" @(isModuleCompleted ? "checked disabled" : "") data-module-id="@Model[i].ModuleID">
-                            Complete Module
-                        </label>
+                    <div class="module-footer">
+                        <input type="checkbox" class="module-complete-checkbox" id="moduleCheckbox-@Model[i].ModuleID"
+                               @(Model[i].ModuleID <= Model[i].LastCompletedModuleId ? "checked disabled" : "") 
+                               data-module-id="@Model[i].ModuleID">
+                        <label for="moduleCheckbox-@Model[i].ModuleID">Complete Module</label>
                     </div>
                 </div>
+                @if (i == Model.Count - 1)
+                {
+                    <button class="btn btn-success finish-course">Finish Course</button>
+                }
             </div>
         }
     </div>
@@ -37,63 +35,66 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            // Disable the next control initially
+            $('.carousel-control-next').prop('disabled', true);
+
             $('.module-complete-checkbox').on('change', function() {
-                var moduleId = $(this).data('module-id');
-                var isChecked = $(this).is(':checked');
-                // AJAX call to server to mark module as complete
-                if(isChecked) {
-                    $.ajax({
-                        url: '@Url.Action("MarkModuleComplete", "Courses")', // Replace with your actual endpoint
-                        type: 'POST',
-                        data: { moduleId: moduleId },
-                        success: function(response) {
-                            if(response.success) {
-                                // Automatically move to the next module if this is not the last
-                                var $currentItem = $('#moduleCarousel .carousel-item.active');
-                                var $nextItem = $currentItem.next('.carousel-item');
-                                if($nextItem.length) {
-                                    $('#moduleCarousel').carousel('next');
-                                }
-                            } else {
-                                // Handle error, uncheck the checkbox
-                                $('input[data-module-id="' + moduleId + '"]').prop('checked', false);
-                            }
-                        },
-                        error: function() {
-                            // Handle AJAX error, uncheck the checkbox
-                            $('input[data-module-id="' + moduleId + '"]').prop('checked', false);
-                        }
-                    });
+                var $this = $(this);
+                var moduleId = $this.data('module-id');
+                if ($this.is(':checked')) {
+                    // Enable the Next control if the module is completed
+                    $('.carousel-control-next').prop('disabled', false);
+
+                    // Optionally save the module completion here via AJAX call
+                    // ...
+
+                } else {
+                    // If the checkbox is unchecked, disable the Next control
+                    $('.carousel-control-next').prop('disabled', true);
                 }
             });
 
+            $('#moduleCarousel').on('slid.bs.carousel', function () {
+                // After sliding, if the current module is completed, enable the Next control
+                var currentModuleId = $('.carousel-item.active').data('module-id');
+                var isCompleted = $('#moduleCheckbox-' + currentModuleId).is(':checked');
+                $('.carousel-control-next').prop('disabled', !isCompleted);
+            });
+
             $('.finish-course').on('click', function() {
-                // Implement course completion logic
-                alert('Course completed!');
+                // Finish course logic here
+                // ...
             });
         });
     </script>
 }
 
 <style>
-    /* ... your previous styles here ... */
+    /* Add custom styles here */
     .module-content-box {
         padding: 20px;
-        border: 1px solid #ccc;
-        height: 400px;
-        overflow-y: auto;
-        margin: 20px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        position: relative; /* Required for absolute positioning inside */
+        border: 1px solid #ccc; /* Add box style */
+        height: 400px; /* Adjust as needed */
+        overflow-y: auto; /* Make content scrollable */
+        position: relative;
     }
     .module-footer {
         position: absolute;
-        bottom: 20px;
+        bottom: 10px;
         width: 100%;
+        text-align: center;
     }
     .finish-course {
         position: absolute;
-        right: 20px;
-        bottom: 20px;
+        right: 15px;
+        bottom: 10px;
+    }
+    .carousel-control-prev, .carousel-control-next {
+        width: 5%; /* Adjust the width as necessary for larger click areas */
+    }
+    /* Style adjustments for disabled state */
+    .carousel-control-next.disabled {
+        pointer-events: none;
+        opacity: 0.5;
     }
 </style>
