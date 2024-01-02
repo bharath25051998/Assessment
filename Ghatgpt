@@ -1,43 +1,18 @@
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            var courseId = @Model.FirstOrDefault()?.CourseID ?? 0; 
-            var $carousel = $('#moduleCarousel');
-            var lastCompletedModuleId = @Model.LastOrDefault(m => m.ModuleID <= m.LastCompletedModuleId)?.ModuleID ?? 0;
+$(document).ready(function () {
+    var courseId = @Model.FirstOrDefault()?.CourseID ?? 0;
+    var $carousel = $('#moduleCarousel');
+    var lastCompletedModuleId = @Model.LastOrDefault(m => m.ModuleID <= m.LastCompletedModuleId)?.ModuleID ?? 0;
+    
+    // Find the index of the module in the Model list that corresponds to the last completed module
+    var startIndex = lastCompletedModuleId > 0 
+        ? Model.findIndex(m => m.ModuleID === lastCompletedModuleId) + 1 
+        : 0; // If no modules are completed, start from the first module (index 0)
+    
+    // Ensure startIndex does not exceed the number of modules
+    startIndex = Math.min(startIndex, Model.length - 1);
 
-            // Initialize carousel to the module where the user left off
-            var startIndex = Model.findIndex(m => m.ModuleID === lastCompletedModuleId);
-            startIndex = startIndex >= 0 ? startIndex + 1 : 0; // Start from the next module after the last completed one
-            $carousel.carousel(startIndex);
+    // Start the carousel at the module that comes after the last completed module
+    $carousel.carousel(startIndex);
 
-            $('.carousel-control-next').click(function(e) {
-                var $activeItem = $('.carousel-item.active');
-                var $checkbox = $activeItem.find('.module-complete-checkbox');
-                var isCompleted = $checkbox.is(':checked') || $checkbox.is(':disabled');
-
-                if (!isCompleted) {
-                    e.preventDefault(); // Prevent moving to the next module
-                    alert('Please complete the current module before proceeding.');
-                } else {
-                    var moduleId = $activeItem.data('module-id');
-                    if (!$checkbox.is(':disabled')) {
-                        // Save the module completion
-                        saveModuleCompletion(courseId, moduleId);
-                    }
-                }
-            });
-
-            function saveModuleCompletion(courseId, moduleId) {
-                $.post('@Url.Action("MarkModuleComplete", "Courses")', { courseId: courseId, moduleId: moduleId }, function(response) {
-                    if(!response.success) {
-                        alert('Error saving module completion.');
-                    }
-                });
-            }
-
-            $('.finish-course').on('click', function() {
-                // Finish course logic here
-            });
-        });
-    </script>
-}
+    // Rest of the script...
+});
