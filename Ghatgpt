@@ -1,9 +1,74 @@
-Describe the purpose of the async keyword in C# and identify the correct usage scenarios.
+<div id="courseCarousel" class="carousel slide" data-ride="carousel">
+  <!-- Carousel items (modules) -->
+  <div class="carousel-inner">
+    @for (int i = 0; i < Model.Modules.Count; i++)
+    {
+      <div class="carousel-item @(i == 0 ? "active" : "")" data-module-id="@Model.Modules[i].ModuleID">
+        <div class="module-content">
+          <!-- Module Content Here -->
+          <label>
+            <input type="checkbox" class="module-complete-checkbox" @(Model.Modules[i].IsCompleted ? "checked disabled" : "") />
+            Complete Module
+          </label>
+        </div>
+      </div>
+    }
+  </div>
+  
+  <!-- Carousel controls -->
+  <a class="carousel-control-next" href="#courseCarousel" role="button" data-slide="next" disabled>
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+  </a>
+</div>
 
-Options:
-a. async is used to declare that a method contains control flow that involves awaiting asynchronous operations; it allows the method to be paused and resumed without blocking the calling thread;
-b. The async keyword is a directive to the compiler to optimize the method for performance regardless of any asynchronous operations;
-c. Use of async marks a method to run synchronously but instructs the compiler to use a separate thread to avoid performance hits to the main application thread;
-d. async is used exclusively for methods that perform CPU-bound operations to improve computational speed by automatically distributing the work across multiple threads.
+<script>
+// Assuming jQuery is available
+$(document).ready(function() {
+  $('.module-complete-checkbox').change(function() {
+    // User completed a module, enable the next button
+    var $this = $(this);
+    var $currentItem = $this.closest('.carousel-item');
+    var $nextButton = $('.carousel-control-next');
+    $nextButton.removeAttr('disabled'); // Enable "Next" button
 
-In a database or spreadsheet, this might be represented in a single cell under a column named "Options".
+    // If checkbox is checked, mark as completed
+    if ($this.is(':checked')) {
+      // Call the backend to save the progress
+      saveModuleCompletion($currentItem.data('module-id'));
+    }
+  });
+
+  $('.carousel-control-next').click(function() {
+    var $currentItem = $('.carousel-item.active');
+    var $nextItem = $currentItem.next('.carousel-item');
+
+    // Check if the next module is the last one
+    if ($nextItem.length === 0) {
+      // Implement what happens when the user reaches the last module
+    } else {
+      // Enable the checkbox for the next module
+      $nextItem.find('.module-complete-checkbox').removeAttr('disabled');
+    }
+    
+    // Save the completion of the current module before moving to the next
+    saveModuleCompletion($currentItem.data('module-id'));
+  });
+
+  function saveModuleCompletion(moduleId) {
+    $.ajax({
+      url: '@Url.Action("SaveModuleCompletion", "Courses")',
+      type: 'POST',
+      data: { moduleId: moduleId },
+      success: function(response) {
+        if(response.success) {
+          console.log("Module " + moduleId + " completed.");
+        }
+      },
+      error: function() {
+        console.error("Failed to save module completion.");
+      }
+    });
+  }
+});
+</script>
