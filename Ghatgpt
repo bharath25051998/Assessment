@@ -72,3 +72,30 @@ $(document).ready(function() {
   }
 });
 </script>
+
+
+
+public List<CourseModule> MapDataSetToCourseModules(DataSet ds)
+{
+    var courseModules = new List<CourseModule>();
+
+    if (ds != null && ds.Tables.Count > 0)
+    {
+        foreach (DataRow row in ds.Tables[0].Rows)
+        {
+            var courseModule = new CourseModule
+            {
+                EmployeeEmail = row.Field<string>("EmployeeEmail"),
+                CourseID = row.Field<int>("CourseID"),
+                ModuleID = row.Field<int>("ModuleID"),
+                ModuleName = row.Field<string>("ModuleName"),
+                Weightage = row.Field<int>("Weightage"),
+                LastCompletedModuleId = row.Field<int?>("LastCompletedModuleID") ?? 0  // Assuming this can be null
+            };
+
+            courseModules.Add(courseModule);
+        }
+    }
+
+    return courseModules;
+}
