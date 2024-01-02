@@ -5,27 +5,25 @@
             var $carousel = $('#moduleCarousel');
             var lastCompletedModuleId = @Model.LastOrDefault(m => m.ModuleID <= m.LastCompletedModuleId)?.ModuleID ?? 0;
 
-            // Initialize carousel to the next module after the last completed one
-            var startIndex = Model.findIndex(m => m.ModuleID === lastCompletedModuleId) + 1;
+            // Initialize carousel to the module where the user left off
+            var startIndex = Model.findIndex(m => m.ModuleID === lastCompletedModuleId);
+            startIndex = startIndex >= 0 ? startIndex + 1 : 0; // Start from the next module after the last completed one
             $carousel.carousel(startIndex);
 
-            $('.carousel-control-next, .carousel-control-prev').click(function(e) {
+            $('.carousel-control-next').click(function(e) {
                 var $activeItem = $('.carousel-item.active');
-                var moduleId = $activeItem.data('module-id');
                 var $checkbox = $activeItem.find('.module-complete-checkbox');
+                var isCompleted = $checkbox.is(':checked') || $checkbox.is(':disabled');
 
-                if (!$checkbox.is(':checked')) {
-                    e.preventDefault(); // Prevent moving to the next module if the current one is not completed
+                if (!isCompleted) {
+                    e.preventDefault(); // Prevent moving to the next module
                     alert('Please complete the current module before proceeding.');
-                }
-            });
-
-            $('.module-complete-checkbox').on('change', function() {
-                var $checkbox = $(this);
-                var moduleId = $checkbox.data('module-id');
-                if ($checkbox.is(':checked')) {
-                    // Save the module completion
-                    saveModuleCompletion(courseId, moduleId);
+                } else {
+                    var moduleId = $activeItem.data('module-id');
+                    if (!$checkbox.is(':disabled')) {
+                        // Save the module completion
+                        saveModuleCompletion(courseId, moduleId);
+                    }
                 }
             });
 
