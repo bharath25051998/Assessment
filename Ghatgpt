@@ -1,35 +1,28 @@
-function submitAnswers() {
-  var userResponses = questions.map(function(question, index) {
-    var response = {
-      AssessmentQuestionID: question.AssessmentQuestionID,
-      SelectedOptionIDs: [] // Use an array to handle both single and multiple choice
-    };
+[HttpPost]
+public JsonResult CalculateScore(List<UserResponse> responses)
+{
+    int score = 0;
+    foreach (var response in responses)
+    {
+        var correctOptions = dbContext.Questions
+            .Where(q => q.AssessmentQuestionID == response.AssessmentQuestionID)
+            .SelectMany(q => q.OptionText)
+            .Where(opt => opt.IsCorrect)
+            .Select(opt => opt.Id)
+            .ToList();
 
-    if (question.questionType === 1) { // Single-choice question
-      var selectedOptionId = parseInt($('input[name="Questions[' + index + '].SelectedOption"]:checked').val(), 10);
-      response.SelectedOptionIDs.push(selectedOptionId);
-    } else if (question.questionType === 2) { // Multiple-choice question
-      $('input[name="Questions[' + index + '].SelectedOptions"]:checked').each(function() {
-        response.SelectedOptionIDs.push(parseInt($(this).val(), 10));
-      });
+        if (response.SelectedOptionIDs.All(id => correctOptions.Contains(id)) && 
+            correctOptions.Count == response.SelectedOptionIDs.Count)
+        {
+            score++;
+        }
     }
 
-    return response;
-  });
+    return Json(new { score = score });
+}
 
-  // Now, send the array of user responses to the server
-  $.ajax({
-    type: 'POST',
-    url: '/YourController/CalculateScore', // Replace with your actual endpoint
-    contentType: 'application/json',
-    data: JSON.stringify(userResponses),
-    success: function(data) {
-      // Handle the score response from the server
-      console.log('Your score is:', data.score);
-    },
-    error: function(error) {
-      // Handle any errors
-      console.error('Error:', error);
-    }
-  });
+public class UserResponse
+{
+    public int AssessmentQuestionID { get; set; }
+    public List<int> SelectedOptionIDs { get; set; }
 }
