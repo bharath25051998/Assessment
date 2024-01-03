@@ -1,29 +1,44 @@
-$(document).ready(function() {
-    var $carousel = $('#moduleCarousel');
-    var $finishButton = $('.finish-course'); // The 'Finish' button
+function calculateScore() {
+  var responses = []; // Initialize an array to hold the response data for AJAX.
 
-    // Initially hide or disable the 'Finish' button
-    $finishButton.hide();
+  questions.forEach(function(question, index) {
+    var response = {
+      questionId: question.id, // Assuming each question object has an id.
+      courseId: courseId, // You will need to have courseId defined somewhere in your code.
+      selectedOptions: [],
+      questionType: question.questionType
+    };
 
-    // Event handler for checkbox change
-    $('.module-complete-checkbox').change(function() {
-        var $activeItem = $('.carousel-item.active');
-        var isLastItem = ($activeItem.index() === $carousel.find('.carousel-item').length - 1);
-        var isChecked = $(this).is(':checked');
+    if (question.questionType == 1) { // For single-choice questions
+      var userSelectedOptionId = parseInt($('input[name="Questions[' + index + '].SelectedOption"]:checked').val(), 10);
+      response.selectedOptions.push(userSelectedOptionId);
+    }
+    else if (question.questionType == 2) { // For multiple-choice questions
+      var userSelectedOptionIds = $('input[name="Questions[' + index + '].SelectedOptions"]:checked').map(function() {
+        return parseInt($(this).val(), 10);
+      }).get();
+      response.selectedOptions = userSelectedOptionIds;
+    }
 
-        // Show and enable the 'Finish' button only if on the last slide and the checkbox is checked
-        if (isLastItem && isChecked) {
-            $finishButton.show();
-        } else {
-            $finishButton.hide();
-        }
-    });
+    // Add the response object to the array.
+    responses.push(response);
+  });
 
-    // Event handler for 'Finish' button click
-    $finishButton.click(function() {
-        // Logic to handle the final action
-        console.log('Finish button clicked. Implement final save logic here.');
-    });
-
-    // Rest of the carousel logic...
-});
+  // Now send the responses array to the server with AJAX.
+  $.ajax({
+    type: 'POST',
+    url: '/submit-quiz', // The URL to your server endpoint that handles the scoring.
+    data: JSON.stringify({ responses: responses }),
+    contentType: 'application/json; charset=utf-8',
+    dataType: 'json',
+    success: function(score) {
+      // Handle the score returned from the server.
+      // For example, you could display the score to the user.
+      alert('Your score is: ' + score);
+    },
+    error: function(xhr, status, error) {
+      // Handle any errors that occur during the request.
+      console.error('An error occurred:', error);
+    }
+  });
+}
