@@ -1,44 +1,74 @@
-function calculateScore() {
-  var responses = []; // Initialize an array to hold the response data for AJAX.
+using System.Web.Mvc;
+using System.Linq;
+using System.Data.Entity; // If using Entity Framework
 
-  questions.forEach(function(question, index) {
-    var response = {
-      questionId: question.id, // Assuming each question object has an id.
-      courseId: courseId, // You will need to have courseId defined somewhere in your code.
-      selectedOptions: [],
-      questionType: question.questionType
-    };
+// Assuming you have these models
+public class Question
+{
+    public int QuestionId { get; set; }
+    public int CourseId { get; set; }
+    public string CorrectAnswer { get; set; } // Correct answers as a comma-separated string
+    public int QuestionType { get; set; } // 1 for single-choice, 2 for multiple-choice
+    // ... other properties ...
+}
 
-    if (question.questionType == 1) { // For single-choice questions
-      var userSelectedOptionId = parseInt($('input[name="Questions[' + index + '].SelectedOption"]:checked').val(), 10);
-      response.selectedOptions.push(userSelectedOptionId);
+// Entity Framework context
+public class YourDbContext : DbContext
+{
+    public DbSet<Question> Questions { get; set; }
+    // ... other DbSets ...
+}
+
+public class QuizController : Controller
+{
+    private YourDbContext dbContext = new YourDbContext();
+
+    [HttpPost]
+    public ActionResult SubmitQuiz(QuizSubmission submission)
+    {
+        int score = 0;
+        var questions = dbContext.Questions
+                                 .Where(q => q.CourseId == submission.CourseId)
+                                 .ToList();
+
+        foreach (var response in submission.Responses)
+        {
+            var question = questions.FirstOrDefault(q => q.QuestionId == response.QuestionId);
+            if (question != null)
+            {
+                var correctAnswers = question.CorrectAnswer.Split(',').Select(int.Parse).ToList();
+                var selectedAnswers = response.SelectedOptions;
+
+                // Check for single-choice question
+                if (question.QuestionType == 1 && correctAnswers.Count == 1)
+                {
+                    if (selectedAnswers.Count == 1 && correctAnswers.Contains(selectedAnswers.Single()))
+                    {
+                        score++;
+                    }
+                }
+                // Check for multiple-choice question
+                else if (question.QuestionType == 2)
+                {
+                    if (selectedAnswers.Count == correctAnswers.Count && !correctAnswers.Except(selectedAnswers).Any())
+                    {
+                        score++;
+                    }
+                }
+            }
+        }
+
+        // Optionally save the result to the database here
+
+        return Json(new { success = true, score = score });
     }
-    else if (question.questionType == 2) { // For multiple-choice questions
-      var userSelectedOptionIds = $('input[name="Questions[' + index + '].SelectedOptions"]:checked').map(function() {
-        return parseInt($(this).val(), 10);
-      }).get();
-      response.selectedOptions = userSelectedOptionIds;
-    }
 
-    // Add the response object to the array.
-    responses.push(response);
-  });
-
-  // Now send the responses array to the server with AJAX.
-  $.ajax({
-    type: 'POST',
-    url: '/submit-quiz', // The URL to your server endpoint that handles the scoring.
-    data: JSON.stringify({ responses: responses }),
-    contentType: 'application/json; charset=utf-8',
-    dataType: 'json',
-    success: function(score) {
-      // Handle the score returned from the server.
-      // For example, you could display the score to the user.
-      alert('Your score is: ' + score);
-    },
-    error: function(xhr, status, error) {
-      // Handle any errors that occur during the request.
-      console.error('An error occurred:', error);
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            dbContext.Dispose();
+        }
+        base.Dispose(disposing);
     }
-  });
 }
