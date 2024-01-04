@@ -1,28 +1,23 @@
-[HttpPost]
-public JsonResult CalculateScore(List<UserResponse> responses)
-{
-    int score = 0;
-    foreach (var response in responses)
-    {
-        var correctOptions = dbContext.Questions
-            .Where(q => q.AssessmentQuestionID == response.AssessmentQuestionID)
-            .SelectMany(q => q.OptionText)
-            .Where(opt => opt.IsCorrect)
-            .Select(opt => opt.Id)
-            .ToList();
+function postToOtherAction(param1, param2) {
+    // Create a form element
+    var form = $('<form>', {
+        'method': 'POST',
+        'action': '/ControllerName/ActionName'
+    });
 
-        if (response.SelectedOptionIDs.All(id => correctOptions.Contains(id)) && 
-            correctOptions.Count == response.SelectedOptionIDs.Count)
-        {
-            score++;
-        }
-    }
+    // Add parameters as hidden fields
+    $('<input>').attr({
+        'type': 'hidden',
+        'name': 'param1',
+        'value': param1
+    }).appendTo(form);
+    
+    $('<input>').attr({
+        'type': 'hidden',
+        'name': 'param2',
+        'value': param2
+    }).appendTo(form);
 
-    return Json(new { score = score });
-}
-
-public class UserResponse
-{
-    public int AssessmentQuestionID { get; set; }
-    public List<int> SelectedOptionIDs { get; set; }
+    // Append the form to the body and submit it
+    form.appendTo('body').submit();
 }
