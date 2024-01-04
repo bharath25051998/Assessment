@@ -1,31 +1,31 @@
-function submitTest() {
-    // Collect the user responses
-    var userResponses = collectUserResponses(); // Ensure this is defined and returns the data you need
+foreach (var response in userAnswers)
+{
+    var question = questions.FirstOrDefault(q => q.AssessmentQuestionID == response.AssessmentQuestionID);
 
-    // AJAX call to get the score
-    $.ajax({
-        type: 'POST',
-        url: '/Learning/CheckAnswer', // Correct URL to your endpoint
-        contentType: 'application/json',
-        data: JSON.stringify(userResponses),
-        success: function(data) {
-            // Assuming 'data' contains the score
-            document.getElementById('hiddenScore').value = data.score; // Set score
-            document.getElementById('hiddenTotalQuestions').value = data.totalQuestions; // Set total questions
-            document.getElementById('hiddenCourseId').value = data.courseId; // Set course ID
-            document.getElementById('hiddenPassingScore').value = data.passingScore; // Set passing score
-            
-            // Submit the form
-            document.getElementById('testSubmissionForm').submit();
-        },
-        error: function(xhr, status, error) {
-            console.error('Error:', error);
+    if (question != null)
+    {
+        // Handle single choice questions
+        if (question.QuestionType == 1)
+        {
+            // Assuming that for single choice questions, only one option ID is selected
+            var selectedOptionId = response.SelectedOptionIDs.FirstOrDefault();
+            if (question.OptionText.Any(opt => opt.Id == selectedOptionId && opt.IsCorrect))
+            {
+                score++;
+            }
         }
-    });
+        // Handle multiple choice questions
+        else if (question.QuestionType == 2)
+        {
+            var correctOptionIds = question.OptionText.Where(opt => opt.IsCorrect).Select(opt => opt.Id).ToList();
+            var selectedOptionIds = response.SelectedOptionIDs;
+            
+            // Check if all selected options are correct and no extra incorrect options are selected
+            if (selectedOptionIds.All(id => correctOptionIds.Contains(id)) &&
+                correctOptionIds.All(id => selectedOptionIds.Contains(id)))
+            {
+                score++;
+            }
+        }
+    }
 }
-
-// Assuming you have a button with the ID 'finishBtn'
-document.getElementById('finishBtn').addEventListener('click', function(event) {
-    event.preventDefault(); // Stop the default form submit
-    submitTest();
-});
