@@ -1,23 +1,31 @@
-function postToOtherAction(param1, param2) {
-    // Create a form element
-    var form = $('<form>', {
-        'method': 'POST',
-        'action': '/ControllerName/ActionName'
+function submitTest() {
+    // Collect the user responses
+    var userResponses = collectUserResponses(); // Ensure this is defined and returns the data you need
+
+    // AJAX call to get the score
+    $.ajax({
+        type: 'POST',
+        url: '/Learning/CheckAnswer', // Correct URL to your endpoint
+        contentType: 'application/json',
+        data: JSON.stringify(userResponses),
+        success: function(data) {
+            // Assuming 'data' contains the score
+            document.getElementById('hiddenScore').value = data.score; // Set score
+            document.getElementById('hiddenTotalQuestions').value = data.totalQuestions; // Set total questions
+            document.getElementById('hiddenCourseId').value = data.courseId; // Set course ID
+            document.getElementById('hiddenPassingScore').value = data.passingScore; // Set passing score
+            
+            // Submit the form
+            document.getElementById('testSubmissionForm').submit();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+        }
     });
-
-    // Add parameters as hidden fields
-    $('<input>').attr({
-        'type': 'hidden',
-        'name': 'param1',
-        'value': param1
-    }).appendTo(form);
-    
-    $('<input>').attr({
-        'type': 'hidden',
-        'name': 'param2',
-        'value': param2
-    }).appendTo(form);
-
-    // Append the form to the body and submit it
-    form.appendTo('body').submit();
 }
+
+// Assuming you have a button with the ID 'finishBtn'
+document.getElementById('finishBtn').addEventListener('click', function(event) {
+    event.preventDefault(); // Stop the default form submit
+    submitTest();
+});
