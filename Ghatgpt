@@ -1,31 +1,9 @@
-foreach (var response in userAnswers)
-{
-    var question = questions.FirstOrDefault(q => q.AssessmentQuestionID == response.AssessmentQuestionID);
+<select id="chapterDropdown" onchange="loadCourses()">
+    <option value="">Select a Chapter</option>
+    <!-- Chapter options here -->
+</select>
 
-    if (question != null)
-    {
-        // Handle single choice questions
-        if (question.QuestionType == 1)
-        {
-            // Assuming that for single choice questions, only one option ID is selected
-            var selectedOptionId = response.SelectedOptionIDs.FirstOrDefault();
-            if (question.OptionText.Any(opt => opt.Id == selectedOptionId && opt.IsCorrect))
-            {
-                score++;
-            }
-        }
-        // Handle multiple choice questions
-        else if (question.QuestionType == 2)
-        {
-            var correctOptionIds = question.OptionText.Where(opt => opt.IsCorrect).Select(opt => opt.Id).ToList();
-            var selectedOptionIds = response.SelectedOptionIDs;
-            
-            // Check if all selected options are correct and no extra incorrect options are selected
-            if (selectedOptionIds.All(id => correctOptionIds.Contains(id)) &&
-                correctOptionIds.All(id => selectedOptionIds.Contains(id)))
-            {
-                score++;
-            }
-        }
-    }
-}
+<select id="courseDropdown">
+    <option value="">Select a Course</option>
+    <!-- Courses will be populated based on chapter selection -->
+</select>
