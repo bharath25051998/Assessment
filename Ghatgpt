@@ -1,22 +1,23 @@
-function updateCourses() {
-    var chapterId = document.getElementById("chapterDropdown").value;
-    var courseDropdown = document.getElementById("courseDropdown");
+public ActionResult AllCoursesStatus()
+{
+    // ... Your existing code to get the DataTable
 
-    // Clear existing options
-    courseDropdown.innerHTML = '<option value="">Select a Course</option>';
+    DataTable dtCourses = ...; // Your DataTable from the ViewBag or elsewhere
 
-    if (chapterId != "") {
-        var assignedCourses = coursesData[chapterId];
-        assignedCourses.forEach(function(course) {
-            var opt = document.createElement('option');
-            opt.value = course.Id;
-            opt.innerHTML = course.Name;
-            courseDropdown.appendChild(opt);
-        });
+    List<CourseDetail> courseDetails = new List<CourseDetail>();
+    foreach (DataRow row in dtCourses.Rows)
+    {
+        var courseDetail = new CourseDetail
+        {
+            CourseId = Convert.ToInt32(row["CourseId"]),
+            CourseName = row["CourseName"].ToString(),
+            // Map other properties
+        };
+        courseDetails.Add(courseDetail);
     }
+
+    ViewBag.CourseDetails = courseDetails;
+
+    // Return your view as normal
+    return View();
 }
-
-
-<script type="text/javascript">
-    var coursesData = @Html.Raw(Json.Encode(courses));
-</script>
