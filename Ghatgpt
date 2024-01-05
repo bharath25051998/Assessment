@@ -1,23 +1,47 @@
-public ActionResult AllCoursesStatus()
-{
-    // ... Your existing code to get the DataTable
-
-    DataTable dtCourses = ...; // Your DataTable from the ViewBag or elsewhere
-
-    List<CourseDetail> courseDetails = new List<CourseDetail>();
-    foreach (DataRow row in dtCourses.Rows)
-    {
-        var courseDetail = new CourseDetail
-        {
-            CourseId = Convert.ToInt32(row["CourseId"]),
-            CourseName = row["CourseName"].ToString(),
-            // Map other properties
-        };
-        courseDetails.Add(courseDetail);
-    }
-
-    ViewBag.CourseDetails = courseDetails;
-
-    // Return your view as normal
-    return View();
+@{
+    var chapters = ViewBag.Chapters as IEnumerable<YourNamespace.ChapterViewModel>;
+    var courses = ViewBag.Courses as IEnumerable<YourNamespace.CourseViewModel>;
 }
+
+<select id="chapterDropdown" onchange="updateCourses()">
+    <option value="">Select a Chapter</option>
+    @foreach(var chapter in chapters)
+    {
+        <option value="@chapter.ChapterId">@chapter.ChapterName</option>
+    }
+</select>
+
+<select id="courseDropdown">
+    <option value="">Select a Course</option>
+    <!-- Courses will be populated based on chapter selection -->
+</select>
+
+@foreach(var course in courses)
+{
+    <div class="course-option" data-chapter-id="@course.ChapterId" data-course-id="@course.CourseId" style="display: none;">
+        @course.CourseName
+    </div>
+}
+
+<script type="text/javascript">
+    function updateCourses() {
+        var chapterId = document.getElementById('chapterDropdown').value;
+        var courseDropdown = document.getElementById('courseDropdown');
+        
+        // Clear existing options
+        courseDropdown.innerHTML = '<option value="">Select a Course</option>';
+
+        if (chapterId !== "") {
+            // Filter and display courses based on the selected chapter
+            var courseElements = document.querySelectorAll('.course-option');
+            courseElements.forEach(function(courseElement) {
+                if(courseElement.getAttribute('data-chapter-id') === chapterId) {
+                    var opt = document.createElement('option');
+                    opt.value = courseElement.getAttribute('data-course-id');
+                    opt.textContent = courseElement.textContent;
+                    courseDropdown.appendChild(opt);
+                }
+            });
+        }
+    }
+</script>
