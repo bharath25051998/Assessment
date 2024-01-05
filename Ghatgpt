@@ -1,32 +1,22 @@
-<select id="chapterDropdown" onchange="loadCourses()">
-    <option value="">Select a Chapter</option>
-    <!-- Chapter options here -->
-</select>
+function updateCourses() {
+    var chapterId = document.getElementById("chapterDropdown").value;
+    var courseDropdown = document.getElementById("courseDropdown");
 
-<select id="courseDropdown">
-    <option value="">Select a Course</option>
-    <!-- Courses will be populated based on chapter selection -->
-</select>
+    // Clear existing options
+    courseDropdown.innerHTML = '<option value="">Select a Course</option>';
 
-
-function loadCourses() {
-    var chapter = document.getElementById("chapterDropdown").value;
-    
-    // Clear existing options in course dropdown
-    document.getElementById("courseDropdown").innerHTML = '<option value="">Select a Course</option>';
-
-    if (chapter != "") {
-        // Fetch courses for the selected chapter
-        // This can be a call to your server or a local data structure
-        fetch('get_courses.php?chapter=' + chapter)
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(function(course) {
-                var opt = document.createElement('option');
-                opt.value = course.id;
-                opt.innerHTML = course.name;
-                document.getElementById("courseDropdown").appendChild(opt);
-            });
+    if (chapterId != "") {
+        var assignedCourses = coursesData[chapterId];
+        assignedCourses.forEach(function(course) {
+            var opt = document.createElement('option');
+            opt.value = course.Id;
+            opt.innerHTML = course.Name;
+            courseDropdown.appendChild(opt);
         });
     }
 }
+
+
+<script type="text/javascript">
+    var coursesData = @Html.Raw(Json.Encode(courses));
+</script>
