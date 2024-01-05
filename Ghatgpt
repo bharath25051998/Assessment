@@ -7,3 +7,26 @@
     <option value="">Select a Course</option>
     <!-- Courses will be populated based on chapter selection -->
 </select>
+
+
+function loadCourses() {
+    var chapter = document.getElementById("chapterDropdown").value;
+    
+    // Clear existing options in course dropdown
+    document.getElementById("courseDropdown").innerHTML = '<option value="">Select a Course</option>';
+
+    if (chapter != "") {
+        // Fetch courses for the selected chapter
+        // This can be a call to your server or a local data structure
+        fetch('get_courses.php?chapter=' + chapter)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(function(course) {
+                var opt = document.createElement('option');
+                opt.value = course.id;
+                opt.innerHTML = course.name;
+                document.getElementById("courseDropdown").appendChild(opt);
+            });
+        });
+    }
+}
