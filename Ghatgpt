@@ -1,21 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Copy to Clipboard Example</title>
-<script>
-function copyToClipboard(text) {
+function copyTextToClipboard() {
+  const text = document.getElementById("textToCopy").innerText;
   navigator.clipboard.writeText(text).then(function() {
     console.log('Text successfully copied to clipboard');
   }).catch(function(err) {
     console.error('Error in copying text: ', err);
   });
 }
-</script>
-</head>
-<body>
-
-<p>Click the button to copy text to the clipboard:</p>
-<button onclick="copyToClipboard('This is the text to be copied')">Copy Text</button>
-
-</body>
-</html>
