@@ -1,21 +1,8 @@
-<button onclick="getAndCopyDownloadLink(1, 'pdf', 'example')">Copy Download Link</button>
+public IActionResult GenerateDownloadLink(int docId, string docType, string docName)
+{
+    var request = HttpContext.Request;
+    var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
+    var downloadUrl = Url.Action("Download", "YourController", new { id = docId, type = docType, name = docName }, protocol: request.Scheme);
 
-<script>
-function getAndCopyDownloadLink(docId, docType, docName) {
-    // Construct the URL for the AJAX call, including the parameters
-    var url = '@Url.Action("GenerateDownloadLink", "YourController")' + 
-              `?docId=${encodeURIComponent(docId)}&docType=${encodeURIComponent(docType)}&docName=${encodeURIComponent(docName)}`;
-
-    // AJAX call to server to get the download URL
-    fetch(url)
-        .then(response => response.text())
-        .then(downloadUrl => {
-            // Copy the URL to the clipboard
-            navigator.clipboard.writeText(downloadUrl).then(function() {
-                console.log('Download URL successfully copied to clipboard');
-            }).catch(function(err) {
-                console.error('Error in copying download URL: ', err);
-            });
-        });
+    return Content(baseUrl + downloadUrl);
 }
-</script>
