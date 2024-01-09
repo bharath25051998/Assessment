@@ -1,8 +1,17 @@
-function copyTextToClipboard() {
-  const text = document.getElementById("textToCopy").innerText;
-  navigator.clipboard.writeText(text).then(function() {
-    console.log('Text successfully copied to clipboard');
-  }).catch(function(err) {
-    console.error('Error in copying text: ', err);
-  });
+<button onclick="getAndCopyDownloadLink()">Copy Download Link</button>
+
+<script>
+function getAndCopyDownloadLink() {
+    // AJAX call to server to get the download URL
+    fetch('@Url.Action("GenerateDownloadLink", "YourController")')
+        .then(response => response.text())
+        .then(downloadUrl => {
+            // Copy the URL to the clipboard
+            navigator.clipboard.writeText(downloadUrl).then(function() {
+                console.log('Download URL successfully copied to clipboard');
+            }).catch(function(err) {
+                console.error('Error in copying download URL: ', err);
+            });
+        });
 }
+</script>
