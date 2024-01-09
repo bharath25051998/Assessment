@@ -1,9 +1,13 @@
-<button onclick="getAndCopyDownloadLink()">Copy Download Link</button>
+<button onclick="getAndCopyDownloadLink(1, 'pdf', 'example')">Copy Download Link</button>
 
 <script>
-function getAndCopyDownloadLink() {
+function getAndCopyDownloadLink(docId, docType, docName) {
+    // Construct the URL for the AJAX call, including the parameters
+    var url = '@Url.Action("GenerateDownloadLink", "YourController")' + 
+              `?docId=${encodeURIComponent(docId)}&docType=${encodeURIComponent(docType)}&docName=${encodeURIComponent(docName)}`;
+
     // AJAX call to server to get the download URL
-    fetch('@Url.Action("GenerateDownloadLink", "YourController")')
+    fetch(url)
         .then(response => response.text())
         .then(downloadUrl => {
             // Copy the URL to the clipboard
