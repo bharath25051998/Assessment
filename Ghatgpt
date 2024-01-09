@@ -2,18 +2,20 @@
 <html>
 <body>
 
-<p>Click the button to copy text to the clipboard:</p>
+<p>Click the button to create a hyperlink with parameters:</p>
 
-<button onclick="copyTextToClipboard()">Copy Text</button>
+<button onclick="createLink()">Create Link</button>
+
+<div id="link-container"></div>
 
 <script>
-function copyTextToClipboard() {
-  const textToCopy = 'This is the text to copy';
-  navigator.clipboard.writeText(textToCopy).then(() => {
-    console.log('Text successfully copied to clipboard');
-  }).catch(err => {
-    console.error('Failed to copy text to clipboard: ', err);
-  });
+function createLink() {
+  var param1 = 'value1';
+  var param2 = 'value2';
+  var url = 'http://www.example.com/page?param1=' + encodeURIComponent(param1) + '&param2=' + encodeURIComponent(param2);
+
+  var linkHtml = '<a href="' + url + '">Link to Page with Parameters</a>';
+  document.getElementById('link-container').innerHTML = linkHtml;
 }
 </script>
 
