@@ -1,23 +1,18 @@
-<!DOCTYPE html>
-<html>
-<body>
+using Microsoft.Extensions.Configuration;
 
-<p>Click the button to create a hyperlink with parameters:</p>
+public class YourController : Controller
+{
+    private readonly IConfiguration _configuration;
 
-<button onclick="createLink()">Create Link</button>
+    public YourController(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
 
-<div id="link-container"></div>
-
-<script>
-function createLink() {
-  var param1 = 'value1';
-  var param2 = 'value2';
-  var url = 'http://www.example.com/page?param1=' + encodeURIComponent(param1) + '&param2=' + encodeURIComponent(param2);
-
-  var linkHtml = '<a href="' + url + '">Link to Page with Parameters</a>';
-  document.getElementById('link-container').innerHTML = linkHtml;
+    public IActionResult YourAction()
+    {
+        var yourSetting = _configuration["YourSettingsKey"];
+        ViewData["YourSettingsKey"] = yourSetting;
+        return View();
+    }
 }
-</script>
-
-</body>
-</html>
