@@ -1,18 +1,21 @@
-using Microsoft.Extensions.Configuration;
-
-public class YourController : Controller
-{
-    private readonly IConfiguration _configuration;
-
-    public YourController(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-
-    public IActionResult YourAction()
-    {
-        var yourSetting = _configuration["YourSettingsKey"];
-        ViewData["YourSettingsKey"] = yourSetting;
-        return View();
-    }
+<!DOCTYPE html>
+<html>
+<head>
+<title>Copy to Clipboard Example</title>
+<script>
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    console.log('Text successfully copied to clipboard');
+  }).catch(function(err) {
+    console.error('Error in copying text: ', err);
+  });
 }
+</script>
+</head>
+<body>
+
+<p>Click the button to copy text to the clipboard:</p>
+<button onclick="copyToClipboard('This is the text to be copied')">Copy Text</button>
+
+</body>
+</html>
