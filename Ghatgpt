@@ -1,20 +1,21 @@
-<script type="text/javascript">
-    function searchCourses() {
-        var chapterId = document.getElementById('chapterDropdown').value;
-        var courseId = document.getElementById('courseDropdown').value;
+<!DOCTYPE html>
+<html>
+<body>
 
-        $.ajax({
-            url: '@Url.Action("GetCourseData", "YourControllerName")',
-            type: 'GET',
-            data: { chapterId: chapterId, courseId: courseId },
-            success: function(data) {
-                // Assuming 'data' is the HTML of the table you want to update
-                $('#resultsTable').html(data);
-            },
-            error: function(xhr, status, error) {
-                // Handle errors here
-                console.error(error);
-            }
-        });
-    }
+<p>Click the button to copy text to the clipboard:</p>
+
+<button onclick="copyTextToClipboard()">Copy Text</button>
+
+<script>
+function copyTextToClipboard() {
+  const textToCopy = 'This is the text to copy';
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    console.log('Text successfully copied to clipboard');
+  }).catch(err => {
+    console.error('Failed to copy text to clipboard: ', err);
+  });
+}
 </script>
+
+</body>
+</html>
