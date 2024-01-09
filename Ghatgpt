@@ -1,8 +1,6 @@
-public IActionResult GenerateDownloadLink(int docId, string docType, string docName)
-{
-    var request = HttpContext.Request;
-    var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-    var downloadUrl = Url.Action("Download", "YourController", new { id = docId, type = docType, name = docName }, protocol: request.Scheme);
+string baseUrl = "https://www.yourwebsite.com/controller/action";
+int id = 123;
+string type = "myType";
+string docName = "myDocumentName";
 
-    return Content(baseUrl + downloadUrl);
-}
+string url = $"{baseUrl}?id={HttpUtility.UrlEncode(id.ToString())}&type={HttpUtility.UrlEncode(type)}&docName={HttpUtility.UrlEncode(docName)}";
