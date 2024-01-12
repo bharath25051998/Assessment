@@ -1,6 +1,36 @@
-string baseUrl = "https://www.yourwebsite.com/controller/action";
-int id = 123;
-string type = "myType";
-string docName = "myDocumentName";
+@{
+  var arrayOfValues = new List<int[]> {
+    new int[] {1, 2},
+    new int[] {1, 2, 3}
+  };
 
-string url = $"{baseUrl}?id={HttpUtility.UrlEncode(id.ToString())}&type={HttpUtility.UrlEncode(type)}&docName={HttpUtility.UrlEncode(docName)}";
+  var averages = new List<double>();
+
+  foreach (var values in arrayOfValues)
+  {
+    if (values.Any())
+    {
+      double sum = values.Sum();
+      double average = sum / values.Length;
+      averages.Add(average);
+    }
+    else
+    {
+      averages.Add(0);
+    }
+  }
+}
+
+<table>
+  <tr>
+    <th>Index</th>
+    <th>Average</th>
+  </tr>
+  @for (int i = 0; i < averages.Count; i++)
+  {
+    <tr>
+      <td>@i</td>
+      <td>@averages[i].ToString("0.##")</td>
+    </tr>
+  }
+</table>
