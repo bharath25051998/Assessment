@@ -7,8 +7,8 @@ public class YourController : Controller
 {
     public ActionResult YourAction()
     {
-        // Assuming ViewBag.Data is your list of dictionaries
-        List<Dictionary<string, int>> data = ViewBag.Data;
+        // Assuming ViewBag.Data is your list of dictionaries with string values
+        List<Dictionary<string, string>> data = ViewBag.Data;
 
         // Dictionary to store the sums and counts for each key
         var combined = new Dictionary<string, (int sum, int count)>();
@@ -18,20 +18,25 @@ public class YourController : Controller
         {
             foreach (var kvp in dict)
             {
-                if (!combined.ContainsKey(kvp.Key))
+                if (int.TryParse(kvp.Value, out int value)) // Convert string to int
                 {
-                    combined[kvp.Key] = (0, 0);
+                    if (!combined.ContainsKey(kvp.Key))
+                    {
+                        combined[kvp.Key] = (0, 0);
+                    }
+                    combined[kvp.Key] = (combined[kvp.Key].sum + value, combined[kvp.Key].count + 1);
                 }
-                combined[kvp.Key] = (combined[kvp.Key].sum + kvp.Value, combined[kvp.Key].count + 1);
             }
         }
 
-        // Calculate averages
-        var averages = combined.ToDictionary(kvp => kvp.Key, kvp => (double)kvp.Value.sum / kvp.Value.count);
+        // Calculate averages and create a dictionary of key and average
+        var averages = combined.ToDictionary(
+            kvp => kvp.Key, 
+            kvp => kvp.Value.count > 0 ? (double)kvp.Value.sum / kvp.Value.count : 0
+        );
 
-        // Use the averages as needed, e.g., pass them to the view
-        ViewBag.Averages = averages;
-
-        return View();
+        // Return the averages dictionary
+        // You can return it directly or pass it to a view, depending on your needs
+        return Json(averages, JsonRequestBehavior.AllowGet);
     }
 }
