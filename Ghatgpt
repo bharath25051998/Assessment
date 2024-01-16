@@ -1,8 +1,9 @@
 for (i = 0; i < spocRating.length; i++) {
   var value = $("#" + spocRating[i].id).val();
-  if (value === "" || !/^\d+$/.test(value)) { // This regex checks if value is not an integer
+  // This regex checks if the value is an integer within 0 to 5 without leading zeros
+  if (value === "" || !/^(0|[1-5])$/.test(value)) {
     isValid = false;
-    errorMsg = "Please enter an integer rating for all skills.";
+    errorMsg = "Please enter a valid integer rating between 0 and 5 for all skills.";
     break;
   }
 }
