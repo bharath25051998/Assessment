@@ -6,31 +6,22 @@ class Program
 {
     static void Main()
     {
-        // Your data
+        // Example data
         Dictionary<string, Dictionary<string, int>> data = new Dictionary<string, Dictionary<string, int>>()
         {
             {"row1", new Dictionary<string, int> { {"key1", 3}, {"key2", 5} }},
             {"row2", new Dictionary<string, int> { {"key1", 4}, {"key3", 6} }}
         };
 
-        // Dictionary to store the sums and counts for each key
-        Dictionary<string, (int sum, int count)> combined = new Dictionary<string, (int sum, int count)>();
+        // Flatten the dictionary and group by key
+        var combined = data.SelectMany(row => row.Value)
+                           .GroupBy(kvp => kvp.Key)
+                           .ToDictionary(group => group.Key, group => group.Average(kvp => kvp.Value));
 
-        // Process each row
-        foreach (var row in data.Values)
-        {
-            foreach (var kvp in row)
-            {
-                if (!combined.ContainsKey(kvp.Key))
-                {
-                    combined[kvp.Key] = (0, 0);
-                }
-                combined[kvp.Key] = (combined[kvp.Key].sum + kvp.Value, combined[kvp.Key].count + 1);
-            }
-        }
-
-        // Calculate and print averages
+        // Print averages
         foreach (var kvp in combined)
         {
-            double average = (double)kvp.Value.sum / kvp.Value.count;
-            Console.WriteLine($"Key: {kvp.Key},
+            Console.WriteLine($"Key: {kvp.Key}, Average: {kvp.Value}");
+        }
+    }
+}
