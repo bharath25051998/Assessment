@@ -1,20 +1,8 @@
-@{
-    var averages = ViewBag.Averages as Dictionary<string, double>;
+for (i = 0; i < spocRating.length; i++) {
+  var value = $("#" + spocRating[i].id).val();
+  if (value === "" || !/^\d+$/.test(value)) { // This regex checks if value is not an integer
+    isValid = false;
+    errorMsg = "Please enter an integer rating for all skills.";
+    break;
+  }
 }
-
-@foreach (var item in averages)
-{
-    <div id="@("average_" + item.Key)">
-        Key: @item.Key, Average: @item.Value
-    </div>
-}
-
-<!-- Or if you want to target a specific HTML element by ID -->
-<script type="text/javascript">
-    window.onload = function() {
-        @foreach (var item in averages)
-        {
-            @:document.getElementById("average_@item.Key").innerText = "Average for @item.Key: @item.Value";
-        }
-    }
-</script>
