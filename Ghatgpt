@@ -1,42 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Mvc;
-
-public class YourController : Controller
-{
-    public ActionResult YourAction()
-    {
-        // Assuming ViewBag.Data is your list of dictionaries with string values
-        List<Dictionary<string, string>> data = ViewBag.Data;
-
-        // Dictionary to store the sums and counts for each key
-        var combined = new Dictionary<string, (int sum, int count)>();
-
-        // Process each dictionary (row)
-        foreach (var dict in data)
-        {
-            foreach (var kvp in dict)
-            {
-                if (int.TryParse(kvp.Value, out int value)) // Convert string to int
-                {
-                    if (!combined.ContainsKey(kvp.Key))
-                    {
-                        combined[kvp.Key] = (0, 0);
-                    }
-                    combined[kvp.Key] = (combined[kvp.Key].sum + value, combined[kvp.Key].count + 1);
-                }
-            }
-        }
-
-        // Calculate averages and create a dictionary of key and average
-        var averages = combined.ToDictionary(
-            kvp => kvp.Key, 
-            kvp => kvp.Value.count > 0 ? (double)kvp.Value.sum / kvp.Value.count : 0
-        );
-
-        // Return the averages dictionary
-        // You can return it directly or pass it to a view, depending on your needs
-        return Json(averages, JsonRequestBehavior.AllowGet);
-    }
+@{
+    var averages = ViewBag.Averages as Dictionary<string, double>;
 }
+
+@foreach (var item in averages)
+{
+    <div id="@("average_" + item.Key)">
+        Key: @item.Key, Average: @item.Value
+    </div>
+}
+
+<!-- Or if you want to target a specific HTML element by ID -->
+<script type="text/javascript">
+    window.onload = function() {
+        @foreach (var item in averages)
+        {
+            @:document.getElementById("average_@item.Key").innerText = "Average for @item.Key: @item.Value";
+        }
+    }
+</script>
