@@ -1,36 +1,36 @@
-@{
-  var arrayOfValues = new List<int[]> {
-    new int[] {1, 2},
-    new int[] {1, 2, 3}
-  };
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-  var averages = new List<double>();
-
-  foreach (var values in arrayOfValues)
-  {
-    if (values.Any())
+class Program
+{
+    static void Main()
     {
-      double sum = values.Sum();
-      double average = sum / values.Length;
-      averages.Add(average);
-    }
-    else
-    {
-      averages.Add(0);
-    }
-  }
-}
+        // Your data
+        Dictionary<string, Dictionary<string, int>> data = new Dictionary<string, Dictionary<string, int>>()
+        {
+            {"row1", new Dictionary<string, int> { {"key1", 3}, {"key2", 5} }},
+            {"row2", new Dictionary<string, int> { {"key1", 4}, {"key3", 6} }}
+        };
 
-<table>
-  <tr>
-    <th>Index</th>
-    <th>Average</th>
-  </tr>
-  @for (int i = 0; i < averages.Count; i++)
-  {
-    <tr>
-      <td>@i</td>
-      <td>@averages[i].ToString("0.##")</td>
-    </tr>
-  }
-</table>
+        // Dictionary to store the sums and counts for each key
+        Dictionary<string, (int sum, int count)> combined = new Dictionary<string, (int sum, int count)>();
+
+        // Process each row
+        foreach (var row in data.Values)
+        {
+            foreach (var kvp in row)
+            {
+                if (!combined.ContainsKey(kvp.Key))
+                {
+                    combined[kvp.Key] = (0, 0);
+                }
+                combined[kvp.Key] = (combined[kvp.Key].sum + kvp.Value, combined[kvp.Key].count + 1);
+            }
+        }
+
+        // Calculate and print averages
+        foreach (var kvp in combined)
+        {
+            double average = (double)kvp.Value.sum / kvp.Value.count;
+            Console.WriteLine($"Key: {kvp.Key},
