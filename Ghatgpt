@@ -1,9 +1,9 @@
 for (i = 0; i < spocRating.length; i++) {
   var value = $("#" + spocRating[i].id).val();
-  // This regex checks if the value is an integer within 0 to 5 without leading zeros
-  if (value === "" || !/^(0|[1-5])$/.test(value)) {
+  // This regex checks if the value has multiple zeros
+  if (value === "" || /^0{2,}$/.test(value)) {
     isValid = false;
-    errorMsg = "Please enter a valid integer rating between 0 and 5 for all skills.";
+    errorMsg = "Please enter a valid rating. Multiple zeros are not allowed.";
     break;
   }
 }
