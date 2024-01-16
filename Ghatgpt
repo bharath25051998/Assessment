@@ -1,27 +1,37 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Mvc;
 
-class Program
+public class YourController : Controller
 {
-    static void Main()
+    public ActionResult YourAction()
     {
-        // Example data
-        Dictionary<string, Dictionary<string, int>> data = new Dictionary<string, Dictionary<string, int>>()
-        {
-            {"row1", new Dictionary<string, int> { {"key1", 3}, {"key2", 5} }},
-            {"row2", new Dictionary<string, int> { {"key1", 4}, {"key3", 6} }}
-        };
+        // Assuming ViewBag.Data is your list of dictionaries
+        List<Dictionary<string, int>> data = ViewBag.Data;
 
-        // Flatten the dictionary and group by key
-        var combined = data.SelectMany(row => row.Value)
-                           .GroupBy(kvp => kvp.Key)
-                           .ToDictionary(group => group.Key, group => group.Average(kvp => kvp.Value));
+        // Dictionary to store the sums and counts for each key
+        var combined = new Dictionary<string, (int sum, int count)>();
 
-        // Print averages
-        foreach (var kvp in combined)
+        // Process each dictionary (row)
+        foreach (var dict in data)
         {
-            Console.WriteLine($"Key: {kvp.Key}, Average: {kvp.Value}");
+            foreach (var kvp in dict)
+            {
+                if (!combined.ContainsKey(kvp.Key))
+                {
+                    combined[kvp.Key] = (0, 0);
+                }
+                combined[kvp.Key] = (combined[kvp.Key].sum + kvp.Value, combined[kvp.Key].count + 1);
+            }
         }
+
+        // Calculate averages
+        var averages = combined.ToDictionary(kvp => kvp.Key, kvp => (double)kvp.Value.sum / kvp.Value.count);
+
+        // Use the averages as needed, e.g., pass them to the view
+        ViewBag.Averages = averages;
+
+        return View();
     }
 }
