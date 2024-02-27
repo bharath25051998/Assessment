@@ -1,88 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dropdown Search</title>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
+using System.Data.SqlClient;
 
-<select id="dropdown1">
-  <option value="">All Levels</option>
-  <option value="level1">Level 1</option>
-  <option value="level2">Level 2</option>
-  <option value="level3">Level 3</option>
-</select>
+// Assuming you have a SqlConnection named connection
 
-<select id="dropdown2">
-  <!-- options will be populated based on selection from dropdown1 -->
-</select>
-
-<select id="dropdown3">
-  <!-- options will be populated based on selection from dropdown2 -->
-</select>
-
-<div id="searchResults">
-  <!-- Search results will be displayed here -->
-</div>
-
-<script>
-$(document).ready(function() {
-  var employeeData = @Html.Raw(Json.Encode(ViewBag.EmployeeData));
-  
-  $('#dropdown1').change(function() {
-    var selectedOption = $(this).val();
-    var filteredData = filterData(employeeData, 'level', selectedOption);
+using (var command = new SqlCommand("YourStoredProcedureName", connection))
+{
+    command.CommandType = CommandType.StoredProcedure;
     
-    // Update dropdown2 based on filtered data
-    $('#dropdown2').empty();
-    filteredData.forEach(function(item) {
-      $('#dropdown2').append($('<option>', {
-        value: item.value,
-        text: item.text
-      }));
-    });
-  });
-  
-  $('#dropdown2').change(function() {
-    var selectedOption = $(this).val();
-    var filteredData = filterData(employeeData, 'department', selectedOption);
-    
-    // Update dropdown3 based on filtered data
-    $('#dropdown3').empty();
-    filteredData.forEach(function(item) {
-      $('#dropdown3').append($('<option>', {
-        value: item.value,
-        text: item.text
-      }));
-    });
-  });
-  
-  // Handle search button click event
-  $('#searchButton').click(function() {
-    var selectedOption1 = $('#dropdown1').val();
-    var selectedOption2 = $('#dropdown2').val();
-    var selectedOption3 = $('#dropdown3').val();
-    
-    // Perform search based on selected options
-    // For demonstration purpose, let's just display the selected options
-    $('#searchResults').html("Selected options: " + selectedOption1 + ", " + selectedOption2 + ", " + selectedOption3);
-  });
-  
-  function filterData(data, column, selectedOption) {
-    // If no option is selected, return all data
-    if (!selectedOption) {
-      return data;
-    }
-    // Filter data based on selectedOption in the specified column
-    return data.filter(function(item) {
-      return item[column] === selectedOption;
-    });
-  }
-});
-</script>
+    int intValue = 0; // Your integer value
 
-</body>
-</html>
+    // Check if intValue is zero, and if so, assign DBNull.Value; otherwise, assign the actual value
+    SqlParameter parameter = new SqlParameter("@yourParameterName", (object)intValue == 0 ? DBNull.Value : (object)intValue);
+    command.Parameters.Add(parameter);
 
+    // Execute your command
+    command.ExecuteNonQuery();
+}
