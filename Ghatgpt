@@ -19,8 +19,10 @@ function exportTableToExcel(tableID, filename = 'excel_data') {
     table.rows().every(function () {
         var rowData = [];
         $(this.node()).find('td').each(function () {
+            // Extract text of the hyperlink if exists
             var cellText = $(this).text();
-            rowData.push(cellText);
+            var linkText = $(this).find('a').text();
+            rowData.push(linkText ? linkText : cellText);
         });
         allRows.push(rowData);
     });
@@ -35,3 +37,4 @@ function exportTableToExcel(tableID, filename = 'excel_data') {
     // Create download link element
     XLSX.writeFile(wb, filename);
 }
+p
