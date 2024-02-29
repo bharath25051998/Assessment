@@ -1,17 +1,57 @@
-using System.Data.SqlClient;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Filtered Table</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<h2>Filtered Table</h2>
+<label for="filterInput">Filter:</label>
+<input type="text" id="filterInput" onkeyup="filterTable()" placeholder="Search...">
+<table id="myTable">
+  <tr>
+    <th>Name</th>
+    <th>Age</th>
+    <th>City</th>
+  </tr>
+  <tr>
+    <td>John</td>
+    <td>25</td>
+    <td>New York</td>
+  </tr>
+  <tr>
+    <td>Jane</td>
+    <td>30</td>
+    <td>Los Angeles</td>
+  </tr>
+  <!-- Add more rows as needed -->
+</table>
 
-// Assuming you have a SqlConnection named connection
+<script src="script.js"></script>
+</body>
+</html>
 
-using (var command = new SqlCommand("YourStoredProcedureName", connection))
-{
-    command.CommandType = CommandType.StoredProcedure;
+function filterTable() {
+  var input, filter, table, tr, td, i, j, txtValue;
+  input = document.getElementById("filterInput");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("myTable");
+  tr = table.getElementsByTagName("tr");
+  
+  for (i = 0; i < tr.length; i++) {
+    tr[i].style.display = "none"; // Hide all rows initially
+    td = tr[i].getElementsByTagName("td");
     
-    int intValue = 0; // Your integer value
-
-    // Check if intValue is zero, and if so, assign DBNull.Value; otherwise, assign the actual value
-    SqlParameter parameter = new SqlParameter("@yourParameterName", (object)intValue == 0 ? DBNull.Value : (object)intValue);
-    command.Parameters.Add(parameter);
-
-    // Execute your command
-    command.ExecuteNonQuery();
+    for (j = 0; j < td.length; j++) {
+      if (td[j]) {
+        txtValue = td[j].textContent || td[j].innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          tr[i].style.display = ""; // Show the row if the filter matches any cell
+          break; // Break the inner loop once a match is found
+        }
+      }
+    }
+  }
 }
