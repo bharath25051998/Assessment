@@ -4,6 +4,10 @@ $(document).ready(function () {
 });
 
 function exportTableToExcel(tableID, filename = '') {
+    // Disable filters before exporting
+    var table = $('#' + tableID).DataTable();
+    table.search('').columns().search('').draw();
+
     var downloadLink;
     var dataType = 'application/vnd.ms-excel';
     var tableSelect = document.getElementById(tableID);
