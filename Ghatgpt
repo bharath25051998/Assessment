@@ -1,3 +1,8 @@
+$(document).ready(function () {
+    // Automatically trigger Excel download when document is ready
+    exportTableToExcel('dataTable', 'excel_data');
+});
+
 function exportTableToExcel(tableID, filename = '') {
     var downloadLink;
     var dataType = 'application/vnd.ms-excel';
@@ -24,14 +29,7 @@ function exportTableToExcel(tableID, filename = '') {
         // Setting the file name
         downloadLink.download = filename;
 
-        //triggering the function
+        // Triggering the function
         downloadLink.click();
     }
 }
-
-// Event listener for button click
-$(document).ready(function () {
-    $('#exportBtn').on('click', function () {
-        exportTableToExcel('dataTable', 'excel_data');
-    });
-});
