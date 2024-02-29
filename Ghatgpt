@@ -19,8 +19,9 @@ function exportTableToExcel(tableID, filename = 'excel_data') {
     table.rows().every(function () {
         var rowData = [];
         $(this.node()).find('td').each(function () {
-            // Extract text content without the hyperlink
-            var cellText = $(this).find('a').text().trim();
+            // Check if <a> tag exists
+            var $aTag = $(this).find('a');
+            var cellText = $aTag.length ? $aTag.text().trim() : $(this).text().trim();
             rowData.push(cellText);
         });
         allRows.push(rowData);
