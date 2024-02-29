@@ -1,23 +1,14 @@
 // Function to export table data to Excel
 function exportTableToExcel(tableID, filename = '') {
-    // Retrieve all data from the server
-    $.ajax({
-        url: '/your-server-endpoint-for-fetching-all-data',
-        type: 'GET',
-        success: function(data) {
-            // Once data is fetched, create the Excel file
-            createExcelFile(data, filename);
-        },
-        error: function(xhr, status, error) {
-            console.error('Error fetching data:', error);
-        }
-    });
+    var table = $('#' + tableID).DataTable();
+    var allData = table.rows().data().toArray();
+    
+    // Create Excel file from allData
+    createExcelFile(allData, filename);
 }
 
 // Function to create Excel file from data
 function createExcelFile(data, filename) {
-    // Logic to create Excel file from data (e.g., using SheetJS)
-    // Example:
     var wb = XLSX.utils.book_new();
     var ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
