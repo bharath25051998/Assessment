@@ -1,18 +1,38 @@
 // Function to export table data to Excel
 function exportTableToExcel(tableID, filename = '') {
+    // Get the DataTable instance
     var table = $('#' + tableID).DataTable();
-    var allData = table.rows().data().toArray();
-    
-    // Create Excel file from allData
-    createExcelFile(allData, filename);
+
+    // Remove any search filters applied to the table
+    table.search('').columns().search('').draw();
+
+    // Remove pagination to display all data
+    table.page.len(-1).draw();
+
+    // Filter out rows with the "no-filter" class
+    var allData = table.rows(':not(.no-filter)').data().toArray();
+
+    // Convert the data to a workbook
+    var wb = XLSX.utils.book_new();
+    var ws = XLSX.utils.json_to_sheet(allData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+    // Specify filename
+    filename = filename ? filename + '.xlsx' : 'excel_data.xlsx';
+
+    // Create download link element
+    var downloadLink = document.createElement('a');
+    downloadLink.href = window.URL.createObjectURL(new Blob([s2ab(XLSX.write(wb, { bookType: 'xlsx', type: 'binary' }))], { type: 'application/octet-stream' }));
+    downloadLink.download = filename;
+    downloadLink.click();
 }
 
-// Function to create Excel file from data
-function createExcelFile(data, filename) {
-    var wb = XLSX.utils.book_new();
-    var ws = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-    XLSX.writeFile(wb, filename + '.xlsx');
+// Function to convert string to array buffer
+function s2ab(s) {
+    var buf = new ArrayBuffer(s.length);
+    var view = new Uint8Array(buf);
+    for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+    return buf;
 }
 
 // Call exportTableToExcel function when needed
