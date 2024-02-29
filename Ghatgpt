@@ -21,6 +21,8 @@ function exportTableToExcel(tableID, filename = 'excel_data') {
         $(this.node()).find('td').each(function () {
             // Extract text of the hyperlink if exists
             var cellText = $(this).find('a').length ? $(this).find('a').text() : $(this).text();
+            // If cellText is empty, extract innerText
+            cellText = cellText || $(this).prop('innerText');
             rowData.push(cellText);
         });
         allRows.push(rowData);
