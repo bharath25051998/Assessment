@@ -5,10 +5,24 @@ function exportTableToExcel(tableID, filename = 'excel_data') {
     table.search('').columns().search('').draw();
     
     var allRows = [];
+    var headers = [];
     
+    // Extract headers
+    $(table.table().header()).find('th').each(function () {
+        headers.push($(this).text());
+    });
+    
+    // Push headers to the beginning of the dataset
+    allRows.push(headers);
+    
+    // Extract data rows
     table.rows().every(function () {
-        var data = this.data();
-        allRows.push(data);
+        var rowData = [];
+        $(this.node()).find('td').each(function () {
+            var cellText = $(this).text();
+            rowData.push(cellText);
+        });
+        allRows.push(rowData);
     });
     
     var wb = XLSX.utils.book_new();
