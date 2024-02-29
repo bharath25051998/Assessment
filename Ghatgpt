@@ -1,39 +1,12 @@
-$(document).ready(function () {
-    // Automatically trigger Excel download when document is ready
-    exportTableToExcel('dataTable', 'excel_data');
-});
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
 
 function exportTableToExcel(tableID, filename = '') {
-    // Disable filters before exporting
-    var table = $('#' + tableID).DataTable();
-    table.search('').columns().search('').draw();
-
-    var downloadLink;
-    var dataType = 'application/vnd.ms-excel';
     var tableSelect = document.getElementById(tableID);
-    var tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+    var wb = XLSX.utils.table_to_book(tableSelect);
 
     // Specify filename
-    filename = filename ? filename + '.xls' : 'excel_data.xls';
+    filename = filename ? filename + '.xlsx' : 'excel_data.xlsx';
 
-    // Create download link element
-    downloadLink = document.createElement("a");
-
-    document.body.appendChild(downloadLink);
-
-    if (navigator.msSaveOrOpenBlob) {
-        var blob = new Blob(['\ufeff', tableHTML], {
-            type: dataType
-        });
-        navigator.msSaveOrOpenBlob(blob, filename);
-    } else {
-        // Create a link to the file
-        downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
-
-        // Setting the file name
-        downloadLink.download = filename;
-
-        // Triggering the function
-        downloadLink.click();
-    }
+    // Save the Excel file
+    XLSX.writeFile(wb, filename);
 }
