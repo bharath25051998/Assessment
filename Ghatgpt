@@ -1,6 +1,6 @@
 SELECT 
     l.lobname,
-    COALESCE(SUM(IFNULL(r.billability, 0)), 0) AS total_billability
+    COALESCE(SUM(CASE WHEN r.billability IS NULL THEN 0 ELSE r.billability END), 0) AS total_billability
 FROM 
     allocation_details a
 LEFT JOIN 
