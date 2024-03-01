@@ -1,14 +1,15 @@
 SELECT 
     l.lobname,
-    COALESCE(SUM(CASE WHEN r.billability IS NULL THEN 0 ELSE r.billability END), 0) AS total_billability
+    COALESCE(SUM(CASE 
+                    WHEN MONTH(r.from_date) = MONTH(CURRENT_DATE()) AND YEAR(r.from_date) = YEAR(CURRENT_DATE()) THEN r.billability 
+                    WHEN MONTH(r.to_date) = MONTH(CURRENT_DATE()) AND YEAR(r.to_date) = YEAR(CURRENT_DATE()) THEN r.billability 
+                    ELSE 0 
+                END), 0) AS total_billability
 FROM 
-    allocation_details a
+    lob_table l
 LEFT JOIN 
-    lob_table l ON a.lobid = l.lobid
+    allocation_details a ON l.lobid = a.lobid
 LEFT JOIN 
     records r ON a.allocationid = r.allocationid
-WHERE 
-    (DATE_FORMAT(r.from_date, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m') OR r.from_date IS NULL)
-    AND (DATE_FORMAT(r.to_date, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m') OR r.to_date IS NULL)
 GROUP BY 
     l.lobname;
