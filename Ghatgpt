@@ -1,54 +1,10 @@
-function exportTableToExcel(tableID, filename = 'excel_data') {
-    var table = $('#' + tableID).DataTable();
-
-    // Remove any search filters to ensure all rows are included
-    table.search('').columns().search('').draw();
-
-    var allRows = [];
-    var headers = [];
-    var headerColors = []; // Array to store header colors
-
-    // Extract headers and header colors
-    $(table.table().header()).find('th').each(function () {
-        headers.push($(this).text());
-        // Example: Assigning yellow color to all header cells
-        headerColors.push('FFFF00'); // Yellow color code
-    });
-
-    // Push headers to the beginning of the dataset
-    allRows.push(headers);
-
-    // Push header colors to the worksheet
-    allRows.push(headerColors);
-
-    // Extract data rows
-    table.rows().every(function () {
-        var rowData = [];
-        $(this.node()).find('td').each(function () {
-            // Extract text content without the hyperlink
-            var cellText = $(this).find('a').length ? $(this).find('a').text().trim() : $(this).text().trim();
-            rowData.push(cellText);
-        });
-        allRows.push(rowData);
-    });
-
-    var wb = XLSX.utils.book_new();
-    var ws = XLSX.utils.aoa_to_sheet(allRows);
-
-    // Set header cell background color (e.g., yellow)
-    for (var i = 0; i < headers.length; i++) {
-        ws[XLSX.utils.encode_cell({ r: 0, c: i })].s = {
-            fill: {
-                fgColor: { rgb: headerColors[i] } // Use header color code
-            }
-        };
-    }
-
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-
-    // Specify filename
-    filename = filename ? filename + '.xlsx' : 'excel_data.xlsx';
-
-    // Create download link element
-    XLSX.writeFile(wb, filename);
-}
+SELECT chapter, COUNT(*) AS chapter_count
+FROM (
+    SELECT DISTINCT chapter, from_date, to_date
+    FROM your_table
+    WHERE 
+        MONTH(from_date) = MONTH(CURRENT_DATE()) AND YEAR(from_date) = YEAR(CURRENT_DATE())
+        AND 
+        MONTH(to_date) = MONTH(CURRENT_DATE()) AND YEAR(to_date) = YEAR(CURRENT_DATE())
+) AS subquery
+GROUP BY chapter;
