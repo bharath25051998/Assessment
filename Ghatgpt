@@ -1,28 +1,11 @@
 SELECT 
-    l.lobname,
-    COALESCE(SUM(CASE 
-                    WHEN (MONTH(r.from_date) = MONTH(CURRENT_DATE()) AND YEAR(r.from_date) = YEAR(CURRENT_DATE())) OR
-                         (MONTH(r.to_date) = MONTH(CURRENT_DATE()) AND YEAR(r.to_date) = YEAR(CURRENT_DATE()))
-                    THEN r.billability 
-                    ELSE 0 
-                END), 0) AS total_billability,
-    COALESCE(SUM(CASE 
-                    WHEN b.band = 'b1' AND (MONTH(r.from_date) = MONTH(CURRENT_DATE()) AND YEAR(r.from_date) = YEAR(CURRENT_DATE())) OR
-                         (MONTH(r.to_date) = MONTH(CURRENT_DATE()) AND YEAR(r.to_date) = YEAR(CURRENT_DATE()))
-                    THEN r.billability 
-                    ELSE 0 
-                END), 0) AS total_b1_billability
+    L.lobname,
+    SUM(CASE WHEN U.headcount_band = 'Band1' THEN 1 ELSE 0 END) AS Band1_headcount,
+    SUM(CASE WHEN U.headcount_band = 'Band2' THEN 1 ELSE 0 END) AS Band2_headcount,
+    SUM(CASE WHEN U.headcount_band = 'Band3' THEN 1 ELSE 0 END) AS Band3_headcount
 FROM 
-    lob_table l
+    Lobs L
 LEFT JOIN 
-    allocation_details a ON l.lobid = a.lobid
-LEFT JOIN 
-    records r ON a.allocationid = r.allocationid
-LEFT JOIN 
-    employee_table e ON a.employee_id = e.employee_id
-LEFT JOIN 
-    band_table b ON e.employee_id = b.employee_id
-WHERE 
-    r.from_date <= CURRENT_DATE() AND r.to_date <= CURRENT_DATE()
+    UserLogin U ON L.lobid = U.lobid
 GROUP BY 
-    l.lobname;
+    L.lobname;
