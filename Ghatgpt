@@ -1,10 +1,14 @@
-SELECT chapter, COUNT(*) AS chapter_count
-FROM (
-    SELECT DISTINCT chapter, from_date, to_date
-    FROM your_table
-    WHERE 
-        MONTH(from_date) = MONTH(CURRENT_DATE()) AND YEAR(from_date) = YEAR(CURRENT_DATE())
-        AND 
-        MONTH(to_date) = MONTH(CURRENT_DATE()) AND YEAR(to_date) = YEAR(CURRENT_DATE())
-) AS subquery
-GROUP BY chapter;
+SELECT 
+    l.lobname,
+    COALESCE(SUM(r.billability), 0) AS total_billability
+FROM 
+    lob_table l
+LEFT JOIN 
+    allocation_details a ON l.lobid = a.lobid
+LEFT JOIN 
+    records r ON a.allocationid = r.allocationid
+WHERE 
+    DATE_FORMAT(r.from_date, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m')
+    AND DATE_FORMAT(r.to_date, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m')
+GROUP BY 
+    l.lobname;
