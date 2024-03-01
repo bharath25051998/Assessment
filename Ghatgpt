@@ -1,11 +1,9 @@
-SELECT 
-    L.lobname,
-    SUM(CASE WHEN U.headcount_band = 'Band1' THEN 1 ELSE 0 END) AS Band1_headcount,
-    SUM(CASE WHEN U.headcount_band = 'Band2' THEN 1 ELSE 0 END) AS Band2_headcount,
-    SUM(CASE WHEN U.headcount_band = 'Band3' THEN 1 ELSE 0 END) AS Band3_headcount
-FROM 
-    Lobs L
-LEFT JOIN 
-    UserLogin U ON L.lobid = U.lobid
-GROUP BY 
-    L.lobname;
+SELECT column1, column2, 
+       CASE 
+           WHEN column1 = 0 THEN NULL -- Handle division by zero
+           ELSE (column2 * 100.0 / column1) 
+       END AS percentage
+FROM (
+    SELECT COALESCE(column1, 0) AS column1, COALESCE(column2, 0) AS column2
+    FROM your_table
+) AS subquery_alias;
