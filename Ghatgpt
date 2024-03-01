@@ -1,14 +1,14 @@
 SELECT 
     l.lobname,
-    COALESCE(SUM(r.billability), 0) AS total_billability
+    COALESCE(SUM(IFNULL(r.billability, 0)), 0) AS total_billability
 FROM 
-    lob_table l
+    allocation_details a
 LEFT JOIN 
-    allocation_details a ON l.lobid = a.lobid
+    lob_table l ON a.lobid = l.lobid
 LEFT JOIN 
     records r ON a.allocationid = r.allocationid
 WHERE 
-    DATE_FORMAT(r.from_date, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m')
-    AND DATE_FORMAT(r.to_date, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m')
+    (DATE_FORMAT(r.from_date, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m') OR r.from_date IS NULL)
+    AND (DATE_FORMAT(r.to_date, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m') OR r.to_date IS NULL)
 GROUP BY 
     l.lobname;
