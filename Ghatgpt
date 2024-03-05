@@ -1,9 +1,66 @@
-SELECT column1, column2, 
-       CASE 
-           WHEN column1 = 0 THEN NULL -- Handle division by zero
-           ELSE (column2 * 100.0 / column1) 
-       END AS percentage
-FROM (
-    SELECT COALESCE(column1, 0) AS column1, COALESCE(column2, 0) AS column2
-    FROM your_table
-) AS subquery_alias;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Selection</title>
+</head>
+<body>
+    <label for="month">Month:</label>
+    <select id="month">
+        <!-- JavaScript will populate this dynamically -->
+    </select>
+
+    <label for="year">Year:</label>
+    <select id="year">
+        <!-- JavaScript will populate this dynamically -->
+    </select>
+
+    <button onclick="getSelectedDate()">Submit</button>
+
+    <script>
+        // Function to populate months dropdown
+        function populateMonths() {
+            var select = document.getElementById("month");
+            var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+            for (var i = 0; i < months.length; i++) {
+                var option = document.createElement("option");
+                option.text = months[i];
+                option.value = i + 1; // Months are 1-indexed in JavaScript
+                select.add(option);
+            }
+        }
+
+        // Function to populate years dropdown
+        function populateYears() {
+            var select = document.getElementById("year");
+            var currentYear = new Date().getFullYear();
+
+            for (var i = currentYear - 5; i <= currentYear + 5; i++) {
+                var option = document.createElement("option");
+                option.text = i;
+                option.value = i;
+                select.add(option);
+            }
+        }
+
+        // Call functions to populate dropdowns when the page loads
+        window.onload = function() {
+            populateMonths();
+            populateYears();
+        };
+
+        // Function to get selected date and pass it to SP as parameters
+        function getSelectedDate() {
+            var selectedMonth = document.getElementById("month").value;
+            var selectedYear = document.getElementById("year").value;
+
+            // Pass selectedMonth and selectedYear to your stored procedure as parameters
+            // Example: CallYourStoredProcedure(selectedMonth, selectedYear);
+            console.log("Selected Month:", selectedMonth);
+            console.log("Selected Year:", selectedYear);
+        }
+    </script>
+</body>
+</html>
