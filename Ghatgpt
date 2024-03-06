@@ -1,7 +1,22 @@
-SELECT 
-    CONCAT(DATENAME(MONTH, FromDate), '-', DATEPART(YEAR, FromDate)) AS Month_Year,
-    COUNT(DISTINCT CASE WHEN LocationIndex = 'onsite' THEN EmployeeEmail END) AS Distinct_Onsite_Employee_Count
-FROM 
-    YourTempTable
-GROUP BY 
-    CONCAT(DATENAME(MONTH, FromDate), '-', DATEPART(YEAR, FromDate))
+SELECT
+    CONCAT(DATENAME(MONTH, b.FromDate), '-', DATEPART(YEAR, b.FromDate)) AS Month_Year,
+    COUNT(DISTINCT CASE WHEN ad.LocationRegion = 'Onsite' THEN ul.EmailId END) AS Distinct_Onsite_Employee_Count,
+    COUNT(DISTINCT CASE WHEN ad.LocationRegion = 'OffShore' THEN ul.EmailId END) AS Distinct_OffShore_Employee_Count,
+    ISNULL(COUNT(DISTINCT CASE WHEN ad.LocationRegion = 'Onsite' THEN ul.EmailId END), 0) +
+    ISNULL(COUNT(DISTINCT CASE WHEN ad.LocationRegion = 'OffShore' THEN ul.EmailId END), 0) AS total,
+    bench,
+    COUNT(CASE WHEN t1.EmployeeEmail IS NULL THEN 1 ELSE NULL END) AS People_Not_In_Temp_Table
+FROM (
+    SELECT
+        a.FromDate,
+        COUNT(*) AS bench
+    FROM PSEmployeeUtilizationDetails AS a
+    JOIN PSEmployeeAdditionalDetails AS ad ON ad.EmployeeEmail = a.EmployeeEmail
+    WHERE ad.LocationRegion = 'Onsite'
+    GROUP BY a.FromDate
+) AS b
+JOIN PSUserLogin AS ul ON ul.EmailId = ad.EmployeeEmail
+LEFT JOIN #temp1 AS t1 ON MONTH(t1.fromdate) = MONTH(b.FromDate) AND YEAR(t1.fromdate) = YEAR(b.FromDate)
+                       AND ul.EmailId = t1.EmployeeEmail
+WHERE ul.DeleteStatus = 0 AND t1.EmployeeEmail IS NULL
+GROUP BY b.FromDate, bench;
