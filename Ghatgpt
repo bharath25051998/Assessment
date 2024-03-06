@@ -1,27 +1,40 @@
-SELECT 
-    Month_Year, 
-    Bench_Count,
-    Partial_Bench_Count
-FROM (
+WITH EmployeeUtilization AS (
     SELECT 
         CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
-        SUM(CASE WHEN EmployeeEmail NOT IN (SELECT EmployeeEmail FROM #temp1) THEN 1 ELSE 0 END) AS Bench_Count,
-        SUM(CASE WHEN Total_Allocation < 1 AND EmployeeEmail IN (SELECT EmployeeEmail FROM #temp1) THEN 1 ELSE 0 END) AS Partial_Bench_Count
-    FROM (
-        SELECT 
-            CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
-            EmployeeEmail,
-            SUM(Allocation) AS Total_Allocation
-        FROM #temp1
-        GROUP BY CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)), EmployeeEmail
-    ) AS temp
-    WHERE NOT EXISTS (
-        SELECT 1
-        FROM PSEmployeeAdditionalDetails ad
-        WHERE ad.EmployeeEmail = temp.EmployeeEmail 
-        AND ad.ERD IS NOT NULL
-        AND MONTH(ad.ERD) = DATEPART(MONTH, CAST(CONCAT('01-', Month_Year) AS DATE)) -- Check ERD for the same month
-        AND YEAR(ad.ERD) = DATEPART(YEAR, CAST(CONCAT('01-', Month_Year) AS DATE))
-    )
+        EmployeeEmail,
+        SUM(Allocation) AS Total_Allocation
+    FROM #temp1
+    GROUP BY CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)), EmployeeEmail
+),
+ActiveEmployees AS (
+    SELECT DISTINCT 
+        CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
+        EmployeeEmail
+    FROM #temp1
+),
+BenchCount AS (
+    SELECT 
+        Month_Year,
+        COUNT(*) AS Bench_Count
+    FROM ActiveEmployees ae
+    LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail 
+                                              AND MONTH(ad.ERD) = DATEPART(MONTH, CAST(CONCAT('01-', ae.Month_Year) AS DATE))
+                                              AND YEAR(ad.ERD) = DATEPART(YEAR, CAST(CONCAT('01-', ae.Month_Year) AS DATE))
+                                              AND ad.ERD IS NOT NULL
+    WHERE ad.EmployeeEmail IS NULL
     GROUP BY Month_Year
-) AS temp;
+),
+PartialBenchCount AS (
+    SELECT 
+        eu.Month_Year,
+        COUNT(*) AS Partial_Bench_Count
+    FROM EmployeeUtilization eu
+    WHERE eu.Total_Allocation < 1
+    GROUP BY eu.Month_Year
+)
+SELECT 
+    bc.Month_Year, 
+    bc.Bench_Count,
+    pbc.Partial_Bench_Count
+FROM BenchCount bc
+LEFT JOIN PartialBenchCount pbc ON bc.Month_Year = pbc.Month_Year;
