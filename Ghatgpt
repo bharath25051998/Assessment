@@ -1,13 +1,7 @@
-SELECT 
-    FORMAT(date_column, 'yyyy-MM') AS month,
-    COUNT(DISTINCT employee_email) AS employee_count
-FROM 
-    your_table
-WHERE 
-    date_column BETWEEN from_date AND to_date
-    AND date_column >= DATEADD(QUARTER, DATEDIFF(QUARTER, 0, GETDATE()) - 1, 0)
-    AND date_column < DATEADD(QUARTER, DATEDIFF(QUARTER, 0, GETDATE()) + 2, 0)
-GROUP BY 
-    FORMAT(date_column, 'yyyy-MM')
-ORDER BY 
-    FORMAT(date_column, 'yyyy-MM');
+DECLARE @CurrentQuarterStart DATE;
+DECLARE @NextTwoQuartersEnd DATE;
+
+SET @CurrentQuarterStart = DATEADD(QUARTER, DATEDIFF(QUARTER, 0, GETDATE()), 0);
+SET @NextTwoQuartersEnd = DATEADD(QUARTER, 3 * 2, @CurrentQuarterStart);
+
+SELECT @CurrentQuarterStart AS CurrentQuarterStart, @NextTwoQuartersEnd AS NextTwoQuartersEnd;
