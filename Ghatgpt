@@ -1,7 +1,5 @@
-DECLARE @CurrentQuarterStart DATE;
-DECLARE @NextTwoQuartersEnd DATE;
+DECLARE @CurrentDate DATE = GETDATE()
+DECLARE @StartDate DATE = DATEADD(QUARTER, DATEDIFF(QUARTER, 0, @CurrentDate), 0)
+DECLARE @EndDate DATE = DATEADD(MONTH, 6, @StartDate)
 
-SET @CurrentQuarterStart = DATEADD(QUARTER, DATEDIFF(QUARTER, 0, GETDATE()), 0);
-SET @NextTwoQuartersEnd = DATEADD(QUARTER, 3 * 2, @CurrentQuarterStart);
-
-SELECT @CurrentQuarterStart AS CurrentQuarterStart, @NextTwoQuartersEnd AS NextTwoQuartersEnd;
+SELECT @StartDate AS Current_Quarter_StartDate, @EndDate AS Next_2_Quarters_EndDate
