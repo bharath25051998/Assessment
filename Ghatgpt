@@ -1,22 +1,27 @@
-SELECT
-    CONCAT(DATENAME(MONTH, b.FromDate), '-', DATEPART(YEAR, b.FromDate)) AS Month_Year,
-    COUNT(DISTINCT CASE WHEN ad.LocationRegion = 'Onsite' THEN ul.EmailId END) AS Distinct_Onsite_Employee_Count,
-    COUNT(DISTINCT CASE WHEN ad.LocationRegion = 'OffShore' THEN ul.EmailId END) AS Distinct_OffShore_Employee_Count,
-    ISNULL(COUNT(DISTINCT CASE WHEN ad.LocationRegion = 'Onsite' THEN ul.EmailId END), 0) +
-    ISNULL(COUNT(DISTINCT CASE WHEN ad.LocationRegion = 'OffShore' THEN ul.EmailId END), 0) AS total,
-    bench,
-    COUNT(CASE WHEN t1.EmployeeEmail IS NULL THEN 1 ELSE NULL END) AS People_Not_In_Temp_Table
+SELECT 
+    Month_Year, 
+    Bench_Count,
+    Partial_Bench_Count
 FROM (
-    SELECT
-        a.FromDate,
-        COUNT(*) AS bench
-    FROM PSEmployeeUtilizationDetails AS a
-    JOIN PSEmployeeAdditionalDetails AS ad ON ad.EmployeeEmail = a.EmployeeEmail
-    WHERE ad.LocationRegion = 'Onsite'
-    GROUP BY a.FromDate
-) AS b
-JOIN PSUserLogin AS ul ON ul.EmailId = ad.EmployeeEmail
-LEFT JOIN #temp1 AS t1 ON MONTH(t1.fromdate) = MONTH(b.FromDate) AND YEAR(t1.fromdate) = YEAR(b.FromDate)
-                       AND ul.EmailId = t1.EmployeeEmail
-WHERE ul.DeleteStatus = 0 AND t1.EmployeeEmail IS NULL
-GROUP BY b.FromDate, bench;
+    SELECT 
+        CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
+        SUM(CASE WHEN EmployeeEmail NOT IN (SELECT EmployeeEmail FROM #temp1) THEN 1 ELSE 0 END) AS Bench_Count,
+        SUM(CASE WHEN Total_Allocation < 1 AND EmployeeEmail IN (SELECT EmployeeEmail FROM #temp1) THEN 1 ELSE 0 END) AS Partial_Bench_Count
+    FROM (
+        SELECT 
+            CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
+            EmployeeEmail,
+            SUM(Allocation) AS Total_Allocation
+        FROM #temp1
+        GROUP BY CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)), EmployeeEmail
+    ) AS temp
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM PSEmployeeAdditionalDetails ad
+        WHERE ad.EmployeeEmail = temp.EmployeeEmail 
+        AND ad.ERD IS NOT NULL
+        AND MONTH(ad.ERD) = DATEPART(MONTH, CAST(CONCAT('01-', Month_Year) AS DATE)) -- Check ERD for the same month
+        AND YEAR(ad.ERD) = DATEPART(YEAR, CAST(CONCAT('01-', Month_Year) AS DATE))
+    )
+    GROUP BY Month_Year
+) AS temp;
