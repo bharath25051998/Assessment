@@ -1,5 +1,7 @@
-DECLARE @CurrentDate DATE = GETDATE()
-DECLARE @StartDate DATE = DATEADD(QUARTER, DATEDIFF(QUARTER, 0, @CurrentDate), 0)
-DECLARE @EndDate DATE = DATEADD(MONTH, 6, @StartDate)
-
-SELECT @StartDate AS Current_Quarter_StartDate, @EndDate AS Next_2_Quarters_EndDate
+SELECT 
+    CONCAT(DATENAME(MONTH, FromDate), '-', DATEPART(YEAR, FromDate)) AS Month_Year,
+    COUNT(DISTINCT CASE WHEN LocationIndex = 'onsite' THEN EmployeeEmail END) AS Distinct_Onsite_Employee_Count
+FROM 
+    YourTempTable
+GROUP BY 
+    CONCAT(DATENAME(MONTH, FromDate), '-', DATEPART(YEAR, FromDate))
