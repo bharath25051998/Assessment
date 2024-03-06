@@ -1,20 +1,26 @@
-WITH EmployeeUtilization AS (
-    SELECT 
-        CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
-        EmployeeEmail,
-        SUM(Allocation) AS Total_Allocation
+WITH MonthYear AS (
+    SELECT DISTINCT CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year
     FROM #temp1
-    GROUP BY CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)), EmployeeEmail
+),
+EmployeeUtilization AS (
+    SELECT 
+        MY.Month_Year,
+        COALESCE(eu.EmployeeEmail, '') AS EmployeeEmail,
+        COALESCE(SUM(eu.Allocation), 0) AS Total_Allocation
+    FROM MonthYear MY
+    LEFT JOIN #temp1 eu ON MY.Month_Year = CONCAT(DATENAME(MONTH, eu.fromdate), '-', DATEPART(YEAR, eu.fromdate))
+    GROUP BY MY.Month_Year, eu.EmployeeEmail
 ),
 ActiveEmployees AS (
     SELECT DISTINCT 
-        CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
-        EmployeeEmail
-    FROM #temp1
+        MY.Month_Year,
+        COALESCE(eu.EmployeeEmail, '') AS EmployeeEmail
+    FROM MonthYear MY
+    LEFT JOIN #temp1 eu ON MY.Month_Year = CONCAT(DATENAME(MONTH, eu.fromdate), '-', DATEPART(YEAR, eu.fromdate))
 ),
 BenchCount AS (
     SELECT 
-        Month_Year,
+        MY.Month_Year,
         COUNT(*) AS Bench_Count
     FROM ActiveEmployees ae
     LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail 
@@ -22,19 +28,20 @@ BenchCount AS (
                                               AND YEAR(ad.ERD) = DATEPART(YEAR, CAST(CONCAT('01-', ae.Month_Year) AS DATE))
                                               AND ad.ERD IS NOT NULL
     WHERE ad.EmployeeEmail IS NULL
-    GROUP BY Month_Year
+    GROUP BY MY.Month_Year
 ),
 PartialBenchCount AS (
     SELECT 
-        eu.Month_Year,
+        MY.Month_Year,
         COUNT(*) AS Partial_Bench_Count
     FROM EmployeeUtilization eu
     WHERE eu.Total_Allocation < 1
-    GROUP BY eu.Month_Year
+    GROUP BY MY.Month_Year
 )
 SELECT 
-    bc.Month_Year, 
-    bc.Bench_Count,
-    pbc.Partial_Bench_Count
-FROM BenchCount bc
-LEFT JOIN PartialBenchCount pbc ON bc.Month_Year = pbc.Month_Year;
+    MY.Month_Year, 
+    COALESCE(bc.Bench_Count, 0) AS Bench_Count,
+    COALESCE(pbc.Partial_Bench_Count, 0) AS Partial_Bench_Count
+FROM MonthYear MY
+LEFT JOIN BenchCount bc ON MY.Month_Year = bc.Month_Year
+LEFT JOIN PartialBenchCount pbc ON MY.Month_Year = pbc.Month_Year;
