@@ -1,46 +1,8 @@
-WITH AllMonths AS (
-    SELECT DISTINCT CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year
-    FROM #temp1
-),
-EmployeeUtilization AS (
-    SELECT 
-        CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
-        EmployeeEmail,
-        SUM(Allocation) AS Total_Allocation
-    FROM #temp1
-    GROUP BY CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)), EmployeeEmail
-),
-ActiveEmployees AS (
-    SELECT DISTINCT 
-        CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
-        EmployeeEmail
-    FROM #temp1
-),
-BenchCount AS (
-    SELECT 
-        am.Month_Year,
-        COUNT(*) AS Bench_Count
-    FROM AllMonths am
-    LEFT JOIN ActiveEmployees ae ON am.Month_Year = ae.Month_Year
-    LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail 
-                                              AND MONTH(ad.ERD) = DATEPART(MONTH, CAST(CONCAT('01-', ae.Month_Year) AS DATE))
-                                              AND YEAR(ad.ERD) = DATEPART(YEAR, CAST(CONCAT('01-', ae.Month_Year) AS DATE))
-                                              AND ad.ERD IS NOT NULL
-    WHERE ad.EmployeeEmail IS NULL
-    GROUP BY am.Month_Year
-),
-PartialBenchCount AS (
-    SELECT 
-        eu.Month_Year,
-        COUNT(*) AS Partial_Bench_Count
-    FROM EmployeeUtilization eu
-    WHERE eu.Total_Allocation < 1
-    GROUP BY eu.Month_Year
-)
-SELECT 
-    am.Month_Year, 
-    COALESCE(bc.Bench_Count, 0) AS Bench_Count,
-    COALESCE(pbc.Partial_Bench_Count, 0) AS Partial_Bench_Count
-FROM AllMonths am
-LEFT JOIN BenchCount bc ON am.Month_Year = bc.Month_Year
-LEFT JOIN PartialBenchCount pbc ON am.Month_Year = pbc.Month_Year;
+LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail 
+                                              AND (
+                                                  (MONTH(ad.ERD) != MONTH(CONCAT('01-', ae.Month_Year)))
+                                                  OR 
+                                                  (YEAR(ad.ERD) != YEAR(CONCAT('01-', ae.Month_Year)))
+                                                  OR 
+                                                  (ad.ERD IS NULL)
+                                              )
