@@ -11,20 +11,24 @@ ActiveEmployees AS (
 BenchCount AS (
     SELECT
         am.Month_Year,
-        COUNT(DISTINCT CASE WHEN ae.EmployeeEmail IS NULL THEN ad.EmployeeEmail ELSE ae.EmployeeEmail END) AS Bench_Count
+        COUNT(DISTINCT CASE 
+            WHEN ae.EmployeeEmail IS NULL THEN ad.EmployeeEmail 
+            ELSE ae.EmployeeEmail 
+        END) AS Bench_Count
     FROM AllMonths am
     LEFT JOIN ActiveEmployees ae ON am.Month_Year = ae.Month_Year
     LEFT JOIN #temp1 t1 ON am.Month_Year = t1.Month_Year AND ae.EmployeeEmail = t1.EmployeeEmail
     LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail
-                                               AND (
-                                                   (MONTH(ad.ERD) != MONTH(CONCAT('01-', am.Month_Year)))
-                                                   OR 
-                                                   (YEAR(ad.ERD) != YEAR(CONCAT('01-', am.Month_Year)))
-                                                   OR 
-                                                   (ad.ERD IS NULL)
-                                               )
+        AND (
+            (MONTH(ad.ERD) != MONTH(CONCAT('01-', am.Month_Year)))
+            OR 
+            (YEAR(ad.ERD) != YEAR(CONCAT('01-', am.Month_Year)))
+            OR 
+            (ad.ERD IS NULL)
+        )
     WHERE (ad.LocationRegion = 'Onsite' AND t1.EmployeeEmail IS NULL)
-       OR (t1.EmployeeEmail IS NOT NULL AND ad.EmployeeEmail IS NULL)
+        OR (t1.EmployeeEmail IS NOT NULL AND ad.EmployeeEmail IS NULL)
+        OR ae.EmployeeEmail NOT IN (SELECT DISTINCT EmployeeEmail FROM #temp1)
     GROUP BY am.Month_Year
 )
 SELECT * FROM BenchCount;
