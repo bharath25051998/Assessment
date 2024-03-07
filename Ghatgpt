@@ -1,7 +1,21 @@
-SELECT
-        CONCAT(DATENAME(MONTH, ad.ERD), '-', DATEPART(YEAR, ad.ERD)) AS Month_Year,
-        COUNT(*) AS ERD_Match_Count
-    FROM PSEmployeeAdditionalDetails ad
-    WHERE ad.ERD IS NOT NULL
-    GROUP BY CONCAT(DATENAME(MONTH, ad.ERD), '-', DATEPART(YEAR, ad.ERD))
+DECLARE @PivotColumns NVARCHAR(MAX);
 
+-- Construct the list of distinct month-year combinations
+SELECT @PivotColumns = COALESCE(@PivotColumns + ', ', '') + QUOTENAME(Month_Year)
+FROM (SELECT DISTINCT Month_Year FROM YourCTETable) AS MonthYearList;
+
+-- Dynamic SQL to transpose the data
+DECLARE @DynamicSQL NVARCHAR(MAX);
+SET @DynamicSQL = '
+SELECT *
+FROM (
+    SELECT Month_Year, Bench_Count
+    FROM YourCTETable
+) AS SourceTable
+PIVOT (
+    MAX(Bench_Count) FOR Month_Year IN (' + @PivotColumns + ')
+) AS PivotTable;
+';
+
+-- Execute the dynamic SQL
+EXEC sp_executesql @DynamicSQL;
