@@ -1,22 +1,9 @@
-SELECT
-    CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate)) AS Month_Year,
-    COUNT(DISTINCT ae.EmployeeEmail) AS Bench_Count
-FROM #temp1 t
-CROSS JOIN ActiveEmployees ae
-LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM #templ
-    WHERE CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate)) = CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate))
-        AND EmployeeEmail = ae.EmployeeEmail
-)
-AND (
-    ad.ERD IS NULL 
-    OR 
-    (
-        MONTH(ad.ERD) != MONTH(t.fromdate) 
-        OR 
-        YEAR(ad.ERD) != YEAR(t.fromdate)
-    )
-)
-GROUP BY CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate));
+ERDMatchCount AS (
+    SELECT
+        ae.Month_Year,
+        COUNT(*) AS ERD_Match_Count
+    FROM ActiveEmployees ae
+    LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail
+    WHERE MONTH(ad.ERD) = MONTH(GETDATE()) AND YEAR(ad.ERD) = YEAR(GETDATE())
+    GROUP BY ae.Month_Year
+)p
