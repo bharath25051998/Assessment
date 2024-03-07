@@ -1,8 +1,3 @@
-LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail 
-                                              AND (
-                                                  (MONTH(ad.ERD) != MONTH(CONCAT('01-', ae.Month_Year)))
-                                                  OR 
-                                                  (YEAR(ad.ERD) != YEAR(CONCAT('01-', ae.Month_Year)))
-                                                  OR 
-                                                  (ad.ERD IS NULL)
-                                              )
+WHERE (ad.LocationRegion = 'Onsite' AND ae.EmployeeEmail IS NULL)
+       OR (ae.EmployeeEmail IS NOT NULL AND ad.EmployeeEmail IS NULL)
+    GROUP BY am.Month_Year
