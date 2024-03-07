@@ -1,18 +1,21 @@
 WITH ActiveEmployees AS (
     SELECT DISTINCT
-        CONCAT(DATENAME(MONTH, GETDATE()), '-', DATEPART(YEAR, GETDATE())) AS Month_Year,
         ul.EmployeeEmail
     FROM psuserlogin ul
     WHERE ul.DeleteStatus = 0
 ),
 BenchCount AS (
     SELECT
-        ae.Month_Year,
+        CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
         COUNT(DISTINCT ae.EmployeeEmail) AS Bench_Count
-    FROM ActiveEmployees ae
-    LEFT JOIN #temp1 t ON ae.Month_Year = CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate))
-        AND ae.EmployeeEmail = t.EmployeeEmail
-    WHERE t.EmployeeEmail IS NULL
-    GROUP BY ae.Month_Year
+    FROM #temp1 t
+    CROSS JOIN ActiveEmployees ae
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM #temp1
+        WHERE CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate)) = CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate))
+            AND EmployeeEmail = ae.EmployeeEmail
+    )
+    GROUP BY CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate))
 )
 SELECT * FROM BenchCount;
