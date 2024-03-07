@@ -1,8 +1,9 @@
 WITH ActiveEmployees AS (
     SELECT DISTINCT
-        CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
-        EmployeeEmail
-    FROM #temp1
+        CONCAT(DATENAME(MONTH, GETDATE()), '-', DATEPART(YEAR, GETDATE())) AS Month_Year,
+        ul.EmployeeEmail
+    FROM psuserlogin ul
+    WHERE ul.DeleteStatus = 0
 ),
 BenchCount AS (
     SELECT
