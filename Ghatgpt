@@ -1,9 +1,7 @@
-ERDMatchCount AS (
-    SELECT
-        ae.Month_Year,
+SELECT
+        CONCAT(DATENAME(MONTH, ad.ERD), '-', DATEPART(YEAR, ad.ERD)) AS Month_Year,
         COUNT(*) AS ERD_Match_Count
-    FROM ActiveEmployees ae
-    LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail
-    WHERE MONTH(ad.ERD) = MONTH(GETDATE()) AND YEAR(ad.ERD) = YEAR(GETDATE())
-    GROUP BY ae.Month_Year
-)p
+    FROM PSEmployeeAdditionalDetails ad
+    WHERE ad.ERD IS NOT NULL
+    GROUP BY CONCAT(DATENAME(MONTH, ad.ERD), '-', DATEPART(YEAR, ad.ERD))
+
