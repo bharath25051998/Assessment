@@ -6,13 +6,13 @@ WITH ActiveEmployees AS (
 ),
 BenchCount AS (
     SELECT
-        CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate)) AS Month_Year,
+        CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate)) AS Month_Year,
         COUNT(DISTINCT ae.EmployeeEmail) AS Bench_Count
     FROM ActiveEmployees ae
     LEFT JOIN #temp1 t ON ae.EmployeeEmail = t.EmployeeEmail
     LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail
     WHERE t.EmployeeEmail IS NULL
       AND (ad.ERD IS NULL OR (MONTH(ad.ERD) != MONTH(GETDATE()) OR YEAR(ad.ERD) != YEAR(GETDATE())))
-    GROUP BY CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate))
+    GROUP BY CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate))
 )
 SELECT * FROM BenchCount;
