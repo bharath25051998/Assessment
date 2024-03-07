@@ -1,18 +1,22 @@
-WITH ActiveEmployees AS (
-    SELECT DISTINCT
-        ul.EmployeeEmail
-    FROM psuserlogin ul
-    WHERE ul.DeleteStatus = 0
-),
-BenchCount AS (
-    SELECT
-        CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate)) AS Month_Year,
-        COUNT(DISTINCT ae.EmployeeEmail) AS Bench_Count
-    FROM ActiveEmployees ae
-    LEFT JOIN #temp1 t ON ae.EmployeeEmail = t.EmployeeEmail
-    LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail
-    WHERE t.EmployeeEmail IS NULL
-      AND (ad.ERD IS NULL OR (MONTH(ad.ERD) != MONTH(GETDATE()) OR YEAR(ad.ERD) != YEAR(GETDATE())))
-    GROUP BY CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate))
+SELECT
+    CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate)) AS Month_Year,
+    COUNT(DISTINCT ae.EmployeeEmail) AS Bench_Count
+FROM #temp1 t
+CROSS JOIN ActiveEmployees ae
+LEFT JOIN PSEmployeeAdditionalDetails ad ON ae.EmployeeEmail = ad.EmployeeEmail
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM #templ
+    WHERE CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate)) = CONCAT(DATENAME(MONTH, fromdate), '-', DATEPART(YEAR, fromdate))
+        AND EmployeeEmail = ae.EmployeeEmail
 )
-SELECT * FROM BenchCount;
+AND (
+    ad.ERD IS NULL 
+    OR 
+    (
+        MONTH(ad.ERD) != MONTH(t.fromdate) 
+        OR 
+        YEAR(ad.ERD) != YEAR(t.fromdate)
+    )
+)
+GROUP BY CONCAT(DATENAME(MONTH, t.fromdate), '-', DATEPART(YEAR, t.fromdate));
