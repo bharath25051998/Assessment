@@ -1,21 +1,47 @@
-DECLARE @PivotColumns NVARCHAR(MAX);
+using System;
+using System.Data;
+using System.Web.Mvc;
 
--- Construct the list of distinct month-year combinations
-SELECT @PivotColumns = COALESCE(@PivotColumns + ', ', '') + QUOTENAME(Month_Year)
-FROM (SELECT DISTINCT Month_Year FROM YourCTETable) AS MonthYearList;
+public class YourController : Controller
+{
+    public ActionResult YourAction()
+    {
+        // Assuming you have retrieved your data into a DataTable named "resultData"
+        DataTable transposedDataTable = TransposeDataTable(resultData);
 
--- Dynamic SQL to transpose the data
-DECLARE @DynamicSQL NVARCHAR(MAX);
-SET @DynamicSQL = '
-SELECT *
-FROM (
-    SELECT Month_Year, Bench_Count
-    FROM YourCTETable
-) AS SourceTable
-PIVOT (
-    MAX(Bench_Count) FOR Month_Year IN (' + @PivotColumns + ')
-) AS PivotTable;
-';
+        // Add the transposed DataTable to the ViewBag
+        ViewBag.TransposedData = transposedDataTable;
 
--- Execute the dynamic SQL
-EXEC sp_executesql @DynamicSQL;
+        return View();
+    }
+
+    static DataTable TransposeDataTable(DataTable inputTable)
+    {
+        DataTable outputTable = new DataTable();
+
+        // Add columns for transposed data
+        outputTable.Columns.Add("RowHeader");
+
+        // Add columns from inputTable's rows
+        foreach (DataRow inputRow in inputTable.Rows)
+        {
+            outputTable.Columns.Add(inputRow[0].ToString());
+        }
+
+        // Add rows and transpose data
+        for (int i = 1; i < inputTable.Columns.Count; i++)
+        {
+            DataRow newRow = outputTable.NewRow();
+            newRow[0] = inputTable.Columns[i].ColumnName;
+
+            for (int j = 0; j < inputTable.Rows.Count; j++)
+            {
+                newRow[j + 1] = inputTable.Rows[j][i];
+            }
+
+            outputTable.Rows.Add(newRow);
+        }
+
+        return outputTable;
+    }
+}
