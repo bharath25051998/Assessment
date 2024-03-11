@@ -1,19 +1,31 @@
-// Add columns from inputTable's rows starting from the second column
-for (int i = 1; i < inputTable.Columns.Count; i++)
+static DataTable TransposeDataTable(DataTable inputTable)
 {
-    outputTable.Columns.Add(inputTable.Columns[i].ColumnName);
-}
+    DataTable outputTable = new DataTable();
 
-// Add rows and transpose data
-for (int i = 0; i < inputTable.Rows.Count; i++)
-{
-    DataRow newRow = outputTable.NewRow();
-
-    // Populate the row with data from inputTable's rows
-    for (int j = 1; j < inputTable.Columns.Count; j++)
+    // Add rows to the output table
+    for (int i = 0; i < inputTable.Columns.Count; i++)
     {
-        newRow[j - 1] = inputTable.Rows[i][j];
+        DataRow newRow = outputTable.NewRow();
+        for (int j = 0; j < inputTable.Rows.Count; j++)
+        {
+            // Ensure the output table has enough columns
+            if (outputTable.Columns.Count <= j)
+            {
+                outputTable.Columns.Add(inputTable.Rows[j][0].ToString());
+            }
+
+            // Fill the transposed data
+            if (i == 0)
+            {
+                newRow[j] = inputTable.Rows[j][0];
+            }
+            else
+            {
+                newRow[inputTable.Rows[j][0].ToString()] = inputTable.Rows[j][i];
+            }
+        }
+        outputTable.Rows.Add(newRow);
     }
 
-    outputTable.Rows.Add(newRow);
+    return outputTable;
 }
