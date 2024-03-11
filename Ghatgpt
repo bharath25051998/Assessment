@@ -1,31 +1,5 @@
-static DataTable TransposeDataTable(DataTable inputTable)
-{
-    DataTable outputTable = new DataTable();
-
-    // Add rows to the output table
-    for (int i = 0; i < inputTable.Columns.Count; i++)
-    {
-        DataRow newRow = outputTable.NewRow();
-        for (int j = 0; j < inputTable.Rows.Count; j++)
-        {
-            // Ensure the output table has enough columns
-            if (outputTable.Columns.Count <= j)
-            {
-                outputTable.Columns.Add(inputTable.Rows[j][0].ToString());
-            }
-
-            // Fill the transposed data
-            if (i == 0)
-            {
-                newRow[j] = inputTable.Rows[j][0];
-            }
-            else
-            {
-                newRow[inputTable.Rows[j][0].ToString()] = inputTable.Rows[j][i];
-            }
-        }
-        outputTable.Rows.Add(newRow);
-    }
-
-    return outputTable;
-}
+SELECT YourColumn
+FROM YourTable
+ORDER BY 
+    CONVERT(DATE, '01-' + SUBSTRING(YourColumn, 1, CHARINDEX('-', YourColumn) - 1) + '-' + SUBSTRING(YourColumn, CHARINDEX('-', YourColumn) + 1, LEN(YourColumn)), 106);
+p
