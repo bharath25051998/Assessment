@@ -1,47 +1,19 @@
-using System;
-using System.Data;
-using System.Web.Mvc;
-
-public class YourController : Controller
+// Add columns from inputTable's rows starting from the second column
+for (int i = 1; i < inputTable.Columns.Count; i++)
 {
-    public ActionResult YourAction()
+    outputTable.Columns.Add(inputTable.Columns[i].ColumnName);
+}
+
+// Add rows and transpose data
+for (int i = 0; i < inputTable.Rows.Count; i++)
+{
+    DataRow newRow = outputTable.NewRow();
+
+    // Populate the row with data from inputTable's rows
+    for (int j = 1; j < inputTable.Columns.Count; j++)
     {
-        // Assuming you have retrieved your data into a DataTable named "resultData"
-        DataTable transposedDataTable = TransposeDataTable(resultData);
-
-        // Add the transposed DataTable to the ViewBag
-        ViewBag.TransposedData = transposedDataTable;
-
-        return View();
+        newRow[j - 1] = inputTable.Rows[i][j];
     }
 
-    static DataTable TransposeDataTable(DataTable inputTable)
-    {
-        DataTable outputTable = new DataTable();
-
-        // Add columns for transposed data
-        outputTable.Columns.Add("RowHeader");
-
-        // Add columns from inputTable's rows
-        foreach (DataRow inputRow in inputTable.Rows)
-        {
-            outputTable.Columns.Add(inputRow[0].ToString());
-        }
-
-        // Add rows and transpose data
-        for (int i = 1; i < inputTable.Columns.Count; i++)
-        {
-            DataRow newRow = outputTable.NewRow();
-            newRow[0] = inputTable.Columns[i].ColumnName;
-
-            for (int j = 0; j < inputTable.Rows.Count; j++)
-            {
-                newRow[j + 1] = inputTable.Rows[j][i];
-            }
-
-            outputTable.Rows.Add(newRow);
-        }
-
-        return outputTable;
-    }
+    outputTable.Rows.Add(newRow);
 }
