@@ -1,5 +1,8 @@
-SELECT YourColumn
-FROM YourTable
-ORDER BY 
-    CONVERT(DATE, '01-' + SUBSTRING(YourColumn, 1, CHARINDEX('-', YourColumn) - 1) + '-' + SUBSTRING(YourColumn, CHARINDEX('-', YourColumn) + 1, LEN(YourColumn)), 106);
-p
+SELECT COUNT(*) AS EligibleCount
+FROM YourTableName
+WHERE 
+    (band = 'wase' OR band = 'wims') 
+    AND freshersindex = 'nga' 
+    AND DATEDIFF(year, wiprojoiningdate, GETDATE()) >= 4
+    OR 
+    (band = 'bl' AND teambrow AND freshersindex = 'nga' AND DATEDIFF(year, wdj, GETDATE()) >= 2);
