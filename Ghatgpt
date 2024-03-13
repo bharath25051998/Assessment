@@ -1,35 +1,19 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
+var ws1 = XLSX.utils.table_to_sheet($('#table1')[0]);
+treatColumnsAsText(ws1, [1]); // Treat column 1 as text
+XLSX.utils.book_append_sheet(wb, ws1, 'Table 
 
-$(document).ready(function() {
-    $('#downloadBtn').on('click', function() {
-        var wb = XLSX.utils.book_new();
 
-        // Create worksheet for table 1 data
-        var ws1 = XLSX.utils.table_to_sheet($('#table1')[0]);
-        XLSX.utils.book_append_sheet(wb, ws1, 'Table 1');
 
-        // Create worksheet for table 2 data
-        var ws2 = XLSX.utils.table_to_sheet($('#table2')[0]);
-        XLSX.utils.book_append_sheet(wb, ws2, 'Table 2');
-
-        // Generate XLSX file
-        var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-
-        // Convert to blob and create a temporary link element
-        var blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
-        var downloadLink = document.createElement('a');
-        downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = 'combined_tables.xlsx';
-
-        // Trigger the click event to download the file
-        downloadLink.click();
+// Treat specific columns as text (string)
+function treatColumnsAsText(ws, columns) {
+    var range = XLSX.utils.decode_range(ws['!ref']);
+    
+    columns.forEach(function(column) {
+        for (var R = range.s.r; R <= range.e.r; ++R) {
+            var cellRef = XLSX.utils.encode_cell({ r: R, c: column });
+            if (ws[cellRef] && typeof ws[cellRef].v === 'string' && ws[cellRef].v.endsWith('%')) {
+                ws[cellRef].t = 's'; // Treat as string
+            }
+        }
     });
-});
-
-// Convert array buffer to base64 string
-function s2ab(s) {
-    var buf = new ArrayBuffer(s.length);
-    var view = new Uint8Array(buf);
-    for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
-    return buf;
 }
