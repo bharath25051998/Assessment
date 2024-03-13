@@ -1,8 +1,32 @@
-SELECT COUNT(*) AS EligibleCount
-FROM YourTableName
-WHERE 
-    (band = 'wase' OR band = 'wims') 
-    AND freshersindex = 'nga' 
-    AND DATEDIFF(year, wiprojoiningdate, GETDATE()) >= 4
-    OR 
-    (band = 'bl' AND teambrow AND freshersindex = 'nga' AND DATEDIFF(year, wdj, GETDATE()) >= 2);
+$(document).ready(function() {
+    $('#downloadBtn').on('click', function() {
+        var combinedData = '';
+
+        // Get data from table 1
+        $('#table1').find('tr').each(function() {
+            $(this).find('td').each(function() {
+                combinedData += $(this).text() + ',';
+            });
+            combinedData += '\n';
+        });
+
+        // Add a separator between tables
+        combinedData += '\n';
+
+        // Get data from table 2
+        $('#table2').find('tr').each(function() {
+            $(this).find('td').each(function() {
+                combinedData += $(this).text() + ',';
+            });
+            combinedData += '\n';
+        });
+
+        // Create a temporary link element
+        var downloadLink = document.createElement('a');
+        downloadLink.href = 'data:application/vnd.ms-excel;charset=utf-8,' + encodeURIComponent(combinedData);
+        downloadLink.download = 'combined_tables.xls';
+
+        // Trigger the click event to download the file
+        downloadLink.click();
+    });
+});
