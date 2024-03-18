@@ -1,19 +1,21 @@
-var ws1 = XLSX.utils.table_to_sheet($('#table1')[0]);
-treatColumnsAsText(ws1, [1]); // Treat column 1 as text
-XLSX.utils.book_append_sheet(wb, ws1, 'Table 
+<select id="myDropdown">
+  <option value="value1">Option 1</option>
+  <option value="value2">Option 2</option>
+  <option value="value3">Option 3</option>
+</select>
 
+<script>
+  // Assuming you have the value you want to make selected
+  var selectedValue = "value2"; // Replace this with your value
 
+  // Find the dropdown element
+  var dropdown = document.getElementById("myDropdown");
 
-// Treat specific columns as text (string)
-function treatColumnsAsText(ws, columns) {
-    var range = XLSX.utils.decode_range(ws['!ref']);
-    
-    columns.forEach(function(column) {
-        for (var R = range.s.r; R <= range.e.r; ++R) {
-            var cellRef = XLSX.utils.encode_cell({ r: R, c: column });
-            if (ws[cellRef] && typeof ws[cellRef].v === 'string' && ws[cellRef].v.endsWith('%')) {
-                ws[cellRef].t = 's'; // Treat as string
-            }
-        }
-    });
-}
+  // Loop through each option to find and select the one matching the desired value
+  for (var i = 0; i < dropdown.options.length; i++) {
+    if (dropdown.options[i].value === selectedValue) {
+      dropdown.options[i].selected = true;
+      break;
+    }
+  }
+</script>
