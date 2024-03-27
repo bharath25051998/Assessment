@@ -1,21 +1,43 @@
-<select id="myDropdown">
-  <option value="value1">Option 1</option>
-  <option value="value2">Option 2</option>
-  <option value="value3">Option 3</option>
-</select>
+@{
+    Layout = null;
+}
 
-<script>
-  // Assuming you have the value you want to make selected
-  var selectedValue = "value2"; // Replace this with your value
+<!DOCTYPE html>
 
-  // Find the dropdown element
-  var dropdown = document.getElementById("myDropdown");
-
-  // Loop through each option to find and select the one matching the desired value
-  for (var i = 0; i < dropdown.options.length; i++) {
-    if (dropdown.options[i].value === selectedValue) {
-      dropdown.options[i].selected = true;
-      break;
-    }
-  }
-</script>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Send Email</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        function sendEmail() {
+            var link = $('#sendEmailLink');
+            if (link.hasClass('disabled')) {
+                return; // If the link is already disabled, exit function
+            }
+            link.addClass('disabled'); // Add a class to disable the link
+            $.ajax({
+                url: '@Url.Action("SendEmail", "YourController")',
+                type: 'POST',
+                success: function (response) {
+                    alert(response.message);
+                    link.removeClass('disabled'); // Remove the class to enable the link
+                },
+                error: function (xhr, status, error) {
+                    alert('An error occurred while sending email: ' + xhr.responseText);
+                    link.removeClass('disabled'); // Remove the class to enable the link
+                }
+            });
+        }
+    </script>
+    <style>
+        .disabled {
+            pointer-events: none; /* Disable pointer events */
+            opacity: 0.5; /* Optionally, reduce opacity to visually indicate the link is disabled */
+        }
+    </style>
+</head>
+<body>
+    <a id="sendEmailLink" href="#" onclick="sendEmail(); return false;">Send Email</a>
+</body>
+</html>
