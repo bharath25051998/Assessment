@@ -1,43 +1,23 @@
-@{
-    Layout = null;
+using System;
+
+public class Program
+{
+    public static void Main()
+    {
+        // Example date in MM/DD/YYYY format
+        string inputDate = "3/23/2024";
+        
+        // Parse the input string to a DateTime object
+        DateTime date;
+        if (DateTime.TryParse(inputDate, out date))
+        {
+            // Format the date as "Date MonthName Year"
+            string formattedDate = date.ToString("d MMMM yyyy");
+            Console.WriteLine(formattedDate); // Output: 23 March 2024
+        }
+        else
+        {
+            Console.WriteLine("Invalid date format");
+        }
+    }
 }
-
-<!DOCTYPE html>
-
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Send Email</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script>
-        function sendEmail() {
-            var link = $('#sendEmailLink');
-            if (link.hasClass('disabled')) {
-                return; // If the link is already disabled, exit function
-            }
-            link.addClass('disabled'); // Add a class to disable the link
-            $.ajax({
-                url: '@Url.Action("SendEmail", "YourController")',
-                type: 'POST',
-                success: function (response) {
-                    alert(response.message);
-                    link.removeClass('disabled'); // Remove the class to enable the link
-                },
-                error: function (xhr, status, error) {
-                    alert('An error occurred while sending email: ' + xhr.responseText);
-                    link.removeClass('disabled'); // Remove the class to enable the link
-                }
-            });
-        }
-    </script>
-    <style>
-        .disabled {
-            pointer-events: none; /* Disable pointer events */
-            opacity: 0.5; /* Optionally, reduce opacity to visually indicate the link is disabled */
-        }
-    </style>
-</head>
-<body>
-    <a id="sendEmailLink" href="#" onclick="sendEmail(); return false;">Send Email</a>
-</body>
-</html>
