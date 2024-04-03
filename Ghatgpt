@@ -1,23 +1,24 @@
-using System;
+// Print out or log the SQL query with parameters before executing the command
+Console.WriteLine("SQL Query: " + command.CommandText);
 
-public class Program
+// Print out or log the parameter values
+Console.WriteLine("EmployeeEmail: " + command.Parameters["@EmployeeEmail"].Value);
+Console.WriteLine("LOB: " + command.Parameters["@LOB"].Value);
+Console.WriteLine("ChapterID: " + command.Parameters["@ChapterID"].Value);
+
+try
 {
-    public static void Main()
+    connection.Open();
+    adapter.Fill(dataTable);
+    
+    // Process the DataTable as needed
+    foreach (DataRow row in dataTable.Rows)
     {
-        // Example date in MM/DD/YYYY format
-        string inputDate = "3/23/2024";
-        
-        // Parse the input string to a DateTime object
-        DateTime date;
-        if (DateTime.TryParse(inputDate, out date))
-        {
-            // Format the date as "Date MonthName Year"
-            string formattedDate = date.ToString("d MMMM yyyy");
-            Console.WriteLine(formattedDate); // Output: 23 March 2024
-        }
-        else
-        {
-            Console.WriteLine("Invalid date format");
-        }
+        // Access data from the row
+        Console.WriteLine(row["ColumnName"]);
     }
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Error: " + ex.Message);
 }
