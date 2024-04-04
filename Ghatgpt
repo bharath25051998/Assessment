@@ -4,22 +4,10 @@ CREATE PROCEDURE [dbo].[PS_sp_GetLobspocchangeinfo]
     @LOB INT
 AS
 BEGIN
-    ;WITH TempCTE AS (
-        SELECT 
-            LOB, 
-            EmployeeEmail, 
-            SPOC 
-        FROM 
-            PSEmployeeUtilizationDetails pd
-        INNER JOIN 
-            PSEmployeeUtilizationRecord pr ON pd.id = pr.AllocationId
-        WHERE 
-            FromDate <= GETDATE() 
-            AND ToDate >= GETDATE() 
-            AND pd.EmployeeEmail = @EmployeeEmail
-    )
     SELECT 
-        tb.*, 
+        pd.LOB, 
+        pd.EmployeeEmail, 
+        pd.SPOC, 
         ps.UserName, 
         CASE 
             WHEN cl.ChapterLeadName IS NULL THEN cl.ChapterManagerName 
@@ -28,11 +16,16 @@ BEGIN
             ELSE CONCAT(cl.ChapterLeadName, ';', cl.ChapterManagerName) 
         END AS ChapterManagers 
     FROM 
-        TempCTE tb
+        PSEmployeeUtilizationDetails pd
     INNER JOIN 
-        PSUserLogin ps ON ps.UserAdID = tb.EmployeeEmail
+        PSEmployeeUtilizationRecord pr ON pd.id = pr.AllocationId
+    INNER JOIN 
+        PSUserLogin ps ON ps.UserAdID = pd.EmployeeEmail
     LEFT OUTER JOIN 
         [chapterLeads] cl ON cl.id = @ChapterID
     WHERE 
-        NOT EXISTS (SELECT 1 FROM TempCTE WHERE LOB = @LOB);
+        FromDate <= GETDATE() 
+        AND ToDate >= GETDATE() 
+        AND pd.EmployeeEmail = @EmployeeEmail
+        AND NOT EXISTS (SELECT 1 FROM PSEmployeeUtilizationDetails pd2 WHERE pd2.LOB = @LOB);
 END;
