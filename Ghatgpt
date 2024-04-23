@@ -1,31 +1,6 @@
-CREATE PROCEDURE [dbo].[PS_sp_GetLobspocchangeinfo]
-    @EmployeeEmail NVARCHAR(500),
-    @ChapterID INT,
-    @LOB INT
-AS
-BEGIN
-    SELECT 
-        pd.LOB, 
-        pd.EmployeeEmail, 
-        pd.SPOC, 
-        ps.UserName, 
-        CASE 
-            WHEN cl.ChapterLeadName IS NULL THEN cl.ChapterManagerName 
-            WHEN cl.ChapterManagerName IS NULL THEN cl.ChapterLeadName 
-            WHEN cl.ChapterLeadName IS NULL AND cl.ChapterManagerName IS NULL THEN '' 
-            ELSE CONCAT(cl.ChapterLeadName, ';', cl.ChapterManagerName) 
-        END AS ChapterManagers 
-    FROM 
-        PSEmployeeUtilizationDetails pd
-    INNER JOIN 
-        PSEmployeeUtilizationRecord pr ON pd.id = pr.AllocationId
-    INNER JOIN 
-        PSUserLogin ps ON ps.UserAdID = pd.EmployeeEmail
-    LEFT OUTER JOIN 
-        [chapterLeads] cl ON cl.id = @ChapterID
-    WHERE 
-        FromDate <= GETDATE() 
-        AND ToDate >= GETDATE() 
-        AND pd.EmployeeEmail = @EmployeeEmail
-        AND NOT EXISTS (SELECT 1 FROM PSEmployeeUtilizationDetails pd2 WHERE pd2.LOB = @LOB);
-END;
+SELECT 
+    [Month],
+    [Year],
+    DAY(EOMONTH(DATEFROMPARTS([Year], [Month], 1))) AS LastDayOfMonth
+FROM 
+    YourTable;
