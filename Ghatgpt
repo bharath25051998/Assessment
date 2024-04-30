@@ -1,39 +1,20 @@
-@{
-    var options = ViewBag.Options as List<SelectListItem>;
-}
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bootstrap Multiselect Dropdown with ViewBag</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-4">
-        <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Select Options
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <form>
-                    <div class="form-group">
-                        @foreach (var option in options)
-                        {
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="@option.Value" value="@option.Value">
-                                <label class="form-check-label" for="@option.Value">@option.Text</label>
-                            </div>
-                        }
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+<style>
+    /* Customize dropdown menu */
+    .dropdown-menu {
+        background-color: white; /* Set background color to white */
+        /* max-height: 200px; Remove this line to allow the dropdown menu to expand */
+        overflow-y: auto; /* Enable vertical scrolling for overflowing content */
+        padding: 5px;
+    }
+    /* Customize checkboxes */
+    .form-check-input[type="checkbox"] {
+        margin-right: 5px; /* Add some space between checkbox and label */
+    }
+    .form-check-label {
+        display: block; /* Display labels as block elements */
+        margin-bottom: 5px; /* Add some space between checkboxes */
+    }
+    .dropdown-toggle {
+        width: 200px; /* Set width for the dropdown toggle button */
+    }
+</style>
