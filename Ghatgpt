@@ -12,6 +12,7 @@
       border: 1px solid #ccc;
       max-height: 200px;
       overflow-y: auto;
+      width: 150px; /* Adjust the width as needed */
     }
   </style>
 </head>
@@ -35,7 +36,6 @@
       </div>
     </div>
   </div>
-  <div id="selectedOptions" class="mt-2"></div>
 </div>
 
 <script>
@@ -47,6 +47,15 @@ function toggleDropdown() {
     dropdownContent.style.display = 'block';
   }
 }
+
+document.addEventListener("click", function(event) {
+  const dropdownContent = document.querySelector('.dropdown-content');
+  const dropdownButton = document.querySelector('.btn-secondary');
+  if (!dropdownButton.contains(event.target) && !dropdownContent.contains(event.target)) {
+    dropdownContent.style.display = 'none';
+    displaySelectedOptions();
+  }
+});
 
 document.addEventListener("DOMContentLoaded", function() {
   const checkboxes = document.querySelectorAll('.dropdown-content input[type="checkbox"]');
@@ -63,7 +72,8 @@ document.addEventListener("DOMContentLoaded", function() {
         selectedOptions.push(checkbox.value);
       }
     });
-    document.getElementById('selectedOptions').textContent = "Selected options: " + (selectedOptions.length > 0 ? selectedOptions.join(', ') : "None");
+    const dropdownButton = document.querySelector('.btn-secondary');
+    dropdownButton.textContent = selectedOptions.length > 0 ? selectedOptions.join(', ') : "Select Options";
   }
 });
 </script>
