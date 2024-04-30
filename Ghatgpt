@@ -3,19 +3,71 @@
     List<string> options = new List<string> {"Option 1", "Option 2", "Option 3", "Option 4"};
 }
 
-<select id="multiSelectDropdown" multiple="multiple">
-    @foreach (var option in options)
-    {
-        <option value="@option">@option</option>
-    }
-</select>
+<div class="dropdown">
+    <button onclick="toggleDropdown()" class="dropbtn">Select options</button>
+    <div id="dropdownOptions" class="dropdown-content">
+        @foreach (var option in options)
+        {
+            <input type="checkbox" id="@option" value="@option" name="@option">
+            <label for="@option">@option</label><br>
+        }
+    </div>
+</div>
 
 <script>
-    // JavaScript to handle the multi-select dropdown with checkboxes
-    var select = document.getElementById("multiSelectDropdown");
+    function toggleDropdown() {
+        var dropdownOptions = document.getElementById("dropdownOptions");
+        dropdownOptions.classList.toggle("show");
+    }
 
-    select.addEventListener("change", function() {
-        var selectedOptions = Array.from(select.selectedOptions).map(option => option.value);
-        console.log("Selected options: ", selectedOptions);
-    });
+    // Close the dropdown if the user clicks outside of it
+    window.onclick = function(event) {
+        if (!event.target.matches('.dropbtn')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
 </script>
+
+<style>
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    .dropdown-content label {
+        display: block;
+        padding: 5px 10px;
+    }
+
+    .dropdown-content.show {
+        display: block;
+    }
+
+    .dropbtn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .dropbtn:hover, .dropbtn:focus {
+        background-color: #3e8e41;
+    }
+</style>
