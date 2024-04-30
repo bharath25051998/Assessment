@@ -1,62 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Multi-select Dropdown</title>
-<style>
-/* Dropdown container */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
+<!-- CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 
-/* Dropdown content */
-.dropdown .dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  z-index: 1;
-  border-radius: 4px;
-  max-height: 150px;
-  overflow-y: auto;
-}
+<!-- JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
-/* Show the dropdown content */
-.dropdown.open .dropdown-content {
-  display: block;
-}
-
-/* Dropdown items */
-.dropdown .dropdown-content label {
-  display: block;
-  padding: 10px;
-  cursor: pointer;
-}
-
-/* Hover effect */
-.dropdown .dropdown-content label:hover {
-  background-color: #f9f9f9;
-}
-</style>
-</head>
-<body>
-
-<div class="dropdown" onclick="toggleDropdown()">
-  <div class="dropdown-content" id="dropdownContent">
-    <label><input type="checkbox" value="item1"> Item 1</label>
-    <label><input type="checkbox" value="item2"> Item 2</label>
-    <label><input type="checkbox" value="item3"> Item 3</label>
-    <!-- Add more items as needed -->
-  </div>
-</div>
+<select id="statusDropdown" style="width: 15%;" class="custom-dropdown" multiple>
+    <option value="NULL">Select Status</option>
+    @foreach (var ap in apstatus)
+    {
+        <option value="@ap.Id">@ap.Status</option>
+    }
+</select>
 
 <script>
-function toggleDropdown() {
-  document.getElementById("dropdownContent").classList.toggle("open");
-}
+    $(document).ready(function() {
+        $('#statusDropdown').select2();
+    });
 </script>
-
-</body>
-</html>
