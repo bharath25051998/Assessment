@@ -1,26 +1,2 @@
-<select id="multiselectDropdown" multiple="multiple">
-    @foreach (var option in options)
-    {
-        <option value="@option.Value">@option.Text</option>
-    }
-</select>
-
-<button id="fetchDataButton">Fetch Data</button>
-
-@section scripts {
-    <script src="path/to/select2.min.js"></script>
-    <link href="path/to/select2.min.css" rel="stylesheet" />
-
-    <script>
-        $(document).ready(function() {
-            $('#multiselectDropdown').select2({
-                dropdownCssClass: 'dropdown-checkboxes' // Add this class to style checkboxes
-            });
-
-            $('#fetchDataButton').click(function() {
-                var selectedValues = $('#multiselectDropdown').val();
-                // AJAX request to fetch data based on selectedValues
-            });
-        });
-    </script>
-}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
