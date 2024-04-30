@@ -14,31 +14,29 @@
     <button class="btn btn-secondary dropdown-toggle" type="button" id="multiSelectDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
       Select Options
     </button>
-    <div class="dropdown-menu" aria-labelledby="multiSelectDropdown">
-      <form>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" value="option1" id="checkbox1">
-          <label class="form-check-label" for="checkbox1">
-            Option 1
-          </label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" value="option2" id="checkbox2">
-          <label class="form-check-label" for="checkbox2">
-            Option 2
-          </label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" value="option3" id="checkbox3">
-          <label class="form-check-label" for="checkbox3">
-            Option 3
-          </label>
-        </div>
-        <!-- Add more checkboxes as needed -->
-        <button type="button" class="btn btn-primary mt-2" onclick="getSelectedOptions()">Submit</button>
-      </form>
+    <div class="dropdown-menu" aria-labelledby="multiSelectDropdown" style="max-height: 200px; overflow-y: auto;">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="option1" id="checkbox1">
+        <label class="form-check-label" for="checkbox1">
+          Option 1
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="option2" id="checkbox2">
+        <label class="form-check-label" for="checkbox2">
+          Option 2
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="option3" id="checkbox3">
+        <label class="form-check-label" for="checkbox3">
+          Option 3
+        </label>
+      </div>
+      <!-- Add more checkboxes as needed -->
     </div>
   </div>
+  <div id="selectedOptions" class="mt-2"></div>
 </div>
 
 <!-- Bootstrap JS (jQuery and Popper.js required) -->
@@ -47,9 +45,10 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
-// Ensure dropdown opens on click
-$('.dropdown-toggle').dropdown();
-// Function to get selected options
+// Ensure dropdown opens downwards
+$('.dropdown-toggle').dropdown({ flip: false });
+
+// Function to get selected options and display them
 function getSelectedOptions() {
   const selectedOptions = [];
   // Loop through each checkbox and check if it's checked
@@ -58,9 +57,16 @@ function getSelectedOptions() {
       selectedOptions.push($(this).val());
     }
   });
-  // Output selected options (you can customize this part)
-  alert("Selected options: " + selectedOptions.join(', '));
+  // Display selected options outside the dropdown
+  $('#selectedOptions').text("Selected options: " + (selectedOptions.length > 0 ? selectedOptions.join(', ') : "None"));
 }
+
+// Handle click outside the dropdown to display selected options
+$(document).on('click', function(e) {
+  if (!$(e.target).closest('.dropdown').length) {
+    getSelectedOptions();
+  }
+});
 </script>
 
 </body>
