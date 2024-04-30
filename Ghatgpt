@@ -1,22 +1,21 @@
-.dropdown-menu {
-    position: absolute;
-    z-index: 1000;
-    display: none;
-    min-width: 10rem;
-    padding: .5rem 0;
-    margin: .125rem 0 0;
-    font-size: 1rem;
-    color: #212529;
-    text-align: left;
-    list-style: none;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid rgba(0, 0, 0, .15);
-    border-radius: .25rem;
-    max-height: 200px; /* Adjust the max-height as needed */
-    overflow-y: auto;
+@{
+    ViewBag.Title = "Multi-Select Dropdown with CheckBoxes";
+    List<string> options = new List<string> {"Option 1", "Option 2", "Option 3", "Option 4"};
 }
 
-.dropdown-menu.show {
-    display: block;
-}
+<select id="multiSelectDropdown" multiple="multiple">
+    @foreach (var option in options)
+    {
+        <option value="@option">@option</option>
+    }
+</select>
+
+<script>
+    // JavaScript to handle the multi-select dropdown with checkboxes
+    var select = document.getElementById("multiSelectDropdown");
+
+    select.addEventListener("change", function() {
+        var selectedOptions = Array.from(select.selectedOptions).map(option => option.value);
+        console.log("Selected options: ", selectedOptions);
+    });
+</script>
