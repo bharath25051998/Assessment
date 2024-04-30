@@ -1,5 +1,5 @@
 @{
-    ViewBag.Options = new List<string> {"Option 1", "Option 2", "Option 3", "Option 4"};
+    ViewBag.Options = new List<string> {"Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9", "Option 10"};
 }
 
 <!DOCTYPE html>
@@ -7,48 +7,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Multi-select Dropdown</title>
-<style>
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  min-width: 160px;
-  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
-  padding: 12px 16px;
-  z-index: 1;
-}
-
-.dropdown-content input[type="checkbox"] {
-  margin-right: 8px;
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-</style>
+<title>Multi-select Dropdown with Bootstrap</title>
+<!-- Bootstrap CSS -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 
 <div class="dropdown">
-  <button class="dropbtn">Select Options</button>
-  <div class="dropdown-content">
+  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Select Options
+  </button>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="max-height: 200px; overflow-y: auto;">
     @foreach (var option in ViewBag.Options)
     {
-        <label><input type="checkbox" name="option" value="@option"> @option</label><br>
+        <label class="dropdown-item"><input class="form-check-input" type="checkbox" name="option" value="@option"> @option</label>
     }
   </div>
 </div>
 
+<!-- Bootstrap JS (optional, for dropdown functionality) -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <script>
 // JavaScript to handle selecting options
-const checkboxes = document.querySelectorAll('.dropdown-content input[type="checkbox"]');
-const dropbtn = document.querySelector('.dropbtn');
+const checkboxes = document.querySelectorAll('.dropdown-menu input[type="checkbox"]');
+const dropdownToggle = document.querySelector('.dropdown-toggle');
 let selectedOptions = [];
 
 checkboxes.forEach(checkbox => {
@@ -58,7 +43,7 @@ checkboxes.forEach(checkbox => {
     } else {
       selectedOptions = selectedOptions.filter(option => option !== this.value);
     }
-    dropbtn.textContent = selectedOptions.length > 0 ? selectedOptions.join(', ') : 'Select Options';
+    dropdownToggle.textContent = selectedOptions.length > 0 ? selectedOptions.join(', ') : 'Select Options';
   });
 });
 </script>
