@@ -1,5 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-select Dropdown</title>
 <style>
-.dropdown-menu.show {
-  max-height: none !important;
+/* Dropdown container */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown content */
+.dropdown .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 1;
+  border-radius: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+/* Show the dropdown content */
+.dropdown.open .dropdown-content {
+  display: block;
+}
+
+/* Dropdown items */
+.dropdown .dropdown-content label {
+  display: block;
+  padding: 10px;
+  cursor: pointer;
+}
+
+/* Hover effect */
+.dropdown .dropdown-content label:hover {
+  background-color: #f9f9f9;
 }
 </style>
+</head>
+<body>
+
+<div class="dropdown" onclick="toggleDropdown()">
+  <div class="dropdown-content" id="dropdownContent">
+    <label><input type="checkbox" value="item1"> Item 1</label>
+    <label><input type="checkbox" value="item2"> Item 2</label>
+    <label><input type="checkbox" value="item3"> Item 3</label>
+    <!-- Add more items as needed -->
+  </div>
+</div>
+
+<script>
+function toggleDropdown() {
+  document.getElementById("dropdownContent").classList.toggle("open");
+}
+</script>
+
+</body>
+</html>
