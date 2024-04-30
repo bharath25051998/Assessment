@@ -1,11 +1,23 @@
-<!-- CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Page Title</title>
+    
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- JavaScript -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <!-- Include Bootstrap CSS (optional) -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
-<select id="statusDropdown" style="width: 15%;" class="custom-dropdown" multiple>
+    <!-- Include Bootstrap Multiselect CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.min.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Your dropdown code -->
+<select id="statusDropdown" style="width: 200px;" multiple>
     <option value="NULL">Select Status</option>
     @foreach (var ap in apstatus)
     {
@@ -13,8 +25,15 @@
     }
 </select>
 
+<!-- Include Bootstrap Multiselect JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.min.js"></script>
+
+<!-- Script to initialize Bootstrap Multiselect -->
 <script>
     $(document).ready(function() {
-        $('#statusDropdown').select2();
+        $('#statusDropdown').multiselect();
     });
 </script>
+
+</body>
+</html>
