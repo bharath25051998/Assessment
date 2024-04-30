@@ -47,6 +47,9 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
+// Ensure dropdown opens on click
+$('.dropdown-toggle').dropdown();
+// Function to get selected options
 function getSelectedOptions() {
   const selectedOptions = [];
   // Loop through each checkbox and check if it's checked
