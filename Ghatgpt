@@ -4,15 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Page Title</title>
-    
-    <!-- Include jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Include Bootstrap CSS (optional) -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Include Bootstrap Multiselect CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.min.css" rel="stylesheet">
 </head>
 <body>
 
@@ -25,13 +16,16 @@
     }
 </select>
 
-<!-- Include Bootstrap Multiselect JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.min.js"></script>
-
-<!-- Script to initialize Bootstrap Multiselect -->
 <script>
-    $(document).ready(function() {
-        $('#statusDropdown').multiselect();
+    // Get the select element
+    var select = document.getElementById('statusDropdown');
+
+    // Add an event listener to toggle the selected attribute of the clicked option
+    select.addEventListener('click', function(event) {
+        var option = event.target;
+        if (option.tagName === 'OPTION') {
+            option.selected = !option.selected;
+        }
     });
 </script>
 
