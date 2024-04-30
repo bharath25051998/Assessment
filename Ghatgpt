@@ -1,25 +1,39 @@
-.dropdown-checkboxes .select2-container .select2-selection--multiple .select2-selection__rendered {
-    display: flex;
-    flex-wrap: wrap;
+@{
+    var options = ViewBag.Options as List<SelectListItem>;
 }
 
-.dropdown-checkboxes .select2-container .select2-selection--multiple .select2-selection__rendered .select2-selection__choice {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 5px;
-    margin: 2px;
-    background-color: #007bff;
-    color: #fff;
-    border-radius: 3px;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap Multiselect Dropdown with ViewBag</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Select Options
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <form>
+                    <div class="form-group">
+                        @foreach (var option in options)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="@option.Value" value="@option.Value">
+                                <label class="form-check-label" for="@option.Value">@option.Text</label>
+                            </div>
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-.dropdown-checkboxes .select2-container .select2-selection--multiple .select2-selection__choice__remove {
-    margin-left: 5px;
-    color: #fff;
-    cursor: pointer;
-}
-
-.dropdown-checkboxes .select2-container .select2-search--inline .select2-search__field {
-    padding: 0;
-    border: none;
-}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
