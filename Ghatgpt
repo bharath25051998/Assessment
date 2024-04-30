@@ -1,47 +1,31 @@
-@{
-    ViewBag.Title = "Index";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiple Selection Dropdown</title>
+<style>
+.dropdown {
+  width: 200px;
 }
 
-<h2>Dropdown with Multi-Select</h2>
-
-<select id="multiSelect" multiple="multiple">
-    @foreach (var option in ViewBag.Options)
-    {
-        <option value="@option.Value">@option.Text</option>
-    }
-</select>
-
-<button id="searchButton" class="btn btn-primary">Search</button>
-
-@section scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.16/js/bootstrap-multiselect.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.16/css/bootstrap-multiselect.css" rel="stylesheet" />
-
-    <script>
-        $(document).ready(function () {
-            $('#multiSelect').multiselect({
-                includeSelectAllOption: true,
-                enableFiltering: true
-            });
-
-            $('#searchButton').click(function () {
-                var selectedValues = $('#multiSelect').val();
-
-                // Perform AJAX call
-                $.ajax({
-                    url: '@Url.Action("Search", "Home")',
-                    type: 'POST',
-                    data: { selectedValues: selectedValues },
-                    success: function (data) {
-                        // Handle success response
-                        console.log(data);
-                    },
-                    error: function (xhr, status, error) {
-                        // Handle error response
-                        console.error(xhr.responseText);
-                    }
-                });
-            });
-        });
-    </script>
+.dropdown select {
+  width: 100%;
+  height: 100%;
 }
+</style>
+</head>
+<body>
+
+<div class="dropdown">
+  <select multiple>
+    <option value="option1">Option 1</option>
+    <option value="option2">Option 2</option>
+    <option value="option3">Option 3</option>
+    <option value="option4">Option 4</option>
+    <option value="option5">Option 5</option>
+  </select>
+</div>
+
+</body>
+</html>
