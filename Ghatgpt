@@ -45,7 +45,7 @@
     <div class="dropdown-button" onclick="toggleDropdown()">
       <span>Select Options</span>
     </div>
-    <div class="dropdown-content">
+    <div class="dropdown-content" id="dropdownContent">
       <div class="form-check">
         <input class="form-check-input" type="checkbox" value="option1" id="checkbox1">
         <label class="form-check-label" for="checkbox1">Option 1</label>
@@ -64,19 +64,15 @@
 
 <script>
 function toggleDropdown() {
-  const dropdownContent = document.querySelector('.dropdown-content');
-  if (dropdownContent.style.display === 'block') {
-    dropdownContent.style.display = 'none';
-  } else {
-    dropdownContent.style.display = 'block';
-  }
+  const dropdownContent = document.getElementById('dropdownContent');
+  dropdownContent.classList.toggle('show');
 }
 
 document.addEventListener("click", function(event) {
-  const dropdownContent = document.querySelector('.dropdown-content');
+  const dropdownContent = document.getElementById('dropdownContent');
   const dropdownButton = document.querySelector('.dropdown-button');
   if (!dropdownButton.contains(event.target) && !dropdownContent.contains(event.target)) {
-    dropdownContent.style.display = 'none';
+    dropdownContent.classList.remove('show');
     displaySelectedOptions();
   }
 });
