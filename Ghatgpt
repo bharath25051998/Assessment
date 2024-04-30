@@ -1,31 +1,67 @@
+@{
+    ViewBag.Options = new List<string> {"Option 1", "Option 2", "Option 3", "Option 4"};
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Multiple Selection Dropdown</title>
+<title>Multi-select Dropdown</title>
 <style>
 .dropdown {
-  width: 200px;
+  position: relative;
+  display: inline-block;
 }
 
-.dropdown select {
-  width: 100%;
-  height: 100%;
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 1;
+}
+
+.dropdown-content input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
 }
 </style>
 </head>
 <body>
 
 <div class="dropdown">
-  <select multiple>
-    <option value="option1">Option 1</option>
-    <option value="option2">Option 2</option>
-    <option value="option3">Option 3</option>
-    <option value="option4">Option 4</option>
-    <option value="option5">Option 5</option>
-  </select>
+  <button class="dropbtn">Select Options</button>
+  <div class="dropdown-content">
+    @foreach (var option in ViewBag.Options)
+    {
+        <label><input type="checkbox" name="option" value="@option"> @option</label><br>
+    }
+  </div>
 </div>
+
+<script>
+// JavaScript to handle selecting options
+const checkboxes = document.querySelectorAll('.dropdown-content input[type="checkbox"]');
+const dropbtn = document.querySelector('.dropbtn');
+let selectedOptions = [];
+
+checkboxes.forEach(checkbox => {
+  checkbox.addEventListener('change', function() {
+    if (this.checked) {
+      selectedOptions.push(this.value);
+    } else {
+      selectedOptions = selectedOptions.filter(option => option !== this.value);
+    }
+    dropbtn.textContent = selectedOptions.length > 0 ? selectedOptions.join(', ') : 'Select Options';
+  });
+});
+</script>
 
 </body>
 </html>
