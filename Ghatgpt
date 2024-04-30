@@ -1,51 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Multi-select Dropdown with Checkboxes using Bootstrap and ViewBag</title>
-    <!-- Include Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
+<select id="multiselectDropdown" multiple="multiple">
+    <option value="value1">Option 1</option>
+    <option value="value2">Option 2</option>
+    <option value="value3">Option 3</option>
+    <!-- Add more options as needed -->
+</select>
 
-<div class="dropdown">
-  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-    Select Options
-  </button>
-  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-    @foreach (var option in ViewBag.Options)
-    {
-        <div class="dropdown-item">
-            <input type="checkbox" id="@option" value="@option">
-            <label for="@option">@option</label>
-        </div>
-    }
-  </div>
-</div>
-
-<script>
-    var checkboxes = document.querySelectorAll(".dropdown-item input[type='checkbox']");
-
-    checkboxes.forEach(function(checkbox) {
-        checkbox.addEventListener("change", function() {
-            console.log(getSelectedOptions());
-        });
-    });
-
-    function getSelectedOptions() {
-        var selectedOptions = [];
-        checkboxes.forEach(function(checkbox) {
-            if (checkbox.checked) {
-                selectedOptions.push(checkbox.value);
-            }
-        });
-        return selectedOptions;
-    }
-</script>
-
-<!-- Include Bootstrap JS and jQuery -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-</body>
-</html>
+<button id="fetchDataButton">Fetch Data</button>
