@@ -1,37 +1,47 @@
-/* styles.css */
-
-/* Dropdown button */
-.btn-secondary {
-    background-color: #f8f9fa;
-    border-color: #ced4da;
-    color: #212529;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    border-radius: 0.25rem;
-    cursor: pointer;
+@{
+    ViewBag.Title = "Index";
 }
 
-/* Dropdown menu */
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    background-color: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-top: none;
-    width: auto;
-}
+<h2>Dropdown with Multi-Select</h2>
 
-/* Options */
-.option {
-    padding: 5px;
-}
+<select id="multiSelect" multiple="multiple">
+    @foreach (var option in ViewBag.Options)
+    {
+        <option value="@option.Value">@option.Text</option>
+    }
+</select>
 
-.option input[type="checkbox"] {
-    margin-right: 5px;
-}
+<button id="searchButton" class="btn btn-primary">Search</button>
 
-/* Show dropdown menu */
-.show {
-    display: block;
+@section scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.16/js/bootstrap-multiselect.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.16/css/bootstrap-multiselect.css" rel="stylesheet" />
+
+    <script>
+        $(document).ready(function () {
+            $('#multiSelect').multiselect({
+                includeSelectAllOption: true,
+                enableFiltering: true
+            });
+
+            $('#searchButton').click(function () {
+                var selectedValues = $('#multiSelect').val();
+
+                // Perform AJAX call
+                $.ajax({
+                    url: '@Url.Action("Search", "Home")',
+                    type: 'POST',
+                    data: { selectedValues: selectedValues },
+                    success: function (data) {
+                        // Handle success response
+                        console.log(data);
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error response
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
 }
