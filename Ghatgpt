@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Custom Multi-select Dropdown</title>
   <style>
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
     .dropdown-content {
       display: none;
       background-color: #f9f9f9;
@@ -13,6 +17,24 @@
       max-height: 200px;
       overflow-y: auto;
       width: 150px; /* Adjust the width as needed */
+      position: absolute;
+      z-index: 1;
+    }
+    .dropdown-button {
+      padding: 8px 20px 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #fff;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 160px; /* Fixed width for the button */
+    }
+    .dropdown-button::after {
+      content: "\25BC";
+      font-size: 0.8em;
+      margin-left: 5px;
     }
   </style>
 </head>
@@ -20,7 +42,9 @@
 
 <div class="container mt-5">
   <div class="dropdown">
-    <button class="btn btn-secondary" onclick="toggleDropdown()">Select Options</button>
+    <div class="dropdown-button" onclick="toggleDropdown()">
+      <span>Select Options</span>
+    </div>
     <div class="dropdown-content">
       <div class="form-check">
         <input class="form-check-input" type="checkbox" value="option1" id="checkbox1">
@@ -50,7 +74,7 @@ function toggleDropdown() {
 
 document.addEventListener("click", function(event) {
   const dropdownContent = document.querySelector('.dropdown-content');
-  const dropdownButton = document.querySelector('.btn-secondary');
+  const dropdownButton = document.querySelector('.dropdown-button');
   if (!dropdownButton.contains(event.target) && !dropdownContent.contains(event.target)) {
     dropdownContent.style.display = 'none';
     displaySelectedOptions();
@@ -72,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function() {
         selectedOptions.push(checkbox.value);
       }
     });
-    const dropdownButton = document.querySelector('.btn-secondary');
+    const dropdownButton = document.querySelector('.dropdown-button span');
     dropdownButton.textContent = selectedOptions.length > 0 ? selectedOptions.join(', ') : "Select Options";
   }
 });
