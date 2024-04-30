@@ -2,8 +2,8 @@
     /* Customize dropdown menu */
     .dropdown-menu {
         background-color: white; /* Set background color to white */
-        /* max-height: 200px; Remove this line to allow the dropdown menu to expand */
-        overflow-y: auto; /* Enable vertical scrolling for overflowing content */
+        /* max-height: 200px; Remove max-height to allow the dropdown menu to expand */
+        overflow-y: auto; /* Enable vertical scrolling if needed */
         padding: 5px;
     }
     /* Customize checkboxes */
