@@ -1,33 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Page Title</title>
-</head>
-<body>
+.dropdown-menu {
+    position: absolute;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 10rem;
+    padding: .5rem 0;
+    margin: .125rem 0 0;
+    font-size: 1rem;
+    color: #212529;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: .25rem;
+}
 
-<!-- Your dropdown code -->
-<select id="statusDropdown" style="width: 200px;" multiple>
-    <option value="NULL">Select Status</option>
-    @foreach (var ap in apstatus)
-    {
-        <option value="@ap.Id">@ap.Status</option>
-    }
-</select>
-
-<script>
-    // Get the select element
-    var select = document.getElementById('statusDropdown');
-
-    // Add an event listener to toggle the selected attribute of the clicked option
-    select.addEventListener('click', function(event) {
-        var option = event.target;
-        if (option.tagName === 'OPTION') {
-            option.selected = !option.selected;
-        }
-    });
-</script>
-
-</body>
-</html>
+.dropdown-menu.show {
+    display: block;
+}
