@@ -3,68 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multi-select Dropdown with Checkboxes</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <title>Custom Multi-select Dropdown</title>
+  <style>
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+      padding: 12px 16px;
+      z-index: 1;
+    }
+    .dropdown-content input[type="checkbox"] {
+      margin-right: 8px;
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+  </style>
 </head>
 <body>
 
 <div class="container mt-5">
   <div class="dropdown">
-    <button class="btn btn-secondary dropdown-toggle" type="button" id="multiSelectDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      Select Options
-    </button>
-    <div class="dropdown-menu" aria-labelledby="multiSelectDropdown" style="max-height: 200px; overflow-y: auto;">
+    <button class="btn btn-secondary">Select Options</button>
+    <div class="dropdown-content">
       <div class="form-check">
         <input class="form-check-input" type="checkbox" value="option1" id="checkbox1">
-        <label class="form-check-label" for="checkbox1">
-          Option 1
-        </label>
+        <label class="form-check-label" for="checkbox1">Option 1</label>
       </div>
       <div class="form-check">
         <input class="form-check-input" type="checkbox" value="option2" id="checkbox2">
-        <label class="form-check-label" for="checkbox2">
-          Option 2
-        </label>
+        <label class="form-check-label" for="checkbox2">Option 2</label>
       </div>
       <div class="form-check">
         <input class="form-check-input" type="checkbox" value="option3" id="checkbox3">
-        <label class="form-check-label" for="checkbox3">
-          Option 3
-        </label>
+        <label class="form-check-label" for="checkbox3">Option 3</label>
       </div>
-      <!-- Add more checkboxes as needed -->
     </div>
   </div>
   <div id="selectedOptions" class="mt-2"></div>
 </div>
 
-<!-- Bootstrap JS (jQuery and Popper.js required) -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 <script>
-// Ensure dropdown opens downwards
-$('.dropdown-toggle').dropdown({ flip: false });
-
-// Function to get selected options and display them
-function getSelectedOptions() {
-  const selectedOptions = [];
-  // Loop through each checkbox and check if it's checked
-  $('.dropdown-menu input[type="checkbox"]').each(function() {
-    if ($(this).prop('checked')) {
-      selectedOptions.push($(this).val());
-    }
+document.addEventListener("DOMContentLoaded", function() {
+  const checkboxes = document.querySelectorAll('.dropdown-content input[type="checkbox"]');
+  checkboxes.forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+      displaySelectedOptions();
+    });
   });
-  // Display selected options outside the dropdown
-  $('#selectedOptions').text("Selected options: " + (selectedOptions.length > 0 ? selectedOptions.join(', ') : "None"));
-}
 
-// Handle click outside the dropdown to display selected options
-$(document).on('click', function(e) {
-  if (!$(e.target).closest('.dropdown').length) {
-    getSelectedOptions();
+  function displaySelectedOptions() {
+    const selectedOptions = [];
+    checkboxes.forEach(function(checkbox) {
+      if (checkbox.checked) {
+        selectedOptions.push(checkbox.value);
+      }
+    });
+    document.getElementById('selectedOptions').textContent = "Selected options: " + (selectedOptions.length > 0 ? selectedOptions.join(', ') : "None");
   }
 });
 </script>
