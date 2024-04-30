@@ -1,8 +1,13 @@
+@{
+    // Use ViewBag to populate dropdown options
+    SelectList options = ViewBag.Options;
+}
+
 <select id="multiselectDropdown" multiple="multiple">
-    <option value="value1">Option 1</option>
-    <option value="value2">Option 2</option>
-    <option value="value3">Option 3</option>
-    <!-- Add more options as needed -->
+    @foreach (var option in options)
+    {
+        <option value="@option.Value">@option.Text</option>
+    }
 </select>
 
 <button id="fetchDataButton">Fetch Data</button>
