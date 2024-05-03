@@ -1,12 +1,53 @@
-.lob-card {
-    display: flex; /* Ensure cards are displayed horizontally */
-    overflow-x: auto; /* Add horizontal scroll */
-    padding: 10px; /* Add padding to separate cards */
-    white-space: nowrap; /* Prevent cards from wrapping */
-}
+<div class="dashboard-container">
+    <div class="search-filter">
+        <!-- Search filter UI -->
+        <input type="text" id="searchInput" placeholder="Search...">
+        <!-- Add any other filter options here -->
+    </div>
 
-.card {
-    flex: 0 0 auto; /* Allow cards to shrink if needed */
-    width: 200px; /* Set a fixed width for each card */
-    margin-right: 10px; /* Add margin between cards */
-}
+    <div class="card-container">
+        @foreach (var group in ViewBag.GroupedData)
+        {
+            <!-- Line of business (LOB) card -->
+            <div class="lob-card card" onclick="toggleDetails(this)">
+                <!-- LOB name as card content -->
+                <h2>@group.Key</h2>
+                
+                <!-- Render cards for the specified LOB -->
+                @foreach (var item in group)
+                {
+                    <div class="card details">
+                        <!-- Card content for the LOB -->
+                        <p>AA Number: @item.AANumber</p>
+                        <p>SWCU: @item.SWCU</p>
+                        <p>Status: @item.Status</p>
+                        
+                        <!-- Additional details (initially hidden) -->
+                        <div class="additional-details">
+                            <p>Additional Details:</p>
+                            <!-- Add additional details here -->
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function toggleDetails(card) {
+        var details = card.querySelector('.details');
+        
+        // Check if details are currently hidden
+        if (!details.classList.contains('show')) {
+            // Show details
+            details.classList.add('show');
+        } else {
+            // Hide details
+            details.classList.remove('show');
+            
+            // Redirect on second click (optional)
+            // window.location.href = '@Url.Action("YourAction", "YourController")';
+        }
+    }
+</script>
