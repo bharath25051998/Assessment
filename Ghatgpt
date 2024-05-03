@@ -1,17 +1,39 @@
-@foreach (var item in group)
-{
-    <div class="card" id="@("card_" + item.Id)" onclick="toggleDetails('@("card_" + item.Id)')">
-        <!-- Card content for the LOB -->
-        <p>AA Number: @item.AANumber</p>
-        <p>SWCU: @item.SWCU</p>
-        <p>Status: @item.Status</p>
-        
-        <!-- Additional details (initially hidden) -->
-        <div class="additional-details" style="display: none;">
-            <p>Additional Details:</p>
-            <!-- Add additional details here -->
-        </div>
-        <!-- Arrow icon indicating expansion state -->
-        <span class="arrow-icon">&#9660;</span>
-    </div>
-}
+<script>
+    function toggleDetails(card) {
+        var details = card.querySelector('.additional-details');
+        var arrowIcon = card.querySelector('.arrow-icon');
+
+        // Toggle visibility of additional details for the clicked card
+        if (details.style.display === 'none' || details.style.display === '') {
+            // Show details of the clicked card
+            details.style.display = 'block';
+            // Change arrow to upwards
+            arrowIcon.textContent = '\u25B2';
+        } else {
+            // Hide details of the clicked card
+            details.style.display = 'none';
+            // Change arrow to downwards
+            arrowIcon.textContent = '\u25BC';
+        }
+
+        // Hide details of all other cards
+        hideOtherDetails(card);
+    }
+    
+    function hideOtherDetails(clickedCard) {
+        var allCards = document.querySelectorAll('.card');
+
+        // Loop through all cards and hide details of other cards
+        allCards.forEach(function(card) {
+            if (card !== clickedCard) { // Check if it's not the clicked card
+                var details = card.querySelector('.additional-details');
+                var arrowIcon = card.querySelector('.arrow-icon');
+
+                // Hide details
+                details.style.display = 'none';
+                // Change arrow to downwards
+                arrowIcon.textContent = '\u25BC';
+            }
+        });
+    }
+</script>
