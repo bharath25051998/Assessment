@@ -1,31 +1,3 @@
-<style>
-    .card-container {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .card {
-        border: 1px solid #ccc;
-        padding: 10px;
-        margin: 5px;
-        width: calc(25% - 10px); /* Adjust the width as needed */
-        box-sizing: border-box;
-        position: relative; /* Add position relative */
-        cursor: pointer; /* Add pointer cursor */
-    }
-
-    .additional-details {
-        display: none;
-        padding-top: 10px; /* Adjust spacing between details and arrow icon */
-    }
-
-    .arrow-icon {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-    }
-</style>
-
 <div class="dashboard-container">
     <div class="search-filter">
         <!-- Search filter UI -->
@@ -87,16 +59,16 @@
     }
     
     function hideAllCards() {
-        var allDetails = document.querySelectorAll('.additional-details');
-        var allArrowIcons = document.querySelectorAll('.arrow-icon');
-        
-        // Hide details of all cards
-        allDetails.forEach(function(details) {
-            details.style.display = 'none';
-        });
+        var allCards = document.querySelectorAll('.card');
 
-        // Change arrow to downwards for all cards
-        allArrowIcons.forEach(function(arrowIcon) {
+        // Loop through all cards and hide their details
+        allCards.forEach(function(card) {
+            var details = card.querySelector('.additional-details');
+            var arrowIcon = card.querySelector('.arrow-icon');
+
+            // Hide details
+            details.style.display = 'none';
+            // Change arrow to downwards
             arrowIcon.textContent = '\u25BC';
         });
     }
