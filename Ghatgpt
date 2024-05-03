@@ -3,9 +3,6 @@
         var details = card.querySelector('.additional-details');
         var arrowIcon = card.querySelector('.arrow-icon');
 
-        // Hide details of all other non-clickable cards
-        hideNonClickableCards();
-
         // Toggle visibility of additional details for the clicked card
         if (details.style.display === 'none') {
             // Show details of the clicked card
@@ -18,22 +15,20 @@
             // Change arrow to downwards
             arrowIcon.textContent = '\u25BC';
         }
+
+        // Hide details of all other cards
+        hideOtherCards(card);
     }
     
-    function hideNonClickableCards() {
+    function hideOtherCards(clickedCard) {
         var allCards = document.querySelectorAll('.card');
 
-        // Loop through all cards and hide details of non-clickable cards
+        // Loop through all cards and hide details of other cards
         allCards.forEach(function(card) {
-            if (card !== event.currentTarget) { // Check if it's not the clicked card
+            if (card !== clickedCard) { // Check if it's not the clicked card
                 var details = card.querySelector('.additional-details');
                 var arrowIcon = card.querySelector('.arrow-icon');
 
                 // Hide details
                 details.style.display = 'none';
-                // Change arrow to downwards
-                arrowIcon.textContent = '\u25BC';
-            }
-        });
-    }
-</script>
+                // Change arrow to
