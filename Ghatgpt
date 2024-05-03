@@ -41,34 +41,41 @@
         var details = card.querySelector('.additional-details');
         var arrowIcon = card.querySelector('.arrow-icon');
         
-        // Toggle visibility of additional details
+        // Toggle visibility of additional details for the clicked card
         if (details.style.display === 'none') {
-            // Hide details of all cards under LOB
-            hideAllCards();
-            // Show details of the selected card
+            // Hide details of all other cards under the same LOB
+            hideAllCardsUnderLOB(card);
+            // Show details of the clicked card
             details.style.display = 'block';
             // Change arrow to upwards
             arrowIcon.textContent = '\u25B2';
         } else {
-            // Hide details of the selected card
+            // Hide details of the clicked card
             details.style.display = 'none';
             // Change arrow to downwards
             arrowIcon.textContent = '\u25BC';
         }
     }
     
-    function hideAllCards() {
-        var allDetails = document.querySelectorAll('.additional-details');
-        var allArrowIcons = document.querySelectorAll('.arrow-icon');
-        
-        // Hide details of all cards
+    function hideAllCardsUnderLOB(clickedCard) {
+        var lobCard = clickedCard.closest('.lob-card'); // Find the closest parent with class '.lob-card'
+        var allDetails = lobCard.querySelectorAll('.additional-details'); // Find all '.additional-details' within the same LOB card
+        var allArrowIcons = lobCard.querySelectorAll('.arrow-icon'); // Find all '.arrow-icon' within the same LOB card
+
+        // Loop through all details and arrow icons within the same LOB card
         allDetails.forEach(function(details) {
-            details.style.display = 'none';
+            // Check if the current details element is not the details of the clicked card
+            if (details !== clickedCard.querySelector('.additional-details')) {
+                details.style.display = 'none'; // Hide details if it's not the details of the clicked card
+            }
         });
-        
-        // Change arrow to downwards for all cards
+
+        // Loop through all arrow icons within the same LOB card
         allArrowIcons.forEach(function(arrowIcon) {
-            arrowIcon.textContent = '\u25BC';
+            // Check if the current arrow icon is not the arrow icon of the clicked card
+            if (arrowIcon !== clickedCard.querySelector('.arrow-icon')) {
+                arrowIcon.textContent = '\u25BC'; // Change arrow to downwards if it's not the arrow icon of the clicked card
+            }
         });
     }
 </script>
