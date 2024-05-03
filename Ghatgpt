@@ -1,48 +1,10 @@
-<div class="dashboard-container">
-    <div class="search-filter">
-        <!-- Search filter UI -->
-        <input type="text" id="searchInput" placeholder="Search...">
-        <!-- Add any other filter options here -->
-    </div>
-
-    <div class="card-container">
-        @foreach (var group in ViewBag.GroupedData)
-        {
-            <!-- Line of business (LOB) card -->
-            <div class="lob-card card" onclick="toggleDetails(this)">
-                <!-- LOB name as card content -->
-                <h2>@group.Key</h2>
-                
-                <!-- Render cards for the specified LOB -->
-                @foreach (var item in group)
-                {
-                    <div class="card">
-                        <!-- Card content for the LOB -->
-                        <p>AA Number: @item.AANumber</p>
-                        <p>SWCU: @item.SWCU</p>
-                        <p>Status: @item.Status</p>
-                        
-                        <!-- Additional details (initially hidden) -->
-                        <div class="additional-details" style="display: none;">
-                            <p>Additional Details:</p>
-                            <!-- Add additional details here -->
-                        </div>
-                        <!-- Arrow icon indicating expansion state -->
-                        <span class="arrow-icon">&#9660;</span>
-                    </div>
-                }
-            </div>
-        }
-    </div>
-</div>
-
 <script>
     function toggleDetails(card) {
         var details = card.querySelector('.additional-details');
         var arrowIcon = card.querySelector('.arrow-icon');
 
-        // Hide details of all other cards
-        hideAllCards();
+        // Hide details of all other non-clickable cards
+        hideNonClickableCards();
 
         // Toggle visibility of additional details for the clicked card
         if (details.style.display === 'none') {
@@ -58,18 +20,20 @@
         }
     }
     
-    function hideAllCards() {
+    function hideNonClickableCards() {
         var allCards = document.querySelectorAll('.card');
 
-        // Loop through all cards and hide their details
+        // Loop through all cards and hide details of non-clickable cards
         allCards.forEach(function(card) {
-            var details = card.querySelector('.additional-details');
-            var arrowIcon = card.querySelector('.arrow-icon');
+            if (card !== event.currentTarget) { // Check if it's not the clicked card
+                var details = card.querySelector('.additional-details');
+                var arrowIcon = card.querySelector('.arrow-icon');
 
-            // Hide details
-            details.style.display = 'none';
-            // Change arrow to downwards
-            arrowIcon.textContent = '\u25BC';
+                // Hide details
+                details.style.display = 'none';
+                // Change arrow to downwards
+                arrowIcon.textContent = '\u25BC';
+            }
         });
     }
 </script>
