@@ -9,28 +9,26 @@
         @foreach (var group in ViewBag.GroupedData)
         {
             <!-- Line of business (LOB) card -->
-            <div class="lob-card card" onclick="toggleDetails(this)">
+            <div class="lob-card card">
                 <!-- LOB name as card content -->
-                <h2>
-                    @group.Key
-                    <!-- Arrow icon indicating expansion state -->
-                    <span class="arrow-icon">&#9660;</span>
-                </h2>
+                <h2>@group.Key</h2>
                 
                 <!-- Render cards for the specified LOB -->
                 @foreach (var item in group)
                 {
-                    <div class="card" style="display: none;">
+                    <div class="card" onclick="toggleDetails(this)">
                         <!-- Card content for the LOB -->
                         <p>AA Number: @item.AANumber</p>
                         <p>SWCU: @item.SWCU</p>
                         <p>Status: @item.Status</p>
                         
-                        <!-- Additional details -->
-                        <div class="additional-details">
+                        <!-- Additional details (initially hidden) -->
+                        <div class="additional-details" style="display: none;">
                             <p>Additional Details:</p>
                             <!-- Add additional details here -->
                         </div>
+                        <!-- Arrow icon indicating expansion state -->
+                        <span class="arrow-icon">&#9660;</span>
                     </div>
                 }
             </div>
@@ -40,17 +38,37 @@
 
 <script>
     function toggleDetails(card) {
-        var details = card.querySelectorAll('.card');
+        var details = card.querySelector('.additional-details');
+        var arrowIcon = card.querySelector('.arrow-icon');
         
-        // Toggle visibility of additional details for each card
-        details.forEach(function(item) {
-            if (item.style.display === 'none') {
-                item.style.display = 'block';
-                card.querySelector('.arrow-icon').textContent = '\u25B2'; // Upwards arrow
-            } else {
-                item.style.display = 'none';
-                card.querySelector('.arrow-icon').textContent = '\u25BC'; // Downwards arrow
-            }
+        // Toggle visibility of additional details
+        if (details.style.display === 'none') {
+            // Hide details of all cards under LOB
+            hideAllCards();
+            // Show details of the selected card
+            details.style.display = 'block';
+            // Change arrow to upwards
+            arrowIcon.textContent = '\u25B2';
+        } else {
+            // Hide details of the selected card
+            details.style.display = 'none';
+            // Change arrow to downwards
+            arrowIcon.textContent = '\u25BC';
+        }
+    }
+    
+    function hideAllCards() {
+        var allDetails = document.querySelectorAll('.additional-details');
+        var allArrowIcons = document.querySelectorAll('.arrow-icon');
+        
+        // Hide details of all cards
+        allDetails.forEach(function(details) {
+            details.style.display = 'none';
+        });
+        
+        // Change arrow to downwards for all cards
+        allArrowIcons.forEach(function(arrowIcon) {
+            arrowIcon.textContent = '\u25BC';
         });
     }
 </script>
