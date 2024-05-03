@@ -1,7 +1,46 @@
+<div class="dashboard-container">
+    <div class="search-filter">
+        <!-- Search filter UI -->
+        <input type="text" id="searchInput" placeholder="Search...">
+        <!-- Add any other filter options here -->
+    </div>
+
+    <div class="card-container">
+        @foreach (var group in ViewBag.GroupedData)
+        {
+            <!-- Line of business (LOB) card -->
+            <div class="lob-card card" id="@("lob_" + group.Key)">
+                <!-- LOB name as card content -->
+                <h2>@group.Key</h2>
+                
+                <!-- Render cards for the specified LOB -->
+                @foreach (var item in group)
+                {
+                    <div class="card" id="@("card_" + item.Id)">
+                        <!-- Card content for the LOB -->
+                        <p>AA Number: @item.AANumber</p>
+                        <p>SWCU: @item.SWCU</p>
+                        <p>Status: @item.Status</p>
+                        
+                        <!-- Additional details (initially hidden) -->
+                        <div class="additional-details" style="display: none;">
+                            <p>Additional Details:</p>
+                            <!-- Add additional details here -->
+                        </div>
+                        <!-- Arrow icon indicating expansion state -->
+                        <span class="arrow-icon">&#9660;</span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+
 <script>
-    function toggleDetails(card) {
-        var details = card.querySelector('.additional-details');
-        var arrowIcon = card.querySelector('.arrow-icon');
+    function toggleDetails(cardId) {
+        var details = document.getElementById(cardId).querySelector('.additional-details');
+        var arrowIcon = document.getElementById(cardId).querySelector('.arrow-icon');
 
         // Toggle visibility of additional details for the clicked card
         if (details.style.display === 'none') {
@@ -17,16 +56,18 @@
         }
 
         // Hide details of all other cards
-        hideOtherDetails(card);
+        hideOtherDetails(cardId);
     }
     
-    function hideOtherDetails(clickedCard) {
-        var allDetails = document.querySelectorAll('.additional-details');
+    function hideOtherDetails(clickedCardId) {
+        var allCards = document.querySelectorAll('.card');
 
-        // Loop through all additional details and hide details of other cards
-        allDetails.forEach(function(details) {
-            if (details !== clickedCard.querySelector('.additional-details')) { // Check if it's not the details of the clicked card
-                var arrowIcon = details.previousElementSibling.querySelector('.arrow-icon');
+        // Loop through all cards and hide details of other cards
+        allCards.forEach(function(card) {
+            var cardId = card.id;
+            if (cardId !== clickedCardId) { // Check if it's not the clicked card
+                var details = document.getElementById(cardId).querySelector('.additional-details');
+                var arrowIcon = document.getElementById(cardId).querySelector('.arrow-icon');
 
                 // Hide details
                 details.style.display = 'none';
