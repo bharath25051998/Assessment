@@ -4,7 +4,7 @@
         var arrowIcon = card.querySelector('.arrow-icon');
 
         // Toggle visibility of additional details for the clicked card
-        if (details.style.display === 'none' || details.style.display === '') {
+        if (details.style.display !== 'block') {
             // Show details of the clicked card
             details.style.display = 'block';
             // Change arrow to upwards
@@ -16,15 +16,16 @@
             arrowIcon.textContent = '\u25BC';
         }
 
-        // Hide details of all other cards
+        // Hide details of all other cards in the same LOB
         hideOtherDetails(card);
     }
     
     function hideOtherDetails(clickedCard) {
-        var allCards = document.querySelectorAll('.card');
+        var lobCard = clickedCard.closest('.lob-card'); // Find the closest parent with class '.lob-card'
+        var allCardsInLOB = lobCard.querySelectorAll('.card');
 
-        // Loop through all cards and hide details of other cards
-        allCards.forEach(function(card) {
+        // Loop through all cards in the same LOB and hide details of other cards
+        allCardsInLOB.forEach(function(card) {
             if (card !== clickedCard) { // Check if it's not the clicked card
                 var details = card.querySelector('.additional-details');
                 var arrowIcon = card.querySelector('.arrow-icon');
