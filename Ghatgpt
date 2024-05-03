@@ -1,3 +1,19 @@
+.card-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow cards to wrap to the next line if necessary */
+    gap: 10px; /* Adjust the gap between cards as needed */
+}
+
+.card {
+    flex: 1; /* Distribute available space evenly among cards */
+    background-color: #ffffff;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    /* Additional card styles as needed */
+}
+
 @{
     ViewBag.Lobs = new List<string> { "LOB1", "LOB2", "LOB3", /* Add all LOBs here */ };
 }
@@ -15,29 +31,12 @@
             <div class="column">
                 <h2>@lob</h2>
                 <div id="@($"cards-{lob}")" class="card-container">
-                    <!-- Cards for each LOB will be dynamically added here -->
+                    <!-- Render cards for the specified LOB -->
+                    <!-- For now, let's just print a placeholder message -->
+                    <p>No cards for @lob yet.</p>
                 </div>
             </div>
         }
     </div>
 </div>
 
-// Function to populate cards for each LOB
-function populateCards(lob) {
-    // Make an AJAX call to fetch data for the specified LOB
-    // and populate the cards dynamically
-}
-
-// Event listener for expanding cards
-document.addEventListener('click', function(event) {
-    if (event.target.classList.contains('expand-button')) {
-        // Redirect to another view for more details
-        // You can use the data attributes of the card to pass relevant information
-    }
-});
-
-// Event listener for search filter
-document.getElementById('searchInput').addEventListener('input', function(event) {
-    var searchQuery = event.target.value.toLowerCase();
-    // Filter cards based on the search query
-});
