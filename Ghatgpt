@@ -1,64 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Multi-select Dropdown</title>
-  <style>
-    /* CSS styles remain unchanged */
-  </style>
-</head>
-<body>
+@{
+    ViewBag.Lobs = new List<string> { "LOB1", "LOB2", "LOB3", /* Add all LOBs here */ };
+}
 
-<div class="container mt-5">
-  <div class="dropdown">
-    <div class="dropdown-button" onclick="toggleDropdown()">
-      <span>Select Options</span>
+<div class="dashboard-container">
+    <div class="search-filter">
+        <!-- Search filter UI -->
+        <input type="text" id="searchInput" placeholder="Search...">
+        <!-- Add any other filter options here -->
     </div>
-    <div class="dropdown-content" id="dropdownContent">
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" value="option1" id="checkbox1">
-        <label class="form-check-label" for="checkbox1">Option 1</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" value="option2" id="checkbox2">
-        <label class="form-check-label" for="checkbox2">Option 2</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" value="option3" id="checkbox3">
-        <label class="form-check-label" for="checkbox3">Option 3</label>
-      </div>
-      <!-- Add more options as needed -->
+
+    <div class="dashboard-columns">
+        @foreach (var lob in ViewBag.Lobs)
+        {
+            <div class="column">
+                <h2>@lob</h2>
+                <div id="@($"cards-{lob}")" class="card-container">
+                    <!-- Cards for each LOB will be dynamically added here -->
+                </div>
+            </div>
+        }
     </div>
-  </div>
-  <button onclick="submitSelection()">Submit</button>
 </div>
 
-<script>
-function toggleDropdown() {
-  const dropdownContent = document.getElementById('dropdownContent');
-  dropdownContent.classList.toggle('show');
+// Function to populate cards for each LOB
+function populateCards(lob) {
+    // Make an AJAX call to fetch data for the specified LOB
+    // and populate the cards dynamically
 }
 
-function submitSelection() {
-  const selectedValues = Array.from(document.querySelectorAll('.dropdown-content input[type="checkbox"]:checked')).map(checkbox => checkbox.value);
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", "/your-server-endpoint", true);
-  xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === XMLHttpRequest.DONE) {
-      if (xhr.status === 200) {
-        // Request was successful
-        console.log(xhr.responseText);
-      } else {
-        // Error occurred
-        console.error(xhr.statusText);
-      }
+// Event listener for expanding cards
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('expand-button')) {
+        // Redirect to another view for more details
+        // You can use the data attributes of the card to pass relevant information
     }
-  };
-  xhr.send(JSON.stringify({ selectedValues: selectedValues }));
-}
-</script>
+});
 
-</body>
-</html>
+// Event listener for search filter
+document.getElementById('searchInput').addEventListener('input', function(event) {
+    var searchQuery = event.target.value.toLowerCase();
+    // Filter cards based on the search query
+});
