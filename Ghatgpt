@@ -9,20 +9,18 @@
         <!-- Add any other filter options here -->
     </div>
 
-    <div class="dashboard-columns">
+    <div class="card-container">
         @foreach (var lob in ViewBag.Lobs)
         {
-            <div class="column">
+            <div class="lob-card-column">
                 <h2>@lob</h2>
                 <!-- Render cards for the specified LOB -->
-                <div id="@($"cards-{lob}")" class="card-container">
-                    <!-- Example of a card at the LOB level -->
-                    <div class="card">
-                        <!-- Card content for the LOB level -->
-                        Card for @lob
-                    </div>
-                    <!-- Add more cards as needed -->
+                <!-- Example of a card for the LOB -->
+                <div class="card">
+                    <!-- Card content for the LOB -->
+                    Card for @lob
                 </div>
+                <!-- Add more cards for the LOB as needed -->
             </div>
         }
     </div>
