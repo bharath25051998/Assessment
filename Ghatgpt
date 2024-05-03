@@ -1,27 +1,5 @@
-@{
-    ViewBag.Lobs = new List<string> { "LOB1", "LOB2", "LOB3", /* Add all LOBs here */ };
+.lob-card {
+    overflow-y: auto; /* Add vertical scroll */
+    max-height: 300px; /* Set maximum height to enable scrolling */
+    padding: 10px; /* Add padding to separate cards */
 }
-
-<div class="dashboard-container">
-    <div class="search-filter">
-        <!-- Search filter UI -->
-        <input type="text" id="searchInput" placeholder="Search...">
-        <!-- Add any other filter options here -->
-    </div>
-
-    <div class="card-container">
-        @foreach (var lob in ViewBag.Lobs)
-        {
-            <div class="lob-card-column">
-                <h2>@lob</h2>
-                <!-- Render cards for the specified LOB -->
-                <!-- Example of a card for the LOB -->
-                <div class="card">
-                    <!-- Card content for the LOB -->
-                    Card for @lob
-                </div>
-                <!-- Add more cards for the LOB as needed -->
-            </div>
-        }
-    </div>
-</div>
