@@ -11,18 +11,22 @@
             <!-- Line of business (LOB) card -->
             <div class="lob-card card" onclick="toggleDetails(this)">
                 <!-- LOB name as card content -->
-                <h2>@group.Key</h2>
+                <h2>
+                    @group.Key
+                    <!-- Arrow icon indicating expansion state -->
+                    <span class="arrow-icon">&#9660;</span>
+                </h2>
                 
                 <!-- Render cards for the specified LOB -->
                 @foreach (var item in group)
                 {
-                    <div class="card details">
+                    <div class="card" style="display: none;">
                         <!-- Card content for the LOB -->
                         <p>AA Number: @item.AANumber</p>
                         <p>SWCU: @item.SWCU</p>
                         <p>Status: @item.Status</p>
                         
-                        <!-- Additional details (initially hidden) -->
+                        <!-- Additional details -->
                         <div class="additional-details">
                             <p>Additional Details:</p>
                             <!-- Add additional details here -->
@@ -36,18 +40,17 @@
 
 <script>
     function toggleDetails(card) {
-        var details = card.querySelector('.details');
+        var details = card.querySelectorAll('.card');
         
-        // Check if details are currently hidden
-        if (!details.classList.contains('show')) {
-            // Show details
-            details.classList.add('show');
-        } else {
-            // Hide details
-            details.classList.remove('show');
-            
-            // Redirect on second click (optional)
-            // window.location.href = '@Url.Action("YourAction", "YourController")';
-        }
+        // Toggle visibility of additional details for each card
+        details.forEach(function(item) {
+            if (item.style.display === 'none') {
+                item.style.display = 'block';
+                card.querySelector('.arrow-icon').textContent = '\u25B2'; // Upwards arrow
+            } else {
+                item.style.display = 'none';
+                card.querySelector('.arrow-icon').textContent = '\u25BC'; // Downwards arrow
+            }
+        });
     }
 </script>
