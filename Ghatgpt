@@ -1,3 +1,31 @@
+<style>
+    .card-container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .card {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 5px;
+        width: calc(25% - 10px); /* Adjust the width as needed */
+        box-sizing: border-box;
+        position: relative; /* Add position relative */
+        cursor: pointer; /* Add pointer cursor */
+    }
+
+    .additional-details {
+        display: none;
+        padding-top: 10px; /* Adjust spacing between details and arrow icon */
+    }
+
+    .arrow-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+</style>
+
 <div class="dashboard-container">
     <div class="search-filter">
         <!-- Search filter UI -->
@@ -9,14 +37,14 @@
         @foreach (var group in ViewBag.GroupedData)
         {
             <!-- Line of business (LOB) card -->
-            <div class="lob-card card">
+            <div class="lob-card card" onclick="toggleDetails(this)">
                 <!-- LOB name as card content -->
                 <h2>@group.Key</h2>
                 
                 <!-- Render cards for the specified LOB -->
                 @foreach (var item in group)
                 {
-                    <div class="card" onclick="toggleDetails(this)">
+                    <div class="card">
                         <!-- Card content for the LOB -->
                         <p>AA Number: @item.AANumber</p>
                         <p>SWCU: @item.SWCU</p>
@@ -40,11 +68,12 @@
     function toggleDetails(card) {
         var details = card.querySelector('.additional-details');
         var arrowIcon = card.querySelector('.arrow-icon');
-        
+
+        // Hide details of all other cards
+        hideAllCards();
+
         // Toggle visibility of additional details for the clicked card
         if (details.style.display === 'none') {
-            // Hide details of all other cards under the same LOB
-            hideAllCardsUnderLOB(card);
             // Show details of the clicked card
             details.style.display = 'block';
             // Change arrow to upwards
@@ -57,25 +86,18 @@
         }
     }
     
-    function hideAllCardsUnderLOB(clickedCard) {
-        var lobCard = clickedCard.closest('.lob-card'); // Find the closest parent with class '.lob-card'
-        var allDetails = lobCard.querySelectorAll('.additional-details'); // Find all '.additional-details' within the same LOB card
-        var allArrowIcons = lobCard.querySelectorAll('.arrow-icon'); // Find all '.arrow-icon' within the same LOB card
-
-        // Loop through all details and arrow icons within the same LOB card
+    function hideAllCards() {
+        var allDetails = document.querySelectorAll('.additional-details');
+        var allArrowIcons = document.querySelectorAll('.arrow-icon');
+        
+        // Hide details of all cards
         allDetails.forEach(function(details) {
-            // Check if the current details element is not the details of the clicked card
-            if (details !== clickedCard.querySelector('.additional-details')) {
-                details.style.display = 'none'; // Hide details if it's not the details of the clicked card
-            }
+            details.style.display = 'none';
         });
 
-        // Loop through all arrow icons within the same LOB card
+        // Change arrow to downwards for all cards
         allArrowIcons.forEach(function(arrowIcon) {
-            // Check if the current arrow icon is not the arrow icon of the clicked card
-            if (arrowIcon !== clickedCard.querySelector('.arrow-icon')) {
-                arrowIcon.textContent = '\u25BC'; // Change arrow to downwards if it's not the arrow icon of the clicked card
-            }
+            arrowIcon.textContent = '\u25BC';
         });
     }
 </script>
