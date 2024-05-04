@@ -25,6 +25,10 @@
         font-size: 16px; /* Adjust as needed */
         color: #555; /* Icon color */
     }
+
+    .card {
+        display: none; /* Hide all cards by default */
+    }
 </style>
 </head>
 <body>
@@ -35,10 +39,37 @@
         </div>
         <!-- Add any other filter options here -->
     </div>
+
+    @foreach (var group in ViewBag.FilterView)
+    {
+        <div class="card-container">
+            <!-- Your card elements go here -->
+            <h2>LoB: @group.Key (.Count)</h2>
+            @foreach (var item in group.Value)
+            {
+                <div class="card Lob-card">
+                    <!-- Card content -->
+                    <h3>@item.Title</h3>
+                    <p>@item.Description</p>
+                </div>
+            }
+        </div>
+    }
+
+    <script>
+        document.getElementById("searchInput").addEventListener("input", function() {
+            var searchText = this.value.toLowerCase();
+            var cards = document.querySelectorAll(".card");
+
+            cards.forEach(function(card) {
+                var cardText = card.textContent.toLowerCase();
+                if (cardText.includes(searchText)) {
+                    card.style.display = "block"; // Show matching cards
+                } else {
+                    card.style.display = "none"; // Hide non-matching cards
+                }
+            });
+        });
+    </script>
 </body>
 </html>
-
-.search-icon-container input[type="text"]:focus {
-    outline: 2px solid blue; /* Add blue border outline when input field is focused */
-    outline-offset: -2px; /* Adjust outline offset to prevent changing the container size */
-}
