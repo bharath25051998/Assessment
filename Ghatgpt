@@ -4,6 +4,7 @@
         var details = card.querySelector('.additional-details');
         var arrowIcon = card.querySelector('.arrow-icon');
         var lobCard = card.closest('.Lob-card');
+        var scrollTop = lobCard.scrollTop;
 
         if (details.style.display === 'none' || details.style.display === '') {
             // Show details of the clicked card
@@ -21,18 +22,9 @@
             card.classList.remove('expanded');
         }
 
-        // Adjust position of other cards in the same .Lob-card container
-        var otherCards = lobCard.querySelectorAll('.card');
-        var cardIndex = Array.from(otherCards).indexOf(card);
-        var totalHeight = 0;
-
-        // Calculate total height of expanded cards above the current card
-        for (var i = 0; i < cardIndex; i++) {
-            var otherCard = otherCards[i];
-            totalHeight += otherCard.offsetHeight;
+        // Adjust scrollTop to maintain scroll position
+        if (card.classList.contains('expanded')) {
+            lobCard.scrollTop = scrollTop;
         }
-
-        // Set transform for .Lob-card to enable vertical scrolling
-        lobCard.style.transform = 'translateY(-' + totalHeight + 'px)';
     }
 </script>
