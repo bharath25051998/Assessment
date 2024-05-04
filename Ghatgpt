@@ -1,3 +1,54 @@
+<style>
+    /* Global styles */
+    .dashboard-container {
+        overflow-x: auto; /* Enable horizontal scrolling if needed */
+    }
+
+    .card-container {
+        display: flex;
+        gap: 10px; /* Adjust the gap between cards as needed */
+        overflow-x: hidden; /* Hide horizontal overflow */
+    }
+
+    .Lob-card {
+        display: flex; /* Ensure cards are displayed horizontally */
+        flex-direction: column; /* Stack cards vertically */
+        padding: 10px; /* Add padding to separate cards */
+        overflow-y: auto; /* Enable vertical scrolling */
+        max-height: calc(2 * (200px + 10px)); /* Initially show only two cards */
+    }
+
+    .card {
+        background-color: #ffffff;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        height: 200px; /* Set a fixed height for all cards */
+        /* Additional card styles as needed */
+    }
+
+    .card.expanded {
+        height: auto; /* Allow expanded card to grow in height */
+    }
+
+    .additional-details {
+        display: none;
+        padding-top: 10px; /* Adjust spacing between details and arrow icon */
+    }
+
+    .arrow-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+</style>
+
+
+
+
+
+
 <script>
     function toggleDetails(cardId) {
         var card = document.getElementById(cardId);
@@ -23,14 +74,20 @@
 
         // Adjust other cards in the same .Lob-card container
         var otherCards = lobCard.querySelectorAll('.card');
-        var visibleCards = 0;
+        var expandOffset = 0;
         otherCards.forEach(function(otherCard) {
             if (otherCard.id !== cardId && !otherCard.classList.contains('expanded')) {
-                if (visibleCards < 2) {
-                    otherCard.style.display = 'block';
-                    visibleCards++;
+                if (otherCard.offsetTop > card.offsetTop) {
+                    // Cards below the expanded card
+                    if (details.style.display === 'block') {
+                        otherCard.style.transform = 'translateY(calc(100% + ' + expandOffset + 'px))';
+                    } else {
+                        otherCard.style.transform = 'translateY(calc(0% + ' + expandOffset + 'px))';
+                    }
+                    expandOffset += otherCard.offsetHeight + 10;
                 } else {
-                    otherCard.style.display = 'none';
+                    // Cards above the expanded card
+                    otherCard.style.transform = 'translateY(0)';
                 }
             }
         });
