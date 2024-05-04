@@ -1,66 +1,123 @@
 <style>
+    /* Global styles */
+    .dashboard-container {
+        overflow-x: auto; /* Enable horizontal scrolling if needed */
+    }
+
+    .card-container {
+        display: flex;
+        flex-wrap: wrap; /* Allow cards to wrap to the next line if necessary */
+        gap: 10px; /* Adjust the gap between cards as needed */
+    }
+
     .card {
-        height: 100px; /* Adjust the height as needed */
-        border: 1px solid #ccc;
+        flex: 1; /* Distribute available space evenly among cards */
+        background-color: #ffffff;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 5px;
         margin-bottom: 10px;
+        /* Additional card styles as needed */
+    }
+
+    .Lob-card {
+        display: flex; /* Ensure cards are displayed horizontally */
+        padding: 10px; /* Add padding to separate cards */
     }
 
     .additional-details {
         display: none;
-        border-top: 1px solid #ccc;
-        padding: 10px;
+        padding-top: 10px; /* Adjust spacing between details and arrow icon */
+    }
+
+    .arrow-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
     }
 </style>
 
-<div class="card-container">
-    @foreach (var lob in ViewBag.FilterView)
-    {
-        <div class="Lob-card card" id="@("card_" + lob.Keys)" onclick="toggleDetails('@("card_" + lob.Keys)')">
-            <h2>LoB: @lob.Keys</h2>
-            <!-- Card content for the LOB -->
-            @foreach (var item in lob.Value)
-            {
-                <div class="card" id="@("card_" + item.Id)" onclick="toggleDetails('@("card_" + item.Id)')">
-                    <!-- Card content for the LOB -->
-                    <p>@item.AANumber</p>
-                    <p>@item.SWCNAME</p>
-                    <p>@item.DDStatusName</p>
-                    <!-- Additional details -->
-                    <div class="additional-details">
-                        <p>Stream Leads: @item.StreamLeads</p>
-                        <p>Crew Leads: @item.CrewLeads</p>
-                        <!-- Add additional details here -->
+<div class="dashboard-container">
+    <div class="search-filter">
+        <!-- Search filter UI -->
+        <input type="text" id="searchInput" placeholder="Search...">
+        <!-- Add any other filter options here -->
+    </div>
+    
+    <div class="card-container">
+        @foreach (var lob in ViewBag.FilterView)
+        {
+            <div class="Lob-card">
+                <h2>LoB: @lob.Key</h2>
+                <!-- Render cards for the specified LOB -->
+                <!-- Example of a card for the LOB -->
+                @foreach (var item in lob.Value)
+                {
+                    <div class="card" id="@("card_" + item.Id)" onclick="toggleDetails('@("card_" + item.Id)')">
+                        <!-- Card content for the LOB -->
+                        <p>@item.AANumber</p>
+                        <p>@item.SWCNAME</p>
+                        <p>@item.DDStatusNames</p>
+                        <!-- Additional details (initially hidden) -->
+                        <div class="additional-details">
+                            <p>Stream Leads: @item.StreamLeads</p>
+                            <p>Crew Leads: @item.CrewLeads</p>
+                            <!-- Add additional details here -->
+                        </div>
+                        <span class="arrow-icon">&#9660;</span>
                     </div>
-                </div>
-            }
-        </div>
-    }
+                }
+            </div>
+        }
+    </div>
 </div>
 
 <script>
     function toggleDetails(cardId) {
-        var details = document.getElementById(cardId).querySelector('.additional-details');
-        var arrowIcon = document.getElementById(cardId).querySelector('.arrow-icon');
-
-        // Hide details of all other cards
-        hideOtherDetails(cardId);
-
+        var card = document.getElementById(cardId);
+        var details = card.querySelector('.additional-details');
+        var arrowIcon = card.querySelector('.arrow-icon');
+        
         if (details.style.display === 'none' || details.style.display === '') {
             // Show details of the clicked card
             details.style.display = 'block';
+            // Change arrow to upwards
+            arrowIcon.textContent = '\u25B2';
         } else {
             // Hide details of the clicked card
             details.style.display = 'none';
+            // Change arrow to downwards
+            arrowIcon.textContent = '\u25BC';
         }
     }
+</script>
 
-    function hideOtherDetails(clickedCardId) {
+<script>
+    function toggleDetails(cardId) {
+        var card = document.getElementById(cardId);
+        var details = card.querySelector('.additional-details');
+        var arrowIcon = card.querySelector('.arrow-icon');
+        
+        if (details.style.display === 'none' || details.style.display === '') {
+            // Show details of the clicked card
+            details.style.display = 'block';
+            // Change arrow to upwards
+            arrowIcon.textContent = '\u25B2';
+        } else {
+            // Hide details of the clicked card
+            details.style.display = 'none';
+            // Change arrow to downwards
+            arrowIcon.textContent = '\u25BC';
+        }
+
+        // Hide details of all other cards
         var allCards = document.querySelectorAll('.card');
-        allCards.forEach(function(card) {
-            var cardId = card.id;
-            if (cardId !== clickedCardId) {
-                var details = card.querySelector('.additional-details');
-                details.style.display = 'none';
+        allCards.forEach(function(otherCard) {
+            var otherDetails = otherCard.querySelector('.additional-details');
+            var otherArrowIcon = otherCard.querySelector('.arrow-icon');
+            if (otherCard.id !== cardId) {
+                otherDetails.style.display = 'none';
+                otherArrowIcon.textContent = '\u25BC';
             }
         });
     }
