@@ -12,10 +12,6 @@
             arrowIcon.textContent = '\u25B2';
             // Mark card as expanded
             card.classList.add('expanded');
-
-            // Adjust position of other cards
-            lobCard.style.overflow = 'visible'; // Allow cards to overflow
-            lobCard.style.height = lobCard.scrollHeight + 'px'; // Set height to prevent page jumping
         } else {
             // Hide details of the clicked card
             details.style.display = 'none';
@@ -23,10 +19,20 @@
             arrowIcon.textContent = '\u25BC';
             // Remove expanded class
             card.classList.remove('expanded');
-
-            // Reset position of other cards
-            lobCard.style.overflow = 'hidden'; // Hide overflow
-            lobCard.style.height = 'auto'; // Reset height
         }
+
+        // Adjust position of other cards in the same .Lob-card container
+        var otherCards = lobCard.querySelectorAll('.card');
+        var cardIndex = Array.from(otherCards).indexOf(card);
+        var totalHeight = 0;
+
+        // Calculate total height of expanded cards above the current card
+        for (var i = 0; i < cardIndex; i++) {
+            var otherCard = otherCards[i];
+            totalHeight += otherCard.offsetHeight;
+        }
+
+        // Set transform for .Lob-card to enable vertical scrolling
+        lobCard.style.transform = 'translateY(-' + totalHeight + 'px)';
     }
 </script>
