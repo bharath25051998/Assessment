@@ -1,24 +1,67 @@
-using System.Linq;
+<style>
+    .card {
+        height: 100px; /* Adjust the height as needed */
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+    }
 
-// Assuming your data is stored in a List<Data> where Data is the class representing your data
-// Replace Data with your actual class name
+    .additional-details {
+        display: none;
+        border-top: 1px solid #ccc;
+        padding: 10px;
+    }
+</style>
 
-// Define your groups
-var groups = yourDataList.GroupBy(d =>
-{
-    if (d.DDStatusID < 7)
-        return "Group1";
-    else if (d.DDStatusID >= 7 && d.DDStatusID <= 14)
-        return "Group2";
-    else if (d.DDStatusID >= 14 && d.DDStatusID <= 20)
-        return "Group3";
-    else if (d.DDStatusID > 20 && d.DDStatusID <= 30)
-        return "Group4";
-    else if (d.DDStatusID == 31 || d.DDStatusID == 32 || d.DDStatusID == 33)
-        return "Group5";
-    else
-        return "Other";
-});
+<div class="card-container">
+    @foreach (var lob in ViewBag.FilterView)
+    {
+        <div class="Lob-card card" id="@("card_" + lob.Keys)" onclick="toggleDetails('@("card_" + lob.Keys)')">
+            <h2>LoB: @lob.Keys</h2>
+            <!-- Card content for the LOB -->
+            @foreach (var item in lob.Value)
+            {
+                <div class="card" id="@("card_" + item.Id)" onclick="toggleDetails('@("card_" + item.Id)')">
+                    <!-- Card content for the LOB -->
+                    <p>@item.AANumber</p>
+                    <p>@item.SWCNAME</p>
+                    <p>@item.DDStatusName</p>
+                    <!-- Additional details -->
+                    <div class="additional-details">
+                        <p>Stream Leads: @item.StreamLeads</p>
+                        <p>Crew Leads: @item.CrewLeads</p>
+                        <!-- Add additional details here -->
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
 
-// Create a ViewBag to hold the grouped data
-ViewBag.GroupedData = groups.ToDictionary(g => g.Key, g => g.ToList());
+<script>
+    function toggleDetails(cardId) {
+        var details = document.getElementById(cardId).querySelector('.additional-details');
+        var arrowIcon = document.getElementById(cardId).querySelector('.arrow-icon');
+
+        // Hide details of all other cards
+        hideOtherDetails(cardId);
+
+        if (details.style.display === 'none' || details.style.display === '') {
+            // Show details of the clicked card
+            details.style.display = 'block';
+        } else {
+            // Hide details of the clicked card
+            details.style.display = 'none';
+        }
+    }
+
+    function hideOtherDetails(clickedCardId) {
+        var allCards = document.querySelectorAll('.card');
+        allCards.forEach(function(card) {
+            var cardId = card.id;
+            if (cardId !== clickedCardId) {
+                var details = card.querySelector('.additional-details');
+                details.style.display = 'none';
+            }
+        });
+    }
+</script>
