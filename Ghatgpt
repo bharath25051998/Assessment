@@ -24,14 +24,24 @@
         // Adjust position of other cards in the same .Lob-card container
         var otherCards = lobCard.querySelectorAll('.card');
         var cardIndex = Array.from(otherCards).indexOf(card);
-        var expandOffset = 0;
+        var totalOffset = 0;
+
+        // Calculate total height of expanded cards above the current card
+        for (var i = 0; i < cardIndex; i++) {
+            if (otherCards[i].classList.contains('expanded')) {
+                totalOffset += otherCards[i].offsetHeight;
+            }
+        }
+
+        // Adjust positions of subsequent cards
         for (var i = cardIndex + 1; i < otherCards.length; i++) {
             var otherCard = otherCards[i];
-            if (!otherCard.classList.contains('expanded')) {
-                otherCard.style.transform = 'translateY(' + expandOffset + 'px)';
-                expandOffset += otherCard.offsetHeight + 10;
+            var offset = totalOffset;
+            if (otherCard.classList.contains('expanded')) {
+                offset += otherCard.offsetHeight;
             }
+            otherCard.style.transform = 'translateY(' + offset + 'px)';
+            totalOffset += otherCard.offsetHeight + 10;
         }
     }
 </script>
-p
