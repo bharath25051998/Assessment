@@ -1,30 +1,44 @@
-<script>
-    function toggleDetails(cardId) {
-        var card = document.getElementById(cardId);
-        var details = card.querySelector('.additional-details');
-        var arrowIcon = card.querySelector('.arrow-icon');
-        var lobCard = card.closest('.Lob-card');
-        var scrollTop = lobCard.scrollTop;
-
-        if (details.style.display === 'none' || details.style.display === '') {
-            // Show details of the clicked card
-            details.style.display = 'block';
-            // Change arrow to upwards
-            arrowIcon.textContent = '\u25B2';
-            // Mark card as expanded
-            card.classList.add('expanded');
-        } else {
-            // Hide details of the clicked card
-            details.style.display = 'none';
-            // Change arrow to downwards
-            arrowIcon.textContent = '\u25BC';
-            // Remove expanded class
-            card.classList.remove('expanded');
-        }
-
-        // Adjust scrollTop to maintain scroll position
-        if (card.classList.contains('expanded')) {
-            lobCard.scrollTop = scrollTop;
-        }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Filter</title>
+<style>
+    .search-icon-container {
+        position: relative;
+        border: 1px solid black; /* Add black border */
+        border-radius: 5px; /* Add border radius for rounded corners */
     }
-</script>
+
+    .search-icon-container input[type="text"] {
+        padding-left: 30px; /* Adjust as needed */
+        width: 200px; /* Set input field width */
+    }
+
+    .search-icon-container::before {
+        content: "\1F50D"; /* Unicode for search icon */
+        position: absolute;
+        left: 10px; /* Adjust as needed */
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px; /* Adjust as needed */
+        color: #555; /* Icon color */
+    }
+</style>
+</head>
+<body>
+    <div class="search-filter">
+        <!-- Search filter UI -->
+        <div class="search-icon-container">
+            <input type="text" id="searchInput" placeholder="Search...">
+        </div>
+        <!-- Add any other filter options here -->
+    </div>
+</body>
+</html>
+
+.search-icon-container input[type="text"]:focus {
+    outline: 2px solid blue; /* Add blue border outline when input field is focused */
+    outline-offset: -2px; /* Adjust outline offset to prevent changing the container size */
+}
