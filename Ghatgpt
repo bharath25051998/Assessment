@@ -1,48 +1,24 @@
-<script>
-    function toggleDetails(cardId) {
-        var details = document.getElementById(cardId).querySelector('.additional-details');
-        var arrowIcon = document.getElementById(cardId).querySelector('.arrow-icon');
+using System.Linq;
 
-        // Check if details are already hidden
-        if (details.style.display === 'none') {
-            return; // Exit function if details are already hidden
-        }
+// Assuming your data is stored in a List<Data> where Data is the class representing your data
+// Replace Data with your actual class name
 
-        // Toggle visibility of additional details for the clicked card
-        if (details.style.display !== 'block') {
-            // Show details of the clicked card
-            details.style.display = 'block';
-            // Change arrow to upwards
-            arrowIcon.textContent = '\u25B2';
-        } else {
-            // Hide details of the clicked card
-            details.style.display = 'none';
-            // Change arrow to downwards
-            arrowIcon.textContent = '\u25BC';
-        }
+// Define your groups
+var groups = yourDataList.GroupBy(d =>
+{
+    if (d.DDStatusID < 7)
+        return "Group1";
+    else if (d.DDStatusID >= 7 && d.DDStatusID <= 14)
+        return "Group2";
+    else if (d.DDStatusID >= 14 && d.DDStatusID <= 20)
+        return "Group3";
+    else if (d.DDStatusID > 20 && d.DDStatusID <= 30)
+        return "Group4";
+    else if (d.DDStatusID == 31 || d.DDStatusID == 32 || d.DDStatusID == 33)
+        return "Group5";
+    else
+        return "Other";
+});
 
-        // Hide details of all other cards
-        hideOtherDetails(cardId);
-    }
-    
-    function hideOtherDetails(clickedCardId) {
-        var allCards = document.querySelectorAll('.card');
-
-        // Loop through all cards and hide details of other cards
-        allCards.forEach(function(card) {
-            var cardId = card.children[1].getAttribute('id'); // Access the id attribute of the second div
-            if (cardId !== clickedCardId) { // Check if it's not the clicked card
-                var details = card.querySelector('.additional-details');
-                var arrowIcon = card.querySelector('.arrow-icon');
-                
-                // Check if details are currently hidden
-                if (details.style.display !== 'none') {
-                    // Hide details
-                    details.style.display = 'none';
-                    // Change arrow to downwards
-                    arrowIcon.textContent = '\u25BC';
-                }
-            }
-        });
-    }
-</script>
+// Create a ViewBag to hold the grouped data
+ViewBag.GroupedData = groups.ToDictionary(g => g.Key, g => g.ToList());
