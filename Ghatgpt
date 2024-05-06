@@ -1,42 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Three Boxes</title>
-<style>
-  .container {
-    width: 30%;
-    margin: 0 1%;
-    display: inline-block;
-    vertical-align: top;
-    background-color: #f0f0f0;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-  .header {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-</style>
-</head>
-<body>
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('dropdownContent');
+    const toggleButton = document.getElementById('toggleButton');
+    
+    // Check if the clicked element is inside the dropdown or the toggle button
+    if (!dropdown.contains(event.target) && event.target !== toggleButton) {
+        // Close the dropdown if the click is outside of it
+        dropdown.classList.remove('show');
+    }
+});
 
-<div class="container">
-  <div class="header">Box 1</div>
-  <p>Content of box 1 goes here.</p>
-</div>
-
-<div class="container">
-  <div class="header">Box 2</div>
-  <p>Content of box 2 goes here.</p>
-</div>
-
-<div class="container">
-  <div class="header">Box 3</div>
-  <p>Content of box 3 goes here.</p>
-</div>
-
-</body>
-</html>
+document.addEventListener('scroll', function(event) {
+    const dropdown = document.getElementById('dropdownContent');
+    
+    // Close the dropdown when scrolling occurs
+    dropdown.classList.remove('show');
+});
