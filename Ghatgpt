@@ -1,21 +1,21 @@
-<script>
-    // Function to handle redirection to another method in the controller in a new tab
-    function redirectToControllerMethodInNewTab(cardId) {
-        // Construct the URL with the controller method and ID parameter
-        var url = '/ControllerName/MethodName?id=' + cardId; // Replace 'ControllerName' and 'MethodName' with actual names
-        
-        // Open the URL in a new tab
-        window.open(url, '_blank');
+<div class="row">
+    @foreach (var detail in ViewBag.Details.Take(3))
+    {
+        <div class="col-md-4">
+            <!-- Your container content here for each detail -->
+            <p>@detail</p>
+        </div>
     }
+</div>
 
-    // Add click event listener to the additional details area
-    document.querySelectorAll('.additional-details').forEach(function(details) {
-        details.addEventListener('click', function(event) {
-            // Get the ID of the clicked card
-            var cardId = event.target.closest('.card').id;
-            
-            // Redirect to the controller method with the ID as parameter in a new tab
-            redirectToControllerMethodInNewTab(cardId);
-        });
-    });
-</script>
+<div class="row">
+    <div class="col-md-12">
+        @foreach (var detail in ViewBag.Details.Skip(3))
+        {
+            <div class="col-md-4">
+                <!-- Your container content here for each detail -->
+                <p>@detail</p>
+            </div>
+        }
+    </div>
+</div>
