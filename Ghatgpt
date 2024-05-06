@@ -1,17 +1,58 @@
-document.addEventListener('click', function(event) {
-    const dropdown = document.getElementById('dropdownContent');
-    const toggleButton = document.getElementById('toggleButton');
-    
-    // Check if the clicked element is inside the dropdown or the toggle button
-    if (!dropdown.contains(event.target) && event.target !== toggleButton) {
-        // Close the dropdown if the click is outside of it
-        dropdown.classList.remove('show');
-    }
-});
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boxes</title>
+<style>
+  .container {
+    width: 23%; /* Adjust width to fit four containers in one row */
+    margin: 0 1%;
+    display: inline-block;
+    vertical-align: top;
+    background-color: #f0f0f0;
+    padding: 20px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+  }
+  .header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  .single-container {
+    width: 100%; /* Occupy the entire width of the row */
+  }
+</style>
+</head>
+<body>
 
-document.addEventListener('scroll', function(event) {
-    const dropdown = document.getElementById('dropdownContent');
-    
-    // Close the dropdown when scrolling occurs
-    dropdown.classList.remove('show');
-});
+<div class="container">
+  <div class="header">Box 1</div>
+  <p>Content of box 1 goes here.</p>
+</div>
+
+<div class="container">
+  <div class="header">Box 2</div>
+  <p>Content of box 2 goes here.</p>
+</div>
+
+<div class="container">
+  <div class="header">Box 3</div>
+  <p>Content of box 3 goes here.</p>
+</div>
+
+<div class="container">
+  <div class="header">Box 4</div>
+  <p>Content of box 4 goes here.</p>
+</div>
+
+<div class="single-container">
+  <div class="container">
+    <div class="header">Box 5</div>
+    <p>Content of box 5 goes here.</p>
+  </div>
+</div>
+
+</body>
+</html>
