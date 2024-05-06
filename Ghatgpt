@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Boxes</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 <style>
   .container {
     width: 23%; /* Adjust width to fit four containers in one row */
@@ -19,9 +20,6 @@
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 10px;
-  }
-  .single-container {
-    width: 100%; /* Occupy the entire width of the row */
   }
 </style>
 </head>
@@ -47,10 +45,12 @@
   <p>Content of box 4 goes here.</p>
 </div>
 
-<div class="single-container">
-  <div class="container">
-    <div class="header">Box 5</div>
-    <p>Content of box 5 goes here.</p>
+<div class="row">
+  <div class="col-md-12">
+    <div class="container">
+      <div class="header">Box 5</div>
+      <p>Content of box 5 goes here.</p>
+    </div>
   </div>
 </div>
 
