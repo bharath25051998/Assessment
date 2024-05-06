@@ -1,75 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Search Filter</title>
-<style>
-    .search-icon-container {
-        position: relative;
-        border: 1px solid black; /* Add black border */
-        border-radius: 5px; /* Add border radius for rounded corners */
+<script>
+    // Function to handle redirection to another method in the controller in a new tab
+    function redirectToControllerMethodInNewTab(cardId) {
+        // Construct the URL with the controller method and ID parameter
+        var url = '/ControllerName/MethodName?id=' + cardId; // Replace 'ControllerName' and 'MethodName' with actual names
+        
+        // Open the URL in a new tab
+        window.open(url, '_blank');
     }
 
-    .search-icon-container input[type="text"] {
-        padding-left: 30px; /* Adjust as needed */
-        width: 200px; /* Set input field width */
-    }
-
-    .search-icon-container::before {
-        content: "\1F50D"; /* Unicode for search icon */
-        position: absolute;
-        left: 10px; /* Adjust as needed */
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 16px; /* Adjust as needed */
-        color: #555; /* Icon color */
-    }
-
-    .card {
-        display: none; /* Hide all cards by default */
-    }
-</style>
-</head>
-<body>
-    <div class="search-filter">
-        <!-- Search filter UI -->
-        <div class="search-icon-container">
-            <input type="text" id="searchInput" placeholder="Search...">
-        </div>
-        <!-- Add any other filter options here -->
-    </div>
-
-    @foreach (var group in ViewBag.FilterView)
-    {
-        <div class="card-container">
-            <!-- Your card elements go here -->
-            <h2>LoB: @group.Key (.Count)</h2>
-            @foreach (var item in group.Value)
-            {
-                <div class="card Lob-card">
-                    <!-- Card content -->
-                    <h3>@item.Title</h3>
-                    <p>@item.Description</p>
-                </div>
-            }
-        </div>
-    }
-
-    <script>
-        document.getElementById("searchInput").addEventListener("input", function() {
-            var searchText = this.value.toLowerCase();
-            var cards = document.querySelectorAll(".card");
-
-            cards.forEach(function(card) {
-                var cardText = card.textContent.toLowerCase();
-                if (cardText.includes(searchText)) {
-                    card.style.display = "block"; // Show matching cards
-                } else {
-                    card.style.display = "none"; // Hide non-matching cards
-                }
-            });
+    // Add click event listener to the additional details area
+    document.querySelectorAll('.additional-details').forEach(function(details) {
+        details.addEventListener('click', function(event) {
+            // Get the ID of the clicked card
+            var cardId = event.target.closest('.card').id;
+            
+            // Redirect to the controller method with the ID as parameter in a new tab
+            redirectToControllerMethodInNewTab(cardId);
         });
-    </script>
-</body>
-</html>
+    });
+</script>
