@@ -1,74 +1,42 @@
-using System;
-using System.Data;
+// Assuming you have your manipulation logic here to get the final DataTable
+DataSet originalDataSet = GetDataSetFromDatabase();
+DataTable originalTable = originalDataSet.Tables[0];
 
-class Program
+// Add a new column for the sum of values in each row from the second column onwards
+originalTable.Columns.Add("Sum", typeof(int));
+foreach (DataRow row in originalTable.Rows)
 {
-    static void Main()
+    int sum = 0;
+    for (int i = 1; i < originalTable.Columns.Count - 1; i++) // Excluding the last column
     {
-        // Example DataSet retrieved from the database
-        DataSet originalDataSet = GetDataSetFromDatabase();
-
-        // Assuming the DataSet contains one DataTable, you can access it like this:
-        DataTable originalTable = originalDataSet.Tables[0];
-
-        // Add a new column for the sum of values in each row from the second column onwards
-        originalTable.Columns.Add("Sum", typeof(int));
-        foreach (DataRow row in originalTable.Rows)
-        {
-            int sum = 0;
-            for (int i = 1; i < originalTable.Columns.Count - 1; i++) // Excluding the last column
-            {
-                sum += Convert.ToInt32(row[i]);
-            }
-            row["Sum"] = sum;
-        }
-
-        // Add a new row for the count of values in each row from the second column onwards
-        DataRow newRow = originalTable.NewRow();
-        newRow[0] = "Count"; // Assuming the first column contains row identifiers
-        for (int i = 1; i < originalTable.Columns.Count - 1; i++) // Excluding the last column
-        {
-            int count = 0;
-            foreach (DataRow row in originalTable.Rows)
-            {
-                count += Convert.ToInt32(row[i]);
-            }
-            newRow[i] = count;
-        }
-        originalTable.Rows.Add(newRow);
-
-        // Display the modified table
-        DisplayDataTable(originalTable);
+        sum += Convert.ToInt32(row[i]);
     }
-
-    static DataSet GetDataSetFromDatabase()
-    {
-        // Implement your database query here and return the DataSet
-        DataSet ds = new DataSet();
-        // Assume the DataSet contains one DataTable filled with data from the database
-        // This is just an example
-        DataTable dt = new DataTable();
-        dt.Columns.Add("Column1", typeof(int));
-        dt.Columns.Add("Column2", typeof(int));
-        dt.Columns.Add("Column3", typeof(int));
-
-        dt.Rows.Add(1, 10, 20);
-        dt.Rows.Add(2, 30, 40);
-        dt.Rows.Add(3, 50, 60);
-
-        ds.Tables.Add(dt);
-        return ds;
-    }
-
-    static void DisplayDataTable(DataTable dt)
-    {
-        foreach (DataRow row in dt.Rows)
-        {
-            foreach (var item in row.ItemArray)
-            {
-                Console.Write(item + "\t");
-            }
-            Console.WriteLine();
-        }
-    }
+    row["Sum"] = sum;
 }
+
+// Add a new row for the count of values in each row from the second column onwards
+DataRow newRow = originalTable.NewRow();
+newRow[0] = "Count"; // Assuming the first column contains row identifiers
+for (int i = 1; i < originalTable.Columns.Count - 1; i++) // Excluding the last column
+{
+    int count = 0;
+    foreach (DataRow row in originalTable.Rows)
+    {
+        count += Convert.ToInt32(row[i]);
+    }
+    newRow[i] = count;
+}
+
+// Add the count row to the original table
+originalTable.Rows.Add(newRow);
+
+// Add the count of the last column for the grand total row
+int lastColumnCount = 0;
+foreach (DataRow row in originalTable.Rows)
+{
+    lastColumnCount += Convert.ToInt32(row[originalTable.Columns.Count - 2]);
+}
+newRow[originalTable.Columns.Count - 1] = lastColumnCount;
+
+// Assign the DataTable with the count row to a ViewBag
+ViewBag.FinalTable = originalTable;
