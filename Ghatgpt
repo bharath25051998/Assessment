@@ -1,12 +1,42 @@
+-- Create a temporary table to store the aggregated data
+CREATE TABLE #AggregatedData (
+    ddstatusid VARCHAR(100),
+    lob VARCHAR(100),
+    quote_in_dollars DECIMAL(18, 2)
+)
+
+-- Insert aggregated data into the temporary table
+INSERT INTO #AggregatedData (ddstatusid, lob, quote_in_dollars)
 SELECT 
     ap.ddstatusid,
-    FORMAT(SUM(CASE WHEN lb.lob = 'lob1' THEN ap.quote_in_dollars ELSE 0 END), 'C', 'en-US') AS lob1,
-    FORMAT(SUM(CASE WHEN lb.lob = 'lob2' THEN ap.quote_in_dollars ELSE 0 END), 'C', 'en-US') AS lob2,
-    FORMAT(SUM(CASE WHEN lb.lob = 'lob3' THEN ap.quote_in_dollars ELSE 0 END), 'C', 'en-US') AS lob3,
-    FORMAT(SUM(ap.quote_in_dollars), 'C', 'en-US') AS grand_total
+    lb.lob,
+    SUM(ap.quote_in_dollars) AS quote_in_dollars
 FROM 
     app_profile ap
 JOIN 
-    lob_table lb ON ap.lob = lb.lob
+    lobs lb ON ap.lob = lb.lob
 GROUP BY 
-    ap.ddstatusid
+    ap.ddstatusid, lb.lob
+
+-- Calculate grand total
+SELECT 
+    ddstatusid,
+    lob,
+    quote_in_dollars
+FROM 
+    #AggregatedData
+
+UNION ALL
+
+SELECT 
+    'Grand Total' AS ddstatusid,
+    '' AS lob,
+    SUM(quote_in_dollars) AS quote_in_dollars
+FROM 
+    #AggregatedData
+
+ORDER BY 
+    CASE WHEN ddstatusid = 'Grand Total' THEN 1 ELSE 0 END, ddstatusid
+
+-- Drop the temporary table
+DROP TABLE #AggregatedData
