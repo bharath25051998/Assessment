@@ -1,42 +1,12 @@
-// Assuming you have your manipulation logic here to get the final DataTable
-DataSet originalDataSet = GetDataSetFromDatabase();
-DataTable originalTable = originalDataSet.Tables[0];
-
-// Add a new column for the sum of values in each row from the second column onwards
-originalTable.Columns.Add("Sum", typeof(int));
-foreach (DataRow row in originalTable.Rows)
-{
-    int sum = 0;
-    for (int i = 1; i < originalTable.Columns.Count - 1; i++) // Excluding the last column
-    {
-        sum += Convert.ToInt32(row[i]);
-    }
-    row["Sum"] = sum;
-}
-
-// Add a new row for the count of values in each row from the second column onwards
-DataRow newRow = originalTable.NewRow();
-newRow[0] = "Count"; // Assuming the first column contains row identifiers
-for (int i = 1; i < originalTable.Columns.Count - 1; i++) // Excluding the last column
-{
-    int count = 0;
-    foreach (DataRow row in originalTable.Rows)
-    {
-        count += Convert.ToInt32(row[i]);
-    }
-    newRow[i] = count;
-}
-
-// Add the count row to the original table
-originalTable.Rows.Add(newRow);
-
-// Add the count of the last column for the grand total row
-int lastColumnCount = 0;
-foreach (DataRow row in originalTable.Rows)
-{
-    lastColumnCount += Convert.ToInt32(row[originalTable.Columns.Count - 2]);
-}
-newRow[originalTable.Columns.Count - 1] = lastColumnCount;
-
-// Assign the DataTable with the count row to a ViewBag
-ViewBag.FinalTable = originalTable;
+SELECT 
+    ap.ddstatusid,
+    FORMAT(SUM(CASE WHEN lb.lob = 'lob1' THEN ap.quote_in_dollars ELSE 0 END), 'C', 'en-US') AS lob1,
+    FORMAT(SUM(CASE WHEN lb.lob = 'lob2' THEN ap.quote_in_dollars ELSE 0 END), 'C', 'en-US') AS lob2,
+    FORMAT(SUM(CASE WHEN lb.lob = 'lob3' THEN ap.quote_in_dollars ELSE 0 END), 'C', 'en-US') AS lob3,
+    FORMAT(SUM(ap.quote_in_dollars), 'C', 'en-US') AS grand_total
+FROM 
+    app_profile ap
+JOIN 
+    lob_table lb ON ap.lob = lb.lob
+GROUP BY 
+    ap.ddstatusid
