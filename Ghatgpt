@@ -1,42 +1,9 @@
--- Create a temporary table to store the aggregated data
-CREATE TABLE #AggregatedData (
-    ddstatusid VARCHAR(100),
-    lob VARCHAR(100),
-    quote_in_dollars DECIMAL(18, 2)
-)
-
--- Insert aggregated data into the temporary table
-INSERT INTO #AggregatedData (ddstatusid, lob, quote_in_dollars)
 SELECT 
-    ap.ddstatusid,
-    lb.lob,
-    SUM(ap.quote_in_dollars) AS quote_in_dollars
+    lobs,
+    SUM(CASE WHEN ddstatus = 'Approved' THEN quote ELSE 0 END) AS Approved,
+    SUM(CASE WHEN ddstatus = 'Rejected' THEN quote ELSE 0 END) AS Rejected,
+    FORMAT(SUM(quote), 'C', 'en-US') AS Total
 FROM 
-    app_profile ap
-JOIN 
-    lobs lb ON ap.lob = lb.lob
+    appprofiledetails
 GROUP BY 
-    ap.ddstatusid, lb.lob
-
--- Calculate grand total
-SELECT 
-    ddstatusid,
-    lob,
-    quote_in_dollars
-FROM 
-    #AggregatedData
-
-UNION ALL
-
-SELECT 
-    'Grand Total' AS ddstatusid,
-    '' AS lob,
-    SUM(quote_in_dollars) AS quote_in_dollars
-FROM 
-    #AggregatedData
-
-ORDER BY 
-    CASE WHEN ddstatusid = 'Grand Total' THEN 1 ELSE 0 END, ddstatusid
-
--- Drop the temporary table
-DROP TABLE #AggregatedData
+    lobs WITH ROLLUP
