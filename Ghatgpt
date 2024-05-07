@@ -5,8 +5,11 @@ class Program
 {
     static void Main()
     {
-        // Example DataTable retrieved from the database
-        DataTable originalTable = GetDataTableFromDatabase();
+        // Example DataSet retrieved from the database
+        DataSet originalDataSet = GetDataSetFromDatabase();
+
+        // Assuming the DataSet contains one DataTable, you can access it like this:
+        DataTable originalTable = originalDataSet.Tables[0];
 
         // Add a new column for the sum of values in each row from the second column onwards
         originalTable.Columns.Add("Sum", typeof(int));
@@ -38,12 +41,13 @@ class Program
         DisplayDataTable(originalTable);
     }
 
-    static DataTable GetDataTableFromDatabase()
+    static DataSet GetDataSetFromDatabase()
     {
-        // Implement your database query here and return the DataTable
-        DataTable dt = new DataTable();
-        // Assume the DataTable is filled with data from the database
+        // Implement your database query here and return the DataSet
+        DataSet ds = new DataSet();
+        // Assume the DataSet contains one DataTable filled with data from the database
         // This is just an example
+        DataTable dt = new DataTable();
         dt.Columns.Add("Column1", typeof(int));
         dt.Columns.Add("Column2", typeof(int));
         dt.Columns.Add("Column3", typeof(int));
@@ -51,7 +55,9 @@ class Program
         dt.Rows.Add(1, 10, 20);
         dt.Rows.Add(2, 30, 40);
         dt.Rows.Add(3, 50, 60);
-        return dt;
+
+        ds.Tables.Add(dt);
+        return ds;
     }
 
     static void DisplayDataTable(DataTable dt)
