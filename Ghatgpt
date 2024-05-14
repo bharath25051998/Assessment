@@ -1,9 +1,20 @@
-SELECT 
-    lobs,
-    SUM(CASE WHEN ddstatus = 'Approved' THEN quote ELSE 0 END) AS Approved,
-    SUM(CASE WHEN ddstatus = 'Rejected' THEN quote ELSE 0 END) AS Rejected,
-    FORMAT(SUM(quote), 'C', 'en-US') AS Total
-FROM 
-    appprofiledetails
-GROUP BY 
-    lobs WITH ROLLUP
+// Assuming your previously selected options are stored in a string like this:
+string selectedOptionsString = "option1";
+
+// Check if selectedOptionsString is not null and not empty
+if (!string.IsNullOrEmpty(selectedOptionsString))
+{
+    // Split the string into an array of selected options
+    string[] selectedOptions = selectedOptionsString.Split(',');
+
+    // Loop through each option in your multiselect dropdown
+    foreach(var option in ViewBag.MultiselectOptions)
+    {
+        // Check if the current option exists in the array of selected options
+        if(selectedOptions.Contains(option.Value))
+        {
+            // If it does, mark it as selected
+            option.Selected = true;
+        }
+    }
+}
