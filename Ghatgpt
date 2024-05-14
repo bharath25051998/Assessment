@@ -1,20 +1,29 @@
-// Assuming your previously selected options are stored in a string like this:
-string selectedOptionsString = "option1";
-
-// Check if selectedOptionsString is not null and not empty
-if (!string.IsNullOrEmpty(selectedOptionsString))
-{
-    // Split the string into an array of selected options
-    string[] selectedOptions = selectedOptionsString.Split(',');
-
-    // Loop through each option in your multiselect dropdown
-    foreach(var option in ViewBag.MultiselectOptions)
+<select id="multiselectDropdown" multiple>
+    @foreach (var option in ViewBag.MultiselectOptions)
     {
-        // Check if the current option exists in the array of selected options
-        if(selectedOptions.Contains(option.Value))
-        {
-            // If it does, mark it as selected
-            option.Selected = true;
-        }
+        <option value="@option.Value">@option.Text</option>
     }
-}
+</select>
+
+<script>
+    // Execute when the page has fully loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        // Retrieve the previously selected options from the server-side
+        var selectedOptionsString = "@Html.Raw(Json.Encode(Model.SelectedOptions))";
+
+        // Split the string into an array of selected options
+        var selectedOptions = selectedOptionsString ? selectedOptionsString.split(',') : [];
+
+        // Get reference to the multiselect dropdown
+        var dropdown = document.getElementById('multiselectDropdown');
+
+        // Loop through each option in the dropdown
+        for (var i = 0; i < dropdown.options.length; i++) {
+            // Check if the option's value is in the array of selected options
+            if (selectedOptions.includes(dropdown.options[i].value)) {
+                // If it is, mark the option as selected
+                dropdown.options[i].selected = true;
+            }
+        }
+    });
+</script>
