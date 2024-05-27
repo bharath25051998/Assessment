@@ -1,29 +1,23 @@
-<select id="multiselectDropdown" multiple>
-    @foreach (var option in ViewBag.MultiselectOptions)
-    {
-        <option value="@option.Value">@option.Text</option>
-    }
-</select>
+# Function to generate a random letter
+function Get-RandomLetter {
+    $letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    $index = Get-Random -Minimum 0 -Maximum $letters.Length
+    return $letters[$index]
+}
 
-<script>
-    // Execute when the page has fully loaded
-    document.addEventListener('DOMContentLoaded', function () {
-        // Retrieve the previously selected options from the server-side
-        var selectedOptionsString = "@Html.Raw(Json.Encode(Model.SelectedOptions))";
+# Function to send a keystroke
+function Send-Key {
+    param (
+        [string]$key
+    )
+    [System.Windows.Forms.SendKeys]::SendWait($key)
+}
 
-        // Split the string into an array of selected options
-        var selectedOptions = selectedOptionsString ? selectedOptionsString.split(',') : [];
+# Main script to write random letters
+$numberOfLetters = 10  # Number of random letters to type
 
-        // Get reference to the multiselect dropdown
-        var dropdown = document.getElementById('multiselectDropdown');
-
-        // Loop through each option in the dropdown
-        for (var i = 0; i < dropdown.options.length; i++) {
-            // Check if the option's value is in the array of selected options
-            if (selectedOptions.includes(dropdown.options[i].value)) {
-                // If it is, mark the option as selected
-                dropdown.options[i].selected = true;
-            }
-        }
-    });
-</script>
+for ($i = 0; $i -lt $numberOfLetters; $i++) {
+    $randomLetter = Get-RandomLetter
+    Send-Key $randomLetter
+    Start-Sleep -Milliseconds 500  # Adjust the delay as needed
+}
