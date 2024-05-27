@@ -1,3 +1,7 @@
+# Add .NET assemblies for sending keystrokes
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
 # Function to generate a random letter
 function Get-RandomLetter {
     $letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -15,6 +19,8 @@ function Send-Key {
 
 # Main script to write random letters
 $numberOfLetters = 10  # Number of random letters to type
+
+Start-Sleep -Seconds 5  # Give user time to switch to VS Code
 
 for ($i = 0; $i -lt $numberOfLetters; $i++) {
     $randomLetter = Get-RandomLetter
