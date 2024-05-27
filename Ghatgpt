@@ -18,12 +18,14 @@ function Send-Key {
 }
 
 # Main script to write random letters
-$numberOfLetters = 10  # Number of random letters to type
+$durationInMinutes = 10  # Duration to run the script
+$endTime = (Get-Date).AddMinutes($durationInMinutes)
 
 Start-Sleep -Seconds 5  # Give user time to switch to VS Code
 
-for ($i = 0; $i -lt $numberOfLetters; $i++) {
+while ((Get-Date) -lt $endTime) {
     $randomLetter = Get-RandomLetter
+    Write-Output "Typing letter: $randomLetter"  # Debug output
     Send-Key $randomLetter
     Start-Sleep -Milliseconds 500  # Adjust the delay as needed
 }
