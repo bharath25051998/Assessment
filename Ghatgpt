@@ -1,11 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kicker Types and Prices</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Kicker Types and Prices</h2>
+
+        <div id="container">
+            <div id="rowTemplate"> <!-- Row template for cloning -->
+                <div class="row">
+                    <select class="kicker-type form-control">
+                        <option value="">Select Kicker Type</option>
+                        <!-- Add options dynamically if needed -->
+                    </select>
+                    <input type="text" class="price form-control" placeholder="Enter price">
+                    <button class="remove-row-btn btn btn-danger">-</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="add-row-btn btn btn-primary">+</button>
+        <button id="saveBtn" class="btn btn-success">Save</button>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        // JavaScript logic here
+    </script>
+</body>
+</html>
+
+
 $(document).ready(function() {
+    // Clone the row template for the initial set of rows
+    const initialRow = $('#rowTemplate').find('.row').clone();
+    $('#container').append(initialRow);
+
+    // Hide the row template
+    $('#rowTemplate').hide();
+
     // Add new set of rows (dropdown, text box, and remove button)
     $(document).on('click', '.add-row-btn', function() {
-        const newRow = $('.row').first().clone(); // Clone the first row
+        const newRow = $('#rowTemplate').find('.row').clone(); // Clone the row template
         newRow.find('select').val(''); // Reset dropdown value
         newRow.find('input').val(''); // Clear input value
-        newRow.append('<button class="remove-row-btn btn btn-danger">-</button>'); // Add remove button
         $('#container').append(newRow); // Append the new row to the container
+        newRow.append('<button class="add-row-btn btn btn-primary">+</button>'); // Add "+" button to the new row
+        newRow.append('<button class="remove-row-btn btn btn-danger">-</button>'); // Add "-" button to the new row
     });
 
     // Remove a set of rows (dropdown, text box, and remove button)
