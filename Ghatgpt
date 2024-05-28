@@ -1,9 +1,10 @@
 $(document).ready(function() {
     // Add new set of rows (dropdown, text box, and remove button)
     $(document).on('click', '.add-row-btn', function() {
-        const newRow = $('#rowTemplate').find('.row').clone(); // Clone the row template
+        const newRow = $('.row').first().clone(); // Clone the first row
         newRow.find('select').val(''); // Reset dropdown value
         newRow.find('input').val(''); // Clear input value
+        newRow.append('<button class="remove-row-btn btn btn-danger">-</button>'); // Add remove button
         $('#container').append(newRow); // Append the new row to the container
     });
 
