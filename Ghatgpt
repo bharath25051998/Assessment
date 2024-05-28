@@ -15,22 +15,22 @@ function closeModal() {
 // Function to dynamically generate input fields for kicker names
 function generateInputFields() {
   var form = document.getElementById("formData");
-  var kickerNames = @Html.Raw(Json.Serialize(ViewBag.KickerNames)); // Retrieve kicker names from ViewBag
+  var kickerData = @Html.Raw(Json.Serialize(ViewBag.KickerData)); // Retrieve kicker data from ViewBag
 
-  kickerNames.forEach(function(name) {
+  for (var i = 0; i < kickerData.length; i++) {
     var label = document.createElement("label");
-    label.textContent = name + ": ";
+    label.textContent = kickerData[i]["ColumnName1"] + ": "; // Accessing the first column value
     
     var input = document.createElement("input");
     input.type = "text";
-    input.name = name; // You can use the kicker name as the input name
+    input.name = "kickerName"; // Set the input name to "kickerName"
     
     var br = document.createElement("br");
 
     form.appendChild(label);
     form.appendChild(input);
     form.appendChild(br);
-  });
+  }
 }
 
 // Function to collect the entered values
