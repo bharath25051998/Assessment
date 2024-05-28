@@ -1,3 +1,7 @@
+@{
+    List<string> namesFromBackend = ViewBag.NamesFromBackend;
+}
+
 <button onclick="openModal()">Open Modal</button>
 
 <div id="myModal" class="modal">
@@ -5,25 +9,18 @@
     <span class="close" onclick="closeModal()">&times;</span>
     <form id="formData">
       <!-- Input fields will be dynamically generated here -->
+      @foreach (var name in namesFromBackend)
+      {
+          <input type="text" name="@name" placeholder="@name" />
+      }
     </form>
-    <button onclick="saveData()">Save</button>
   </div>
 </div>
 
+<button onclick="saveData()">Save</button>
+
 <script>
 function openModal() {
-  // Code to fetch names from backend and dynamically generate input fields
-  // Example:
-  var namesFromBackend = ['Name1', 'Name2', 'Name3'];
-  var form = document.getElementById("formData");
-  namesFromBackend.forEach(name => {
-    var input = document.createElement("input");
-    input.type = "text";
-    input.name = name;
-    input.placeholder = name;
-    form.appendChild(input);
-  });
-  
   var modal = document.getElementById("myModal");
   modal.style.display = "block";
 }
