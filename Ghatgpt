@@ -1,15 +1,56 @@
-<h2>Kicker Types and Prices</h2>
+$(document).ready(function() {
+    const kickerTypeDropdown = $('#kickerTypeDropdown');
+    const priceFields = $('#priceFields');
+    const addKickerBtn = $('#addKickerBtn');
+    const saveBtn = $('#saveBtn');
 
-<select id="kickerTypeDropdown">
-    @foreach (var kickerType in ViewBag.KickerTypes)
-    {
-        <option value="@kickerType">@kickerType</option>
-    }
-</select>
+    // When a kicker type is selected, show the price input field
+    kickerTypeDropdown.on('change', function() {
+        const selectedKickerType = $(this).val();
+        priceFields.html(`<input type="text" id="${selectedKickerType}" placeholder="Enter price for ${selectedKickerType}">`);
+    });
 
-<div id="priceFields">
-    <!-- Input fields for prices will be dynamically added here -->
-</div>
+    // Add new kicker type input field
+    addKickerBtn.on('click', function() {
+        const newKickerType = $('<input type="text" class="newKickerType" placeholder="Enter new kicker type">');
+        priceFields.append(newKickerType);
+    });
 
-<button id="addKickerBtn">+</button>
-<button id="saveBtn">Save</button>
+    // Save the entered prices
+    saveBtn.on('click', function() {
+        let prices = [];
+
+        // Retrieve prices for existing kicker types
+        $('input[type="text"]').each(function() {
+            const kickerType = $(this).attr('id');
+            const price = $(this).val();
+            if (price) {
+                prices.push(`${kickerType}:${price}`);
+            }
+        });
+
+        // Retrieve prices for newly added kicker types
+        $('.newKickerType').each(function() {
+            const newKickerType = $(this).val();
+            const price = $(`#${newKickerType}`).val();
+            if (price) {
+                prices.push(`${newKickerType}:${price}`);
+            }
+        });
+
+        // Send prices to the server to save
+        $.ajax({
+            url: '/api/savePrices',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(prices),
+            success: function(data) {
+                console.log('Prices saved successfully:', data);
+                // Refresh UI or perform any other actions as needed
+            },
+            error: function(error) {
+                console.error('Error saving prices:', error);
+            }
+        });
+    });
+});
