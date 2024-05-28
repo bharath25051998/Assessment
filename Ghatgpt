@@ -1,53 +1,10 @@
-<script>
-function openModal() {
-  var modal = document.getElementById("myModal");
-  modal.style.display = "block";
-  
-  // Generate input fields for kicker names
-  generateInputFields();
+<style>
+/* Define CSS class for textboxes */
+.myTextBox {
+  width: 200px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;
 }
-
-function closeModal() {
-  var modal = document.getElementById("myModal");
-  modal.style.display = "none";
-}
-
-// Function to dynamically generate input fields for kicker names
-function generateInputFields() {
-  var form = document.getElementById("formData");
-  var kickerData = @Html.Raw(Json.Serialize(ViewBag.KickerData)); // Retrieve kicker data from ViewBag
-
-  for (var i = 0; i < kickerData.length; i++) {
-    var label = document.createElement("label");
-    label.textContent = kickerData[i]["ColumnName1"] + ": "; // Accessing the first column value
-    
-    var input = document.createElement("input");
-    input.type = "text";
-    input.name = "kickerName"; // Set the input name to "kickerName"
-    
-    var br = document.createElement("br");
-
-    form.appendChild(label);
-    form.appendChild(input);
-    form.appendChild(br);
-  }
-}
-
-// Function to collect the entered values
-function saveData() {
-  var formData = {};
-  var inputs = document.getElementById("formData").getElementsByTagName("input");
-  for (var i = 0; i < inputs.length; i++) {
-    formData[inputs[i].name] = inputs[i].value;
-  }
-  
-  // Convert formData to JSON
-  var jsonData = JSON.stringify(formData);
-  
-  // Send jsonData to backend for saving
-  console.log(jsonData); // For testing, you can replace this with an AJAX call to your backend
-  
-  // Close the modal after saving
-  closeModal();
-}
-</script>
+</style>
