@@ -1,40 +1,66 @@
-$(document).ready(function() {
-    const kickerTypeDropdown = $('#kickerTypeDropdown');
-    const priceFields = $('#priceFields');
-    const addKickerBtn = $('#addKickerBtn');
-    const saveBtn = $('#saveBtn');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kicker Types and Prices</title>
+    <style>
+        .remove-kicker-btn::after {
+            content: "x";
+        }
+    </style>
+</head>
+<body>
+    <h2>Kicker Types and Prices</h2>
 
-    // When a kicker type is selected, show the price input field
-    kickerTypeDropdown.on('change', function() {
-        const selectedKickerType = $(this).val();
-        priceFields.html(`<input type="text" id="${selectedKickerType}" placeholder="Enter price for ${selectedKickerType}">`);
+    <div class="kicker-set">
+        <select class="kicker-type-dropdown">
+            <option value="">Select Kicker Type</option>
+            @foreach (var kickerType in ViewBag.KickerTypes)
+            {
+                <option value="@kickerType">@kickerType</option>
+            }
+        </select>
+        <input type="text" class="price-input" placeholder="Enter price">
+        <button class="add-kicker-btn">+</button>
+    </div>
+
+    <button id="saveBtn">Save</button>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        // JavaScript logic here
+    </script>
+</body>
+</html>
+
+
+
+
+$(document).ready(function() {
+    // Add new set of dropdown and text box
+    $(document).on('click', '.add-kicker-btn', function() {
+        const newSet = $('.kicker-set').first().clone(); // Clone the first set
+        newSet.find('.add-kicker-btn').removeClass('add-kicker-btn').addClass('remove-kicker-btn'); // Change button to remove
+        newSet.find('.kicker-type-dropdown').val(''); // Reset dropdown value
+        newSet.find('.price-input').val(''); // Clear price input
+        $('.kicker-set:last').after(newSet); // Append the new set after the last one
     });
 
-    // Add new kicker type input field
-    addKickerBtn.on('click', function() {
-        const newKickerType = $('<input type="text" class="newKickerType" placeholder="Enter new kicker type">');
-        priceFields.append(newKickerType);
+    // Remove a set of dropdown and text box
+    $(document).on('click', '.remove-kicker-btn', function() {
+        $(this).closest('.kicker-set').remove(); // Remove the parent set
     });
 
     // Save the entered prices
-    saveBtn.on('click', function() {
+    $('#saveBtn').on('click', function() {
         let prices = [];
 
-        // Retrieve prices for existing kicker types
-        $('input[type="text"]').each(function() {
-            const kickerType = $(this).attr('id');
-            const price = $(this).val();
-            if (price) {
+        $('.kicker-set').each(function() {
+            const kickerType = $(this).find('.kicker-type-dropdown').val();
+            const price = $(this).find('.price-input').val();
+            if (kickerType && price) {
                 prices.push(`${kickerType}:${price}`);
-            }
-        });
-
-        // Retrieve prices for newly added kicker types
-        $('.newKickerType').each(function() {
-            const newKickerType = $(this).val();
-            const price = $(`#${newKickerType}`).val();
-            if (price) {
-                prices.push(`${newKickerType}:${price}`);
             }
         });
 
@@ -54,3 +80,6 @@ $(document).ready(function() {
         });
     });
 });
+
+
+
