@@ -1,21 +1,15 @@
 $(document).ready(function() {
     // Add new set of rows (dropdown, text box, and remove button)
     $(document).on('click', '.add-row-btn', function() {
-        const newRow = $('.row').first().clone(); // Clone the first row
+        const newRow = $('#rowTemplate').find('.row').clone(); // Clone the row template
         newRow.find('select').val(''); // Reset dropdown value
         newRow.find('input').val(''); // Clear input value
-        newRow.append('<button class="remove-row-btn btn btn-danger">-</button>'); // Add remove button
         $('#container').append(newRow); // Append the new row to the container
-        
-        // Add "+" button to the last row
-        $('.add-row-btn').hide(); // Hide existing "+" buttons
-        newRow.append('<button class="add-row-btn btn btn-primary">+</button>'); // Add "+" button
     });
 
     // Remove a set of rows (dropdown, text box, and remove button)
     $(document).on('click', '.remove-row-btn', function() {
         $(this).closest('.row').remove(); // Remove the parent row
-        $('.add-row-btn').show(); // Show "+" button after removing a row
     });
 
     // Save the entered prices
