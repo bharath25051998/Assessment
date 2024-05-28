@@ -23,14 +23,14 @@
     </tbody>
 </table>
 
-<button id="addPriceBtn">Add Prices</button>
+<button id="addPriceBtn">Add Kicker Types</button>
 
 <div id="priceModal" class="modal">
   <div class="modal-content">
     <span class="close">&times;</span>
     <form id="priceForm">
         <div id="priceFields">
-            <!-- Dynamic price input fields will be added here -->
+            <!-- Dynamic input fields for kicker types and prices will be added here -->
         </div>
         <button type="button" id="saveBtn">Save</button>
     </form>
@@ -66,7 +66,7 @@
             const rows = priceTable.children('tr');
             rows.each(function() {
                 const value = $(this).find('td:first').text();
-                priceFields.append(`<div>${value}: <input type="text" name="${value}" /></div>`);
+                priceFields.append(`<div>${value}: <input type="text" name="kickerTypes[]" /> Price: <input type="text" name="prices[]" /></div>`);
             });
             modal.show();
         });
@@ -86,7 +86,16 @@
         // Save the entered prices
         saveBtn.on('click', function() {
             const formData = $('#priceForm').serializeArray();
-            let prices = formData.map(item => ({ value: item.name, price: item.value }));
+            let prices = [];
+
+            // Construct array of objects from form data
+            for (let i = 0; i < formData.length; i += 2) {
+                let obj = {
+                    value: formData[i].value,
+                    price: formData[i + 1].value
+                };
+                prices.push(obj);
+            }
 
             $.ajax({
                 url: '/api/prices',
