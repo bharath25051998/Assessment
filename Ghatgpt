@@ -3,8 +3,6 @@ $(document).ready(function() {
     $(document).on('click', '.add-kicker-btn', function() {
         const newSet = $('.kicker-set').first().clone(); // Clone the first set
         newSet.find('.add-kicker-btn').removeClass('add-kicker-btn').addClass('remove-kicker-btn').text('x'); // Change button to remove
-        newSet.find('.kicker-type-dropdown').val(''); // Reset dropdown value
-        newSet.find('.price-input').val(''); // Clear price input
         $('.kicker-set:last').after(newSet); // Append the new set after the last one
     });
 
