@@ -1,29 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kicker Types and Prices</title>
+</head>
+<body>
+    <h2>Kicker Types and Prices</h2>
+
+    <div id="container">
+        <div class="row">
+            <input type="text" class="kicker-type" placeholder="Enter kicker type">
+            <input type="text" class="price" placeholder="Enter price">
+            <button class="add-row-btn">+</button>
+        </div>
+    </div>
+
+    <button id="saveBtn">Save</button>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        // JavaScript logic here
+    </script>
+</body>
+</html>
+
+
 $(document).ready(function() {
-    let setCounter = 1; // Counter for tracking sets
-    
-    // Add new set of dropdown and text box
-    $('.add-kicker-btn').on('click', function() {
-        const newSet = $('.kicker-set').first().clone(); // Clone the first set
-        newSet.find('.kicker-type-dropdown').val(''); // Reset dropdown value
-        newSet.find('.price-input').val(''); // Clear price input
-        
-        const removeBtnId = 'removeBtn_' + setCounter; // Unique identifier for remove button
-        newSet.find('.remove-kicker-btn').attr('id', removeBtnId); // Set ID for remove button
-        $('#' + removeBtnId).on('click', function() {
-            $(this).closest('.kicker-set').remove(); // Remove the parent set
-        });
-        
-        $('.kicker-set:last').after(newSet); // Append the new set after the last one
-        setCounter++; // Increment counter for the next set
+    // Add new set of rows (text boxes and remove button)
+    $(document).on('click', '.add-row-btn', function() {
+        const newRow = $('.row').first().clone(); // Clone the first row
+        newRow.find('input').val(''); // Clear input values
+        newRow.append('<button class="remove-row-btn">-</button>'); // Add remove button
+        $('#container').append(newRow); // Append the new row to the container
+    });
+
+    // Remove a set of rows (text boxes and remove button)
+    $(document).on('click', '.remove-row-btn', function() {
+        $(this).closest('.row').remove(); // Remove the parent row
     });
 
     // Save the entered prices
     $('#saveBtn').on('click', function() {
         let prices = [];
 
-        $('.kicker-set').each(function() {
-            const kickerType = $(this).find('.kicker-type-dropdown').val();
-            const price = $(this).find('.price-input').val();
+        $('.row').each(function() {
+            const kickerType = $(this).find('.kicker-type').val();
+            const price = $(this).find('.price').val();
             if (kickerType && price) {
                 prices.push(`${kickerType}:${price}`);
             }
