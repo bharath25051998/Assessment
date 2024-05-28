@@ -3,12 +3,10 @@ $(document).ready(function() {
     $(document).on('click', '.add-kicker-btn', function() {
         const newSet = $('.kicker-set').first().clone(); // Clone the first set
         newSet.find('.add-kicker-btn').removeClass('add-kicker-btn').addClass('remove-kicker-btn').text('x'); // Change button to remove
+        newSet.find('.remove-kicker-btn').on('click', function() {
+            $(this).closest('.kicker-set').remove(); // Remove the parent set
+        });
         $('.kicker-set:last').after(newSet); // Append the new set after the last one
-    });
-
-    // Remove a set of dropdown and text box
-    $(document).on('click', '.remove-kicker-btn', function() {
-        $(this).closest('.kicker-set').remove(); // Remove the parent set
     });
 
     // Save the entered prices
