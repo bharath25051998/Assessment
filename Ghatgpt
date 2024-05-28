@@ -29,60 +29,57 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-        // JavaScript logic here
+        $(document).ready(function() {
+            // Clone the row template for the initial set of rows
+            const initialRow = $('#rowTemplate').find('.row').clone();
+            $('#container').append(initialRow);
+
+            // Hide the row template
+            $('#rowTemplate').hide();
+
+            // Add new set of rows (dropdown, text box, and remove button)
+            $(document).on('click', '.add-row-btn', function() {
+                const newRow = $('#rowTemplate').find('.row').clone(); // Clone the row template
+                newRow.find('select').val(''); // Reset dropdown value
+                newRow.find('input').val(''); // Clear input value
+                $('#container').append(newRow); // Append the new row to the container
+                newRow.append('<button class="add-row-btn btn btn-primary">+</button>'); // Add "+" button to the new row
+                newRow.append('<button class="remove-row-btn btn btn-danger">-</button>'); // Add "-" button to the new row
+            });
+
+            // Remove a set of rows (dropdown, text box, and remove button)
+            $(document).on('click', '.remove-row-btn', function() {
+                $(this).closest('.row').remove(); // Remove the parent row
+            });
+
+            // Save the entered prices
+            $('#saveBtn').on('click', function() {
+                let prices = [];
+
+                $('.row').each(function() {
+                    const kickerType = $(this).find('.kicker-type').val();
+                    const price = $(this).find('.price').val();
+                    if (kickerType && price) {
+                        prices.push(`${kickerType}:${price}`);
+                    }
+                });
+
+                // Send prices to the server to save
+                $.ajax({
+                    url: '/api/savePrices',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(prices),
+                    success: function(data) {
+                        console.log('Prices saved successfully:', data);
+                        // Refresh UI or perform any other actions as needed
+                    },
+                    error: function(error) {
+                        console.error('Error saving prices:', error);
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>
-
-
-$(document).ready(function() {
-    // Clone the row template for the initial set of rows
-    const initialRow = $('#rowTemplate').find('.row').clone();
-    $('#container').append(initialRow);
-
-    // Hide the row template
-    $('#rowTemplate').hide();
-
-    // Add new set of rows (dropdown, text box, and remove button)
-    $(document).on('click', '.add-row-btn', function() {
-        const newRow = $('#rowTemplate').find('.row').clone(); // Clone the row template
-        newRow.find('select').val(''); // Reset dropdown value
-        newRow.find('input').val(''); // Clear input value
-        $('#container').append(newRow); // Append the new row to the container
-        newRow.append('<button class="add-row-btn btn btn-primary">+</button>'); // Add "+" button to the new row
-        newRow.append('<button class="remove-row-btn btn btn-danger">-</button>'); // Add "-" button to the new row
-    });
-
-    // Remove a set of rows (dropdown, text box, and remove button)
-    $(document).on('click', '.remove-row-btn', function() {
-        $(this).closest('.row').remove(); // Remove the parent row
-    });
-
-    // Save the entered prices
-    $('#saveBtn').on('click', function() {
-        let prices = [];
-
-        $('.row').each(function() {
-            const kickerType = $(this).find('.kicker-type').val();
-            const price = $(this).find('.price').val();
-            if (kickerType && price) {
-                prices.push(`${kickerType}:${price}`);
-            }
-        });
-
-        // Send prices to the server to save
-        $.ajax({
-            url: '/api/savePrices',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(prices),
-            success: function(data) {
-                console.log('Prices saved successfully:', data);
-                // Refresh UI or perform any other actions as needed
-            },
-            error: function(error) {
-                console.error('Error saving prices:', error);
-            }
-        });
-    });
-});
