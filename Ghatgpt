@@ -1,35 +1,27 @@
-// Assume you have previously saved data as a JSON string in ViewBag.SavedData
-var savedData = ViewBag.SavedData; // Retrieve the saved data
-
-// Deserialize the JSON string to a dictionary or a custom model
-var savedDataDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(savedData);
-
-// Pass the saved data dictionary to the view
-ViewBag.SavedDataDictionary = savedDataDictionary;
-
-
-
-
-<!-- Modal structure -->
-<div id="myModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <form id="formData">
-      @foreach (var item in ViewBag.KickerData)
+<!-- Table to display previously saved data -->
+<table>
+  <thead>
+    <tr>
+      @foreach (var savedData in ViewBag.SavedDataDictionary)
       {
-          <div class="form-row">
-            <span class="label-text">@item.KickerName:</span>
-            @{
-                string savedValue = "";
-                if (ViewBag.SavedDataDictionary != null && ViewBag.SavedDataDictionary.ContainsKey(item.KickerId.ToString()))
-                {
-                    savedValue = ViewBag.SavedDataDictionary[item.KickerId.ToString()];
-                }
-            }
-            <input type="text" id="kicker_@item.KickerId" name="@item.KickerId" value="@savedValue" />
-          </div>
+          if (!string.IsNullOrEmpty(savedData.Value))
+          {
+              <th>@ViewBag.KickerData[savedData.Key].KickerName</th>
+          }
       }
-    </form>
-    <button type="button" onclick="saveData()">Save</button>
-  </div>
-</div>
+      <th>Additional Header</th> <!-- New additional header -->
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      @foreach (var savedData in ViewBag.SavedDataDictionary)
+      {
+          if (!string.IsNullOrEmpty(savedData.Value))
+          {
+              <td>@string.Format("{0:C}", Convert.ToDecimal(savedData.Value))</td>
+          }
+      }
+      <td>Additional Value</td> <!-- New additional value -->
+    </tr>
+  </tbody>
+</table>
