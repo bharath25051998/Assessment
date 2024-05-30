@@ -1,27 +1,12 @@
-<!-- Table to display previously saved data -->
-<table>
-  <thead>
-    <tr>
-      @foreach (var savedData in ViewBag.SavedDataDictionary)
-      {
-          if (!string.IsNullOrEmpty(savedData.Value))
-          {
-              <th>@ViewBag.KickerData[savedData.Key].KickerName</th>
-          }
-      }
-      <th>Additional Header</th> <!-- New additional header -->
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      @foreach (var savedData in ViewBag.SavedDataDictionary)
-      {
-          if (!string.IsNullOrEmpty(savedData.Value))
-          {
-              <td>@string.Format("{0:C}", Convert.ToDecimal(savedData.Value))</td>
-          }
-      }
-      <td>Additional Value</td> <!-- New additional value -->
-    </tr>
-  </tbody>
-</table>
+function validateInput(event) {
+    const input = event.target.value;
+    const regex = /^[0-9]*$/; // Only allow numbers (no decimals or characters)
+    const errorSpan = document.getElementById('error');
+    
+    if (!regex.test(input)) {
+        errorSpan.style.display = 'block';
+        event.target.value = input.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+    } else {
+        errorSpan.style.display = 'none';
+    }
+}
