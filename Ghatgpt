@@ -1,3 +1,10 @@
+function validateKeyPress(event) {
+    const charCode = event.charCode;
+    if (charCode < 48 || charCode > 57) {
+        return false;
+    }
+}
+
 function validateInput(event) {
     const input = event.target.value;
     const regex = /^[0-9]*$/; // Only allow numbers (no decimals or characters)
