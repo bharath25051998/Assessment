@@ -1,19 +1,73 @@
-function validateKeyPress(event) {
-    const charCode = event.charCode;
-    if (charCode < 48 || charCode > 57) {
-        return false;
-    }
+@{
+    ViewData["Title"] = "Approval Page";
+    var previousComments = "These are the previous comments.";
 }
 
-function validateInput(event) {
-    const input = event.target.value;
-    const regex = /^[0-9]*$/; // Only allow numbers (no decimals or characters)
-    const errorSpan = document.getElementById('error');
-    
-    if (!regex.test(input)) {
-        errorSpan.style.display = 'block';
-        event.target.value = input.replace(/[^0-9]/g, ''); // Remove non-numeric characters
-    } else {
-        errorSpan.style.display = 'none';
-    }
-}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewData["Title"]</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .comment-section {
+            margin-top: 20px;
+        }
+        .chapter-dropdown {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h2>Approval Page</h2>
+
+    <form method="post">
+        <label for="selectType">Select Type:</label>
+        <select id="selectType" name="selectType" onchange="toggleChapterDropdown()">
+            <option value="">--Select--</option>
+            <option value="chapter">Chapter</option>
+            <option value="other">Other</option>
+        </select>
+
+        <div id="chapterDropdown" class="chapter-dropdown">
+            <label for="chapterSelect">Select Chapter:</label>
+            <select id="chapterSelect" name="chapterSelect">
+                <option value="chapter1">Chapter 1</option>
+                <option value="chapter2">Chapter 2</option>
+                <option value="chapter3">Chapter 3</option>
+            </select>
+        </div>
+
+        <div class="comment-section">
+            <label for="previousComments">Previous Comments:</label>
+            <textarea id="previousComments" name="previousComments" rows="4" cols="50" readonly>@previousComments</textarea>
+        </div>
+
+        <div class="comment-section">
+            <label for="newComments">New Comments:</label>
+            <textarea id="newComments" name="newComments" rows="4" cols="50"></textarea>
+        </div>
+
+        <div class="comment-section">
+            <button type="submit" name="action" value="approve">Approve</button>
+            <button type="submit" name="action" value="reject">Reject</button>
+        </div>
+    </form>
+
+    <script>
+        function toggleChapterDropdown() {
+            var selectType = document.getElementById("selectType").value;
+            var chapterDropdown = document.getElementById("chapterDropdown");
+
+            if (selectType === "chapter") {
+                chapterDropdown.style.display = "block";
+            } else {
+                chapterDropdown.style.display = "none";
+            }
+        }
+
+        $(document).ready(function () {
+            toggleChapterDropdown(); // Initial call to set the correct state on page load
+        });
+    </script>
+</body>
+</html>
