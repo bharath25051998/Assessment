@@ -1,51 +1,42 @@
-/* Basic styling for the dropdown container */
-.dropdown {
+/* Container for the custom select */
+.custom-select-container {
   position: relative;
   display: inline-block;
+  width: 200px;
 }
 
-/* Styling for the dropdown button */
-.dropbtn {
-  background-color: #4CAF50; /* Green background */
-  color: white; /* White text */
-  padding: 16px; /* Padding */
-  font-size: 16px; /* Font size */
-  border: none; /* Remove border */
-  cursor: pointer; /* Pointer cursor on hover */
-  border-radius: 4px; /* Rounded corners */
+/* Style the select element */
+.custom-select {
+  display: inline-block;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  appearance: none; /* Remove default arrow */
+  background-color: #f9f9f9;
+  cursor: pointer;
+  color: #333;
 }
 
-/* Change the background color on hover */
-.dropbtn:hover, .dropbtn:focus {
-  background-color: #3e8e41;
-}
-
-/* Dropdown content (hidden by default) */
-.dropdown-content {
-  display: none;
+/* Custom arrow (use ::after pseudo-element) */
+.custom-select::after {
+  content: '\25BC'; /* Downward arrow */
   position: absolute;
-  background-color: #f9f9f9; /* Light gray background */
-  min-width: 160px; /* Minimum width */
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); /* Box shadow */
-  z-index: 1; /* Sit on top */
-  border-radius: 4px; /* Rounded corners */
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #333;
 }
 
-/* Links inside the dropdown */
-.dropdown-content a {
-  color: black; /* Black text */
-  padding: 12px 16px; /* Padding */
-  text-decoration: none; /* Remove underline */
-  display: block; /* Block display */
-  border-radius: 4px; /* Rounded corners */
+/* Optional: Add a hover effect */
+.custom-select:hover {
+  border-color: #888;
 }
 
-/* Change color of links on hover */
-.dropdown-content a:hover {
-  background-color: #f1f1f1; /* Light gray background on hover */
-}
-
-/* Show the dropdown menu when the button is clicked */
-.dropdown:hover .dropdown-content {
-  display: block;
+/* Optional: Focused state */
+.custom-select:focus {
+  border-color: #4CAF50;
+  outline: none;
 }
