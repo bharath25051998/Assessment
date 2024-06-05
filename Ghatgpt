@@ -1,73 +1,51 @@
-@{
-    ViewData["Title"] = "Approval Page";
-    var previousComments = "These are the previous comments.";
+/* Basic styling for the dropdown container */
+.dropdown {
+  position: relative;
+  display: inline-block;
 }
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>@ViewData["Title"]</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        .comment-section {
-            margin-top: 20px;
-        }
-        .chapter-dropdown {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <h2>Approval Page</h2>
+/* Styling for the dropdown button */
+.dropbtn {
+  background-color: #4CAF50; /* Green background */
+  color: white; /* White text */
+  padding: 16px; /* Padding */
+  font-size: 16px; /* Font size */
+  border: none; /* Remove border */
+  cursor: pointer; /* Pointer cursor on hover */
+  border-radius: 4px; /* Rounded corners */
+}
 
-    <form method="post">
-        <label for="selectType">Select Type:</label>
-        <select id="selectType" name="selectType" onchange="toggleChapterDropdown()">
-            <option value="">--Select--</option>
-            <option value="chapter">Chapter</option>
-            <option value="other">Other</option>
-        </select>
+/* Change the background color on hover */
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #3e8e41;
+}
 
-        <div id="chapterDropdown" class="chapter-dropdown">
-            <label for="chapterSelect">Select Chapter:</label>
-            <select id="chapterSelect" name="chapterSelect">
-                <option value="chapter1">Chapter 1</option>
-                <option value="chapter2">Chapter 2</option>
-                <option value="chapter3">Chapter 3</option>
-            </select>
-        </div>
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9; /* Light gray background */
+  min-width: 160px; /* Minimum width */
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); /* Box shadow */
+  z-index: 1; /* Sit on top */
+  border-radius: 4px; /* Rounded corners */
+}
 
-        <div class="comment-section">
-            <label for="previousComments">Previous Comments:</label>
-            <textarea id="previousComments" name="previousComments" rows="4" cols="50" readonly>@previousComments</textarea>
-        </div>
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black; /* Black text */
+  padding: 12px 16px; /* Padding */
+  text-decoration: none; /* Remove underline */
+  display: block; /* Block display */
+  border-radius: 4px; /* Rounded corners */
+}
 
-        <div class="comment-section">
-            <label for="newComments">New Comments:</label>
-            <textarea id="newComments" name="newComments" rows="4" cols="50"></textarea>
-        </div>
+/* Change color of links on hover */
+.dropdown-content a:hover {
+  background-color: #f1f1f1; /* Light gray background on hover */
+}
 
-        <div class="comment-section">
-            <button type="submit" name="action" value="approve">Approve</button>
-            <button type="submit" name="action" value="reject">Reject</button>
-        </div>
-    </form>
-
-    <script>
-        function toggleChapterDropdown() {
-            var selectType = document.getElementById("selectType").value;
-            var chapterDropdown = document.getElementById("chapterDropdown");
-
-            if (selectType === "chapter") {
-                chapterDropdown.style.display = "block";
-            } else {
-                chapterDropdown.style.display = "none";
-            }
-        }
-
-        $(document).ready(function () {
-            toggleChapterDropdown(); // Initial call to set the correct state on page load
-        });
-    </script>
-</body>
-</html>
+/* Show the dropdown menu when the button is clicked */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
