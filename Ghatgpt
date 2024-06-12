@@ -45,7 +45,7 @@ $(document).ready(function() {
                 text: 'Export to Excel',
                 exportOptions: {
                     format: {
-                        body: function ( data, row, column, node ) {
+                        body: function (data, row, column, node) {
                             if (column === 1) {
                                 // Remove $ and , then convert to number
                                 let cleanData = data.replace(/[\$,]/g, '');
@@ -57,8 +57,33 @@ $(document).ready(function() {
                 },
                 customize: function (xlsx) {
                     var sheet = xlsx.xl.worksheets['sheet1.xml'];
-                    $('row c[r^="B"]', sheet).each(function () {
-                        $(this).attr('s', '57'); // Custom format style for currency with 0 decimals
+                    var styleSheet = xlsx.xl['styles.xml'];
+
+                    // Add a custom number format for currency with no decimals
+                    var numFmts = styleSheet.getElementsByTagName('numFmts')[0];
+                    if (!numFmts) {
+                        numFmts = styleSheet.createElement('numFmts');
+                        styleSheet.documentElement.appendChild(numFmts);
+                    }
+
+                    var numFmt = styleSheet.createElement('numFmt');
+                    numFmt.setAttribute('numFmtId', '165');
+                    numFmt.setAttribute('formatCode', '"$"#,##0');
+                    numFmts.appendChild(numFmt);
+
+                    var cellXfs = styleSheet.getElementsByTagName('cellXfs')[0];
+                    var xf = styleSheet.createElement('xf');
+                    xf.setAttribute('numFmtId', '165');
+                    xf.setAttribute('fontId', '0');
+                    xf.setAttribute('fillId', '0');
+                    xf.setAttribute('borderId', '0');
+                    xf.setAttribute('xfId', '0');
+                    xf.setAttribute('applyNumberFormat', '1');
+                    cellXfs.appendChild(xf);
+
+                    var columnIndex = 'B'; // Change to the appropriate column if needed
+                    $('row c[r^="' + columnIndex + '"]', sheet).each(function () {
+                        $(this).attr('s', cellXfs.childNodes.length - 1); // Apply the last style (custom currency)
                     });
                 }
             }
