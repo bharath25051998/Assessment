@@ -47,14 +47,19 @@ $(document).ready(function() {
                     format: {
                         body: function ( data, row, column, node ) {
                             if (column === 1) {
-                                // Remove $ and , then format as currency with 0 decimal places
+                                // Remove $ and , then convert to number
                                 let cleanData = data.replace(/[\$,]/g, '');
-                                let number = parseFloat(cleanData);
-                                return number.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                                return parseFloat(cleanData);
                             }
                             return data;
                         }
                     }
+                },
+                customize: function (xlsx) {
+                    var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                    $('row c[r^="B"]', sheet).each(function () {
+                        $(this).attr('s', '57'); // Custom format style for currency with 0 decimals
+                    });
                 }
             }
         ]
