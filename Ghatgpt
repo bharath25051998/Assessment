@@ -21,10 +21,16 @@ $(document).ready(function() {
                         $(this).find('c').each(function () {
                             var cellIndex = $(this).attr('r').replace(rowIndex, '');
                             
-                            // Skip the header cells
-                            if (rowIndex > 1) {
-                                // Get the value directly from the DataTable
-                                var cellValue = table.cell(parseInt(rowIndex, 10) - 2, cellIndex.charCodeAt(0) - 65).data();
+                            // Get the value directly from the DataTable
+                            var cellValue = table.cell(parseInt(rowIndex, 10) - 2, cellIndex.charCodeAt(0) - 65).data();
+
+                            // Check if the cell value is a dollar value
+                            if (typeof cellValue === 'string' && cellValue.includes('$')) {
+                                // Set the cell type to string (inlineStr)
+                                $(this).attr('t', 'inlineStr');
+                                // Wrap the cell value in a 'is' tag to ensure it is treated as inline string
+                                $(this).html('<is><t>' + cellValue + '</t></is>');
+                            } else {
                                 $(this).text(cellValue);
                             }
                         });
@@ -44,3 +50,4 @@ $(document).ready(function() {
     });
 });
 </script>
+p
