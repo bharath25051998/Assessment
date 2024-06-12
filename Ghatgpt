@@ -1,35 +1,25 @@
 <script>
 $(document).ready(function() {
-    var table = $('#example').DataTable({
+    $('#example').DataTable({
         dom: 'Bfrtip',
         buttons: [
             {
                 extend: 'excelHtml5',
                 text: 'Export to Excel',
+                exportOptions: {
+                    columns: ':visible'
+                },
                 customize: function (xlsx) {
                     var sheet = xlsx.xl.worksheets['sheet1.xml'];
                     
-                    // Iterate over each cell in the column "Salary"
-                    $('row c[r^="F"]', sheet).each(function () {
-                        var cellRef = $(this).attr('r');
-                        var rowIndex = parseInt(cellRef.slice(1)) - 1; // Convert from Excel row index to DataTable row index
-                        var cellValue = table.cell(rowIndex - 1, 5).data(); // Adjust column index if necessary
-
-                        // Check if the cell value contains a dollar sign
-                        if (typeof cellValue === 'string' && cellValue.includes('$')) {
-                            // Set the cell type to string
-                            $(this).attr('t', 'inlineStr');
-                            // Wrap the cell value in 'is' tag to ensure it is treated as an inline string
-                            $(this).html('<is><t>' + cellValue + '</t></is>');
-                        }
+                    // Iterate over each cell in the 5th column (E)
+                    $('row c[r^="E"]', sheet).each(function () {
+                        var cellValue = $(this).text();
+                        // Ensure the cell value is treated as text
+                        $(this).attr('t', 'inlineStr');
+                        $(this).html('<is><t>' + cellValue + '</t></is>');
                     });
                 }
-            }
-        ],
-        columnDefs: [
-            {
-                targets: '_all',
-                visible: true
             }
         ]
     });
