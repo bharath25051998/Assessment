@@ -46,9 +46,11 @@ $(document).ready(function() {
                 exportOptions: {
                     format: {
                         body: function ( data, row, column, node ) {
-                            // Format the 'Value' column (index 1) as text
                             if (column === 1) {
-                                return "'" + data; // Add a leading apostrophe to treat the cell as text in Excel
+                                // Remove $ and , then format as currency with 0 decimal places
+                                let cleanData = data.replace(/[\$,]/g, '');
+                                let number = parseFloat(cleanData);
+                                return number.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
                             }
                             return data;
                         }
