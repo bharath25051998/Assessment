@@ -1,1 +1,46 @@
-$('row:first', sheet).remove();
+<script>
+$(document).ready(function() {
+    var table = $('#example').DataTable({
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'excelHtml5',
+                text: 'Export to Excel',
+                customize: function (xlsx) {
+                    var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                    
+                    // Iterate over each row and column to retain the exact format from the DataTable
+                    $('row', sheet).each(function () {
+                        var rowIndex = $(this).attr('r');
+                        
+                        // Skip the header row (if it's an extra one)
+                        if (rowIndex == 1) {
+                            return;
+                        }
+                        
+                        $(this).find('c').each(function () {
+                            var cellIndex = $(this).attr('r').replace(rowIndex, '');
+                            
+                            // Skip the header cells
+                            if (rowIndex > 1) {
+                                // Get the value directly from the DataTable
+                                var cellValue = table.cell(parseInt(rowIndex, 10) - 2, cellIndex.charCodeAt(0) - 65).data();
+                                $(this).text(cellValue);
+                            }
+                        });
+                    });
+                    
+                    // Optional: Remove the first row if it is an extra header
+                    $('row:first', sheet).remove();
+                }
+            }
+        ],
+        columnDefs: [
+            {
+                targets: '_all',
+                visible: true
+            }
+        ]
+    });
+});
+</script>
