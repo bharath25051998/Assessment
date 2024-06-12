@@ -8,28 +8,21 @@ $(document).ready(function() {
                 text: 'Export to Excel',
                 customize: function (xlsx) {
                     var sheet = xlsx.xl.worksheets['sheet1.xml'];
-
-                    // Iterate over each cell in the 6th column (assuming the dollar values are in the 6th column, adjust as needed)
+                    
+                    // Iterate over each cell in the column "Salary"
                     $('row c[r^="F"]', sheet).each(function () {
-                        // Get the cell reference
                         var cellRef = $(this).attr('r');
-                        
-                        // Find the corresponding cell in the data table
-                        var cellValue = table.cell(parseInt(cellRef.slice(1)) - 2, 5).data(); // Adjust the column index if necessary
-                        
-                        // Check if the cell value is a dollar value
+                        var rowIndex = parseInt(cellRef.slice(1)) - 1; // Convert from Excel row index to DataTable row index
+                        var cellValue = table.cell(rowIndex - 1, 5).data(); // Adjust column index if necessary
+
+                        // Check if the cell value contains a dollar sign
                         if (typeof cellValue === 'string' && cellValue.includes('$')) {
-                            // Set the cell type to string (inlineStr)
+                            // Set the cell type to string
                             $(this).attr('t', 'inlineStr');
-                            // Wrap the cell value in a 'is' tag to ensure it is treated as inline string
+                            // Wrap the cell value in 'is' tag to ensure it is treated as an inline string
                             $(this).html('<is><t>' + cellValue + '</t></is>');
-                        } else {
-                            $(this).text(cellValue);
                         }
                     });
-
-                    // Optional: Remove the first row if it is an extra header
-                    $('row:first', sheet).remove();
                 }
             }
         ],
