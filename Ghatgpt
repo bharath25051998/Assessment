@@ -44,23 +44,20 @@
                     {
                         extend: 'excelHtml5',
                         text: 'Export to Excel',
-                        customize: function (xlsx) {
-                            var sheet = xlsx.xl.worksheets['sheet1.xml'];
-                            var rows = $('row', sheet);
-
-                            rows.each(function (index) {
-                                // Skip the first two rows (index 0 and 1)
-                                if (index < 2) return;
-
-                                var cell = $('c[r^="B"]', this);
-                                var cellValue = cell.text();
-                                if (cellValue) {
-                                    // Remove the $ symbol and commas, then convert to number
-                                    var numberValue = parseFloat(cellValue.replace(/[$,]/g, ''));
-                                    // Reformat the number as currency with 0 decimals and $
-                                    cell.text('$' + numberValue.toFixed(0));
+                        exportOptions: {
+                            columns: ':visible',
+                            format: {
+                                body: function (data, row, column, node) {
+                                    // Apply formatting only from row 3 onwards (0-indexed, so from row 2 onwards)
+                                    if (row >= 2 && column === 1) {
+                                        // Remove the $ symbol and commas
+                                        var numberValue = parseFloat(data.replace(/[$,]/g, ''));
+                                        // Reformat the number as currency with 0 decimals and $
+                                        return '$' + numberValue.toFixed(0);
+                                    }
+                                    return data;
                                 }
-                            });
+                            }
                         }
                     }
                 ]
