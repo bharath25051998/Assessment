@@ -1,30 +1,41 @@
+@model YourNamespace.YourViewModel
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>CKEditor Example</title>
     <script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
+    <style>
+        .no-scroll {
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
-    <textarea class="ckeditor" name="editor1" rows="10" cols="80">Text area 1</textarea>
-    <textarea class="ckeditor" name="editor2" rows="10" cols="80">Text area 2</textarea>
-    <textarea class="ckeditor" name="editor3" rows="10" cols="80">Text area 3</textarea>
-    <textarea class="ckeditor" name="editor4" rows="10" cols="80">Text area 4</textarea>
+    @using (Html.BeginForm())
+    {
+        <div>
+            @Html.LabelFor(model => model.YourTextField1)
+            @Html.TextAreaFor(model => model.YourTextField1, new { @class = "ckeditor" })
+        </div>
+        <div>
+            @Html.LabelFor(model => model.YourTextField2)
+            @Html.TextAreaFor(model => model.YourTextField2, new { @class = "ckeditor" })
+        </div>
+        <input type="submit" value="Submit" />
+    }
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var editors = document.querySelectorAll('.ckeditor');
-            editors.forEach(function (textarea, index) {
-                var editor = CKEDITOR.replace(textarea, {
-                    enterMode: CKEDITOR.ENTER_P, // or CKEDITOR.ENTER_BR
-                    shiftEnterMode: CKEDITOR.ENTER_P // or CKEDITOR.ENTER_BR
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.ckeditor').forEach(function(textarea) {
+                var editor = CKEDITOR.replace(textarea);
+
+                editor.on('focus', function() {
+                    document.body.classList.add('no-scroll');
                 });
 
-                editor.on('contentDom', function() {
-                    this.document.on('keydown', function(event) {
-                        if (event.data.$.keyCode === 13) { // 13 is the Enter key
-                            event.data.preventDefault(); // Prevent the default scrolling behavior
-                        }
-                    });
+                editor.on('blur', function() {
+                    document.body.classList.remove('no-scroll');
                 });
             });
         });
