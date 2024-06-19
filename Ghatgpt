@@ -16,26 +16,32 @@
     {
         <div>
             @Html.LabelFor(model => model.YourTextField1)
-            @Html.TextAreaFor(model => model.YourTextField1, new { @class = "ckeditor" })
+            @Html.TextAreaFor(model => model.YourTextField1, new { @class = "ckeditor", id = "editor1" })
         </div>
         <div>
             @Html.LabelFor(model => model.YourTextField2)
-            @Html.TextAreaFor(model => model.YourTextField2, new { @class = "ckeditor" })
+            @Html.TextAreaFor(model => model.YourTextField2, new { @class = "ckeditor", id = "editor2" })
         </div>
         <input type="submit" value="Submit" />
     }
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var editors = [];
+
             document.querySelectorAll('.ckeditor').forEach(function(textarea) {
-                var editor = CKEDITOR.replace(textarea);
+                var editor = CKEDITOR.replace(textarea.id);
 
-                editor.on('focus', function() {
-                    document.body.classList.add('no-scroll');
-                });
+                editor.on('instanceReady', function() {
+                    editors.push(editor);
+                    
+                    editor.on('focus', function() {
+                        document.body.classList.add('no-scroll');
+                    });
 
-                editor.on('blur', function() {
-                    document.body.classList.remove('no-scroll');
+                    editor.on('blur', function() {
+                        document.body.classList.remove('no-scroll');
+                    });
                 });
             });
         });
