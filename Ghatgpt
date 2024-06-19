@@ -1,30 +1,15 @@
-@model YourNamespace.YourModel
-
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>CKEditor Integration</title>
-    <script src="https://cdn.ckeditor.com/4.16.0/standard/ckeditor.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
-    <form>
-        @Html.TextBoxFor(model => model.Editor1, new { id = "editor1" })
-        @Html.TextBoxFor(model => model.Editor2, new { id = "editor2" })
-        @Html.TextBoxFor(model => model.Editor3, new { id = "editor3" })
-        @Html.TextBoxFor(model => model.Editor4, new { id = "editor4" })
-        @Html.TextBoxFor(model => model.Editor5, new { id = "editor5" })
-    </form>
-
-    <script>
-        $(document).ready(function () {
-            CKEDITOR.replace('editor1');
-            CKEDITOR.replace('editor2');
-            CKEDITOR.replace('editor3');
-            CKEDITOR.replace('editor4');
-            CKEDITOR.replace('editor5');
-        });
-    </script>
-</body>
-</html>
+$(document).ready(function () {
+    var editorConfig = {
+        on: {
+            instanceReady: function(ev) {
+                ev.editor.focusManager.blur(true);  // Prevents automatic focus when the editor is initialized
+            }
+        }
+    };
+    
+    CKEDITOR.replace('editor1', editorConfig);
+    CKEDITOR.replace('editor2', editorConfig);
+    CKEDITOR.replace('editor3', editorConfig);
+    CKEDITOR.replace('editor4', editorConfig);
+    CKEDITOR.replace('editor5', editorConfig);
+});
