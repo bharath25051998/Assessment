@@ -1,21 +1,26 @@
-@{
-    ViewBag.Title = "Your View Title";
-}
+function submitForm() {
+    var selectedValues = [];
+    var selectElement = document.getElementById('mySelect');
 
-<h2>Select Your Flavors</h2>
-
-<form method="post" action="/YourController/YourAction">
-    <select id="mySelect" name="selectedFlavors" multiple="multiple">
-        @foreach (var item in ViewBag.Flavors)
-        {
-            <option value="@item.Value">@item.Text</option>
+    for (var i = 0; i < selectElement.options.length; i++) {
+        if (selectElement.options[i].selected) {
+            selectedValues.push(selectElement.options[i].value);
         }
-    </select>
-    <button type="submit">Submit</button>
-</form>
+    }
 
-@if (ViewBag.SelectedValues != null)
-{
-    <h2>Your Selection</h2>
-    <p>Selected Flavors: @ViewBag.SelectedValues</p>
+    var joinedValues = selectedValues.join(';');
+
+    $.ajax({
+        url: '/YourController/YourAction',
+        type: 'POST',
+        data: { selectedFlavors: joinedValues },
+        success: function(response) {
+            // Handle success
+            alert("Data submitted successfully: " + response);
+        },
+        error: function(xhr, status, error) {
+            // Handle error
+            alert("An error occurred: " + error);
+        }
+    });
 }
