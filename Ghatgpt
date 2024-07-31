@@ -1,45 +1,21 @@
 @{
-    ViewBag.Title = "Multiselect Example";
+    ViewBag.Title = "Your View Title";
 }
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>@ViewBag.Title</title>
-    <!-- Include Select2 CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" />
-    <!-- Include jQuery -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <!-- Include Select2 JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <style>
-        .select2-container {
-            width: 100% !important;
+<h2>Select Your Flavors</h2>
+
+<form method="post" action="/YourController/YourAction">
+    <select id="mySelect" name="selectedFlavors" multiple="multiple">
+        @foreach (var item in ViewBag.Flavors)
+        {
+            <option value="@item.Value">@item.Text</option>
         }
-    </style>
-</head>
-<body>
-    <h2>Multiselect Dropdown</h2>
-
-    <select id="mySelect" multiple="multiple">
-        <option value="chocolate">Chocolate</option>
-        <option value="strawberry">Strawberry</option>
-        <option value="vanilla">Vanilla</option>
     </select>
+    <button type="submit">Submit</button>
+</form>
 
-    <!-- Use noConflict mode for jQuery -->
-    <script>
-        // Save the reference to the jQuery instance
-        var $jq = jQuery.noConflict();
-
-        // Initialize Select2 with the noConflict jQuery instance
-        $jq(document).ready(function() {
-            $jq('#mySelect').select2({
-                placeholder: 'Select options',
-                width: '100%'
-            });
-        });
-    </script>
-</body>
-</html>
+@if (ViewBag.SelectedValues != null)
+{
+    <h2>Your Selection</h2>
+    <p>Selected Flavors: @ViewBag.SelectedValues</p>
+}
