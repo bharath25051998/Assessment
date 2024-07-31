@@ -1,55 +1,44 @@
-@model YourNamespace.YourModel
+@{
+    ViewBag.Title = "Multiselect Example";
+}
 
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width" />
-    <title>CKEditor Integration</title>
-    <script src="https://cdn.ckeditor.com/4.16.0/standard/ckeditor.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title</title>
+    <!-- Include Select2 CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" />
+    <!-- Include jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Include Select2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <style>
-        /* Add custom CSS to avoid unexpected scrolling */
-        html, body {
-            height: 100%;
-            margin: 0;
-            overflow: hidden;
-        }
-        form {
-            height: 100%;
-            overflow: auto;
-        }
-        textarea {
-            width: 100%;
-            height: 200px;
+        .select2-container {
+            width: 100% !important;
         }
     </style>
 </head>
 <body>
-    <form>
-        @Html.TextAreaFor(model => model.Editor1, new { id = "editor1" })
-        @Html.TextAreaFor(model => model.Editor2, new { id = "editor2" })
-        @Html.TextAreaFor(model => model.Editor3, new { id = "editor3" })
-        @Html.TextAreaFor(model => model.Editor4, new { id = "editor4" })
-        @Html.TextAreaFor(model => model.Editor5, new { id = "editor5" })
-    </form>
+    <h2>Multiselect Dropdown</h2>
 
+    <select id="mySelect" multiple="multiple">
+        <option value="chocolate">Chocolate</option>
+        <option value="strawberry">Strawberry</option>
+        <option value="vanilla">Vanilla</option>
+    </select>
+
+    <!-- Use noConflict mode for jQuery -->
     <script>
-        $(document).ready(function () {
-            var editorConfig = {
-                on: {
-                    instanceReady: function(ev) {
-                        // Prevents automatic focus when the editor is initialized
-                        ev.editor.focusManager.blur(true);
-                    }
-                }
-            };
-            
-            // Initialize CKEditor instances
-            CKEDITOR.replace('editor1', editorConfig);
-            CKEDITOR.replace('editor2', editorConfig);
-            CKEDITOR.replace('editor3', editorConfig);
-            CKEDITOR.replace('editor4', editorConfig);
-            CKEDITOR.replace('editor5', editorConfig);
+        // Save the reference to the jQuery instance
+        var $jq = jQuery.noConflict();
+
+        // Initialize Select2 with the noConflict jQuery instance
+        $jq(document).ready(function() {
+            $jq('#mySelect').select2({
+                placeholder: 'Select options',
+                width: '100%'
+            });
         });
     </script>
 </body>
