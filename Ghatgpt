@@ -1,26 +1,70 @@
-function submitForm() {
-    var selectedValues = [];
-    var selectElement = document.getElementById('mySelect');
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your View Title</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        function submitForm() {
+            var selectedValues = [];
+            var selectElement = document.getElementById('mySelect');
 
-    for (var i = 0; i < selectElement.options.length; i++) {
-        if (selectElement.options[i].selected) {
-            selectedValues.push(selectElement.options[i].value);
+            for (var i = 0; i < selectElement.options.length; i++) {
+                if (selectElement.options[i].selected) {
+                    selectedValues.push(selectElement.options[i].value);
+                }
+            }
+
+            var joinedValues = selectedValues.join(';');
+
+            $.ajax({
+                url: '/YourController/YourAction',
+                type: 'POST',
+                data: { selectedFlavors: joinedValues },
+                success: function(response) {
+                    if (response.success) {
+                        alert("Data submitted successfully: " + response.selectedValues);
+                        updateDropdown(response.selectedValues);
+                    } else {
+                        alert("An error occurred: " + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("An error occurred: " + error);
+                }
+            });
         }
-    }
 
-    var joinedValues = selectedValues.join(';');
+        function updateDropdown(selectedValues) {
+            var selectElement = document.getElementById('mySelect');
+            var valuesArray = selectedValues.split(';');
 
-    $.ajax({
-        url: '/YourController/YourAction',
-        type: 'POST',
-        data: { selectedFlavors: joinedValues },
-        success: function(response) {
-            // Handle success
-            alert("Data submitted successfully: " + response);
-        },
-        error: function(xhr, status, error) {
-            // Handle error
-            alert("An error occurred: " + error);
+            for (var i = 0; i < selectElement.options.length; i++) {
+                if (valuesArray.includes(selectElement.options[i].value)) {
+                    selectElement.options[i].selected = true;
+                } else {
+                    selectElement.options[i].selected = false;
+                }
+            }
         }
-    });
-}
+
+        $(document).ready(function() {
+            // On page load, update the dropdown with pre-selected values from the server
+            var preSelectedValues = "@ViewBag.SelectedValues";
+            if (preSelectedValues) {
+                updateDropdown(preSelectedValues);
+            }
+        });
+    </script>
+</head>
+<body>
+    <form id="flavorForm">
+        <select id="mySelect" name="selectedFlavors" multiple="multiple">
+            @foreach (var item in ViewBag.Flavors)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
+        <button type="button" onclick="submitForm()">Submit</button>
+    </form>
+</body>
+</html>
