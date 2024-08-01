@@ -1,31 +1,48 @@
-CREATE PROCEDURE InsertIndividualChaptersAndFetchEmails
-    @SourceId INT
-AS
-BEGIN
-    -- Declare a table variable to store ChapterIds
-    DECLARE @ChapterIds NVARCHAR(MAX);
-    DECLARE @InsertedChapters TABLE (ChapterId INT);
+using System;
+using System.Data;
+using System.Collections.Generic;
 
-    -- Retrieve the ChapterIds from the SourceTable
-    SELECT @ChapterIds = ChapterIds FROM SourceTable WHERE Id = @SourceId;
-    
-    -- Handle cases where @ChapterIds might be empty
-    IF @ChapterIds IS NULL OR @ChapterIds = ''
-    BEGIN
-        RETURN;
-    END
+class Program
+{
+    static void Main()
+    {
+        // Sample DataTables
+        DataTable dt1 = new DataTable();
+        dt1.Columns.Add("Column1");
+        dt1.Columns.Add("Column2");
+        dt1.Rows.Add("Value1_1", "Value1_2");
+        dt1.Rows.Add("Value2_1", "Value2_2");
 
-    -- Insert each ChapterId into the TargetTable and store it in @InsertedChapters
-    INSERT INTO TargetTable (ChapterId, Timestamp)
-    OUTPUT INSERTED.ChapterId INTO @InsertedChapters
-    SELECT value AS ChapterId, GETDATE()
-    FROM STRING_SPLIT(@ChapterIds, ';')
-    WHERE ISNUMERIC(value) = 1;
+        DataTable dt2 = new DataTable();
+        dt2.Columns.Add("Column1");
+        dt2.Columns.Add("Column2");
+        dt2.Rows.Add("Value3_1", "Value3_2");
+        dt2.Rows.Add("Value4_1", "Value4_2");
 
-    -- Retrieve emails based on ChapterId from the EmailsTable
-    SELECT 
-        e.ChapterId,
-        e.Email
-    FROM EmailsTable e
-    INNER JOIN @InsertedChapters ic ON e.ChapterId = ic.ChapterId;
-END
+        // List to hold the combined rows
+        List<string> combinedList = new List<string>();
+
+        // Process dt1 rows
+        foreach (DataRow row in dt1.Rows)
+        {
+            string rowString = string.Join(";", row.ItemArray);
+            combinedList.Add(rowString);
+        }
+
+        // Process dt2 rows
+        foreach (DataRow row in dt2.Rows)
+        {
+            string rowString = string.Join(";", row.ItemArray);
+            combinedList.Add(rowString);
+        }
+
+        // Convert List to array
+        string[] resultArray = combinedList.ToArray();
+
+        // Print the result
+        foreach (var row in resultArray)
+        {
+            Console.WriteLine(row);
+        }
+    }
+}
