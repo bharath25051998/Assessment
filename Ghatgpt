@@ -20,38 +20,37 @@ class Program
         dt2.Rows.Add("Value3_1", "Value3_2");
         dt2.Rows.Add(DBNull.Value, "Value4_2");
 
-        // List to hold the combined rows
+        // List to hold individual values
         List<string> combinedList = new List<string>();
 
         // Process dt1 rows
         foreach (DataRow row in dt1.Rows)
         {
-            // Filter out null values
-            string rowString = string.Join(";", row.ItemArray.Where(item => item != DBNull.Value));
-            if (!string.IsNullOrEmpty(rowString))  // Check if the rowString is not empty
+            foreach (var item in row.ItemArray)
             {
-                combinedList.Add(rowString);
+                if (item != DBNull.Value)  // Exclude null values
+                {
+                    combinedList.Add(item.ToString());
+                }
             }
         }
 
         // Process dt2 rows
         foreach (DataRow row in dt2.Rows)
         {
-            // Filter out null values
-            string rowString = string.Join(";", row.ItemArray.Where(item => item != DBNull.Value));
-            if (!string.IsNullOrEmpty(rowString))  // Check if the rowString is not empty
+            foreach (var item in row.ItemArray)
             {
-                combinedList.Add(rowString);
+                if (item != DBNull.Value)  // Exclude null values
+                {
+                    combinedList.Add(item.ToString());
+                }
             }
         }
 
-        // Convert List to array
-        string[] resultArray = combinedList.ToArray();
-
         // Print the result
-        foreach (var row in resultArray)
+        foreach (var value in combinedList)
         {
-            Console.WriteLine(row);
+            Console.WriteLine(value);
         }
     }
 }
