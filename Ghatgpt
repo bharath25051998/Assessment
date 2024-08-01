@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Collections.Generic;
+using System.Linq;
 
 class Program
 {
@@ -10,14 +11,14 @@ class Program
         DataTable dt1 = new DataTable();
         dt1.Columns.Add("Column1");
         dt1.Columns.Add("Column2");
-        dt1.Rows.Add("Value1_1", "Value1_2");
+        dt1.Rows.Add("Value1_1", DBNull.Value);
         dt1.Rows.Add("Value2_1", "Value2_2");
 
         DataTable dt2 = new DataTable();
         dt2.Columns.Add("Column1");
         dt2.Columns.Add("Column2");
         dt2.Rows.Add("Value3_1", "Value3_2");
-        dt2.Rows.Add("Value4_1", "Value4_2");
+        dt2.Rows.Add(DBNull.Value, "Value4_2");
 
         // List to hold the combined rows
         List<string> combinedList = new List<string>();
@@ -25,15 +26,23 @@ class Program
         // Process dt1 rows
         foreach (DataRow row in dt1.Rows)
         {
-            string rowString = string.Join(";", row.ItemArray);
-            combinedList.Add(rowString);
+            // Filter out null values
+            string rowString = string.Join(";", row.ItemArray.Where(item => item != DBNull.Value));
+            if (!string.IsNullOrEmpty(rowString))  // Check if the rowString is not empty
+            {
+                combinedList.Add(rowString);
+            }
         }
 
         // Process dt2 rows
         foreach (DataRow row in dt2.Rows)
         {
-            string rowString = string.Join(";", row.ItemArray);
-            combinedList.Add(rowString);
+            // Filter out null values
+            string rowString = string.Join(";", row.ItemArray.Where(item => item != DBNull.Value));
+            if (!string.IsNullOrEmpty(rowString))  // Check if the rowString is not empty
+            {
+                combinedList.Add(rowString);
+            }
         }
 
         // Convert List to array
