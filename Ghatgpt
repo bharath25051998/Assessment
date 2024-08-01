@@ -1,9 +1,11 @@
-CREATE PROCEDURE InsertIndividualChapters
+CREATE PROCEDURE InsertIndividualChaptersAndFetchEmails
     @SourceId INT
 AS
 BEGIN
+    -- Declare a table variable to store ChapterIds
     DECLARE @ChapterIds NVARCHAR(MAX);
-    
+    DECLARE @InsertedChapters TABLE (ChapterId INT);
+
     -- Retrieve the ChapterIds from the SourceTable
     SELECT @ChapterIds = ChapterIds FROM SourceTable WHERE Id = @SourceId;
     
@@ -13,9 +15,17 @@ BEGIN
         RETURN;
     END
 
-    -- Insert each ChapterId into the TargetTable
+    -- Insert each ChapterId into the TargetTable and store it in @InsertedChapters
     INSERT INTO TargetTable (ChapterId, Timestamp)
+    OUTPUT INSERTED.ChapterId INTO @InsertedChapters
     SELECT value AS ChapterId, GETDATE()
     FROM STRING_SPLIT(@ChapterIds, ';')
     WHERE ISNUMERIC(value) = 1;
+
+    -- Retrieve emails based on ChapterId from the EmailsTable
+    SELECT 
+        e.ChapterId,
+        e.Email
+    FROM EmailsTable e
+    INNER JOIN @InsertedChapters ic ON e.ChapterId = ic.ChapterId;
 END
