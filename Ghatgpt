@@ -1,1 +1,53 @@
-int[] columnArray = items.Select(item => item.ColumnValue).ToArray();
+CREATE PROCEDURE GetChapterApprovalStatus
+    @ChapterID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Determine the status for the specified chapter
+    DECLARE @StatusMessage NVARCHAR(50);
+
+    -- Count the total number of entries
+    DECLARE @TotalEntries INT;
+    SELECT @TotalEntries = COUNT(*) FROM ChapterApproval WHERE ChapterID = @ChapterID;
+
+    -- Check if there are no entries
+    IF @TotalEntries = 0
+    BEGIN
+        SET @StatusMessage = 'Not yet submitted';
+    END
+    ELSE
+    BEGIN
+        -- Check for any rejected entries
+        DECLARE @HasRejected BIT = 0;
+        DECLARE @HasPending BIT = 0;
+        DECLARE @AllApproved BIT = 1;
+
+        -- Check for entry statuses
+        SELECT 
+            @HasRejected = CASE WHEN EXISTS (SELECT 1 FROM ChapterApproval WHERE ChapterID = @ChapterID AND Status = 2) THEN 1 ELSE 0 END,
+            @HasPending = CASE WHEN EXISTS (SELECT 1 FROM ChapterApproval WHERE ChapterID = @ChapterID AND Status = 1) THEN 1 ELSE 0 END,
+            @AllApproved = CASE WHEN EXISTS (SELECT 1 FROM ChapterApproval WHERE ChapterID = @ChapterID AND Status <> 3) THEN 0 ELSE 1 END;
+
+        -- Determine the status message
+        IF @HasRejected = 1
+        BEGIN
+            SET @StatusMessage = 'Resubmit for approval';
+        END
+        ELSE IF @HasPending = 1
+        BEGIN
+            SET @StatusMessage = 'Pending for approval';
+        END
+        ELSE IF @AllApproved = 1
+        BEGIN
+            SET @StatusMessage = 'Approved';
+        END
+        ELSE
+        BEGIN
+            SET @StatusMessage = 'Unknown status';
+        END
+    END
+
+    -- Return the status message
+    SELECT @StatusMessage AS ApprovalStatus;
+END
