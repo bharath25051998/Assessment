@@ -1,57 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Your View Title</title>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Initialize Select2
-            $('#mySelect').select2();
+CREATE PROCEDURE InsertIndividualChapters
+    @SourceId INT
+AS
+BEGIN
+    DECLARE @ChapterIds NVARCHAR(MAX);
+    
+    -- Retrieve the ChapterIds from the SourceTable
+    SELECT @ChapterIds = ChapterIds FROM SourceTable WHERE Id = @SourceId;
+    
+    -- Handle cases where @ChapterIds might be empty
+    IF @ChapterIds IS NULL OR @ChapterIds = ''
+    BEGIN
+        RETURN;
+    END
 
-            // Ensure that Select2 is fully initialized before setting the selected values
-            var preSelectedValues = "@ViewBag.SelectedValues";
-            if (preSelectedValues) {
-                var valuesArray = preSelectedValues.split(';');
-                $('#mySelect').val(valuesArray).trigger('change');
-            }
-        });
-
-        function submitForm() {
-            var selectedValues = $('#mySelect').val();
-            var joinedValues = selectedValues ? selectedValues.join(';') : '';
-
-            $.ajax({
-                url: '/YourController/YourAction',
-                type: 'POST',
-                data: { selectedFlavors: joinedValues },
-                success: function(response) {
-                    if (response.success) {
-                        alert("Data submitted successfully: " + response.selectedValues);
-                        // Update dropdown after successful submission
-                        var valuesArray = response.selectedValues.split(';');
-                        $('#mySelect').val(valuesArray).trigger('change');
-                    } else {
-                        alert("An error occurred: " + response.message);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    alert("An error occurred: " + error);
-                }
-            });
-        }
-    </script>
-</head>
-<body>
-    <form id="flavorForm">
-        <select id="mySelect" name="selectedFlavors" multiple="multiple" style="width: 100%;">
-            @foreach (var item in ViewBag.Flavors)
-            {
-                <option value="@item.Value">@item.Text</option>
-            }
-        </select>
-        <button type="button" onclick="submitForm()">Submit</button>
-    </form>
-</body>
-</html>
+    -- Insert each ChapterId into the TargetTable
+    INSERT INTO TargetTable (ChapterId, Timestamp)
+    SELECT value AS ChapterId, GETDATE()
+    FROM STRING_SPLIT(@ChapterIds, ';')
+    WHERE ISNUMERIC(value) = 1;
+END
