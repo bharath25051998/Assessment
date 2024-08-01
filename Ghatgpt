@@ -12,12 +12,12 @@ class Program
         dt1.Columns.Add("Column1");
         dt1.Columns.Add("Column2");
         dt1.Rows.Add("Value1_1", DBNull.Value);
-        dt1.Rows.Add("Value2_1", "Value2_2");
+        dt1.Rows.Add("Value2_1;Value2_1_2", "Value2_2");
 
         DataTable dt2 = new DataTable();
         dt2.Columns.Add("Column1");
         dt2.Columns.Add("Column2");
-        dt2.Rows.Add("Value3_1", "Value3_2");
+        dt2.Rows.Add("Value3_1;Value3_1_2", "Value3_2");
         dt2.Rows.Add(DBNull.Value, "Value4_2");
 
         // List to hold individual values
@@ -30,7 +30,9 @@ class Program
             {
                 if (item != DBNull.Value)  // Exclude null values
                 {
-                    combinedList.Add(item.ToString());
+                    // Split by semicolon and add each value to the list
+                    var values = item.ToString().Split(';');
+                    combinedList.AddRange(values.Select(value => value.Trim()));
                 }
             }
         }
@@ -42,7 +44,9 @@ class Program
             {
                 if (item != DBNull.Value)  // Exclude null values
                 {
-                    combinedList.Add(item.ToString());
+                    // Split by semicolon and add each value to the list
+                    var values = item.ToString().Split(';');
+                    combinedList.AddRange(values.Select(value => value.Trim()));
                 }
             }
         }
