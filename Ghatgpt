@@ -1,11 +1,41 @@
-SELECT 
-    ChapterID,
-    CASE
-        WHEN NOT EXISTS (SELECT 1 FROM ChapterApproval c2 WHERE c2.ChapterID = c.ChapterID) THEN 'Not yet submitted'
-        WHEN EXISTS (SELECT 1 FROM ChapterApproval c2 WHERE c2.ChapterID = c.ChapterID AND c2.Status = 2) THEN 'Resubmit for approval'
-        WHEN EXISTS (SELECT 1 FROM ChapterApproval c2 WHERE c2.ChapterID = c.ChapterID AND c2.Status = 1) THEN 'Pending for approval'
-        WHEN NOT EXISTS (SELECT 1 FROM ChapterApproval c2 WHERE c2.ChapterID = c.ChapterID AND c2.Status <> 3) THEN 'Approved'
-        ELSE 'Unknown status'
-    END AS StatusMessage
-FROM 
-    (SELECT DISTINCT ChapterID FROM ChapterApproval) c;
+CREATE PROCEDURE ResubmitApprovals
+    @RemID INT,
+    @ChapterIDs NVARCHAR(MAX)  -- Semicolon-separated chapter IDs or a single chapter ID
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Handle single chapter ID without semicolon
+    IF CHARINDEX(';', @ChapterIDs) = 0
+    BEGIN
+        SET @ChapterIDs = @ChapterIDs + ';'
+    END
+
+    -- Use a CTE to split the chapter IDs into a table
+    ;WITH SplitCTE AS
+    (
+        SELECT 
+            CAST(value AS INT) AS ChapterID
+        FROM 
+            STRING_SPLIT(@ChapterIDs, ';')
+        WHERE 
+            value <> '' -- Exclude empty values
+    )
+
+    -- Update rejected chapters to approval pending
+    UPDATE ca
+    SET ca.Status = 1  -- Assuming 1 means approval pending
+    FROM ChapterApproval ca
+    JOIN SplitCTE s
+    ON ca.ChapterID = s.ChapterID
+    WHERE ca.RemID = @RemID
+      AND ca.Status = 2  -- Assuming 2 means rejected
+
+    -- Insert missing chapter IDs
+    INSERT INTO ChapterApproval (ChapterID, RemID, Status)
+    SELECT s.ChapterID, @RemID, 1  -- Assuming 1 means approval pending
+    FROM SplitCTE s
+    LEFT JOIN ChapterApproval ca
+    ON s.ChapterID = ca.ChapterID AND ca.RemID = @RemID
+    WHERE ca.ChapterID IS NULL
+END
