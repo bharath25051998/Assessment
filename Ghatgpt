@@ -1,5 +1,6 @@
 SELECT 
-    CONCAT(c.chapter_name, ': ', GROUP_CONCAT(st.status_name SEPARATOR '; ')) AS chapter_status
+    cs.remid,
+    STRING_AGG(CONCAT(c.chapter_name, ': ', s.status_name), '; ') AS chapter_status
 FROM 
     chapters c
 JOIN 
@@ -7,8 +8,8 @@ JOIN
 ON 
     c.chapter_id = cs.chapter_id
 JOIN 
-    statuses st
+    statuses s
 ON 
-    cs.status_id = st.status_id
+    cs.status_id = s.status_id
 GROUP BY 
-    c.chapter_name;
+    cs.remid;
