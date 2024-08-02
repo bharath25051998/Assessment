@@ -1,4 +1,15 @@
-INSERT INTO @AllChapters (ChapterID)
-    SELECT DISTINCT value AS ChapterID
-    FROM STRING_SPLIT(@ChapterIds, ';')
-    WHERE ISNUMERIC(value) = 1;
+SELECT 
+    c.chapter_name,
+    GROUP_CONCAT(st.status_name SEPARATOR '; ') AS status_names
+FROM 
+    chapters c
+JOIN 
+    chapter_statuses cs
+ON 
+    c.chapter_id = cs.chapter_id
+JOIN 
+    statuses st
+ON 
+    cs.status_id = st.status_id
+GROUP BY 
+    c.chapter_name;
