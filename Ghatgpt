@@ -1,6 +1,5 @@
 SELECT 
-    c.chapter_name,
-    GROUP_CONCAT(st.status_name SEPARATOR '; ') AS status_names
+    CONCAT(c.chapter_name, ': ', GROUP_CONCAT(st.status_name SEPARATOR '; ')) AS chapter_status
 FROM 
     chapters c
 JOIN 
