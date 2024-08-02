@@ -1,15 +1,31 @@
+WITH ChapterStatuses AS (
+    SELECT 
+        cs.RemID,
+        STRING_AGG(CONCAT(c.psname, ': ', st.StatusName), '; ') AS ChapterLeadApproveStatus
+    FROM 
+        psprocessspeciality c
+    JOIN 
+        chapterapprovals cs ON c.PSId = cs.ChapterID
+    JOIN 
+        apmasapprovalstatus st ON cs.Statusdetails = st.id
+    GROUP BY 
+        cs.RemID
+)
 SELECT 
-    cs.remid,
-    STRING_AGG(CONCAT(c.chapter_name, ': ', s.status_name), '; ') AS chapter_status
+    apd.REMID,
+    ChapterStatuses.ChapterLeadApproveStatus,
+    (SELECT StatusName FROM Apmasapprovalstatus WHERE id = apd.DAApproveStatus) AS DAApproveStatus,
+    apd.LOB,
+    aps.StatusName AS SubmittedStatus,
+    -- Add your other columns here
+    apd.OtherColumn1,
+    apd.OtherColumn2
+    -- etc.
 FROM 
-    chapters c
-JOIN 
-    chapter_statuses cs
-ON 
-    c.chapter_id = cs.chapter_id
-JOIN 
-    statuses s
-ON 
-    cs.status_id = s.status_id
-GROUP BY 
-    cs.remid;
+    appprofiledetails apd
+INNER JOIN 
+    Apmasapprovalstatus aps ON aps.id = apd.SubmittedStatus
+LEFT JOIN 
+    ChapterStatuses ON apd.REMID = ChapterStatuses.RemID
+WHERE 
+    apd.FinanceApproveStatus = @statusname;
