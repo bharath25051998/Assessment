@@ -1,31 +1,20 @@
-WITH ChapterStatuses AS (
-    SELECT 
-        cs.RemID,
-        STRING_AGG(CONCAT(c.psname, ': ', st.StatusName), '; ') AS ChapterLeadApproveStatus
-    FROM 
-        psprocessspeciality c
-    JOIN 
-        chapterapprovals cs ON c.PSId = cs.ChapterID
-    JOIN 
-        apmasapprovalstatus st ON cs.Statusdetails = st.id
-    GROUP BY 
-        cs.RemID
-)
-SELECT 
-    apd.REMID,
-    ChapterStatuses.ChapterLeadApproveStatus,
-    (SELECT StatusName FROM Apmasapprovalstatus WHERE id = apd.DAApproveStatus) AS DAApproveStatus,
-    apd.LOB,
-    aps.StatusName AS SubmittedStatus,
-    -- Add your other columns here
-    apd.OtherColumn1,
-    apd.OtherColumn2
-    -- etc.
-FROM 
-    appprofiledetails apd
-INNER JOIN 
-    Apmasapprovalstatus aps ON aps.id = apd.SubmittedStatus
-LEFT JOIN 
-    ChapterStatuses ON apd.REMID = ChapterStatuses.RemID
-WHERE 
-    apd.FinanceApproveStatus = @statusname;
+fetch('https://your-server.com/config.php', {
+    method: 'POST', // or 'GET'
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+        // Your request parameters here
+        key1: 'value1',
+        key2: 'value2'
+    })
+}).then(response => {
+    if (response.status === 500) {
+        console.log('500 Internal Server Error detected');
+        window.location.href = 'https://your-server.com/your-redirect-url'; // Redirect URL
+    } else {
+        console.log('Response status:', response.status);
+    }
+}).catch(error => {
+    console.error('Error:', error);
+});
