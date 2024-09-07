@@ -1,13 +1,7 @@
-trigger:
-  - main  # or any other branch you want to trigger on
-
-pool:
-  vmImage: 'ubuntu-latest'  # or another agent pool
-
 steps:
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'YourServiceConnection'  # Replace with your Azure service connection in ADO
+    azureSubscription: 'YourServiceConnection'  # The ADO Service Connection configured with access to your subscription
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
@@ -18,21 +12,24 @@ steps:
       vnetName="YourVirtualNetworkName"
       subnetName="YourSubnetName"
       location="YourRegion" # Example: eastus
+      subscriptionId="YourSubscriptionId" # Add your subscription ID
 
-      # Create the private endpoint
+      # Create the private endpoint with subscription specified
       az network private-endpoint create \
         --name $privateEndpointName \
         --resource-group $resourceGroupName \
         --vnet-name $vnetName \
         --subnet $subnetName \
-        --private-connection-resource-id "/subscriptions/YourSubscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.Sql/servers/$sqlServerName" \
+        --private-connection-resource-id "/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.Sql/servers/$sqlServerName" \
         --group-id sqlServer \
         --connection-name "sqlserver-private-endpoint" \
-        --location $location
+        --location $location \
+        --subscription $subscriptionId
 
       # Approve the private endpoint connection
       az sql server private-endpoint-connection approve \
         --name $privateEndpointName \
         --resource-group $resourceGroupName \
         --server $sqlServerName \
-        --description "Auto-approval via ADO pipeline"
+        --description "Auto-approval via ADO pipeline" \
+        --subscription $subscriptionId
