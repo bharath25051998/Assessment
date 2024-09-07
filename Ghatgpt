@@ -1,20 +1,38 @@
-fetch('https://your-server.com/config.php', {
-    method: 'POST', // or 'GET'
-    headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-        // Your request parameters here
-        key1: 'value1',
-        key2: 'value2'
-    })
-}).then(response => {
-    if (response.status === 500) {
-        console.log('500 Internal Server Error detected');
-        window.location.href = 'https://your-server.com/your-redirect-url'; // Redirect URL
-    } else {
-        console.log('Response status:', response.status);
-    }
-}).catch(error => {
-    console.error('Error:', error);
-});
+trigger:
+  - main  # or any other branch you want to trigger on
+
+pool:
+  vmImage: 'ubuntu-latest'  # or another agent pool
+
+steps:
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'YourServiceConnection'  # Replace with your Azure service connection in ADO
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      # Variables
+      resourceGroupName="YourResourceGroupName"
+      privateEndpointName="YourPrivateEndpointName"
+      sqlServerName="YourSqlServerName"
+      vnetName="YourVirtualNetworkName"
+      subnetName="YourSubnetName"
+      location="YourRegion" # Example: eastus
+
+      # Create the private endpoint
+      az network private-endpoint create \
+        --name $privateEndpointName \
+        --resource-group $resourceGroupName \
+        --vnet-name $vnetName \
+        --subnet $subnetName \
+        --private-connection-resource-id "/subscriptions/YourSubscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.Sql/servers/$sqlServerName" \
+        --group-id sqlServer \
+        --connection-name "sqlserver-private-endpoint" \
+        --location $location
+
+      # Approve the private endpoint connection
+      az sql server private-endpoint-connection approve \
+        --name $privateEndpointName \
+        --resource-group $resourceGroupName \
+        --server $sqlServerName \
+        --description "Auto-approval via ADO pipeline"
