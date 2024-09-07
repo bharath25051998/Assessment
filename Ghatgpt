@@ -1,35 +1,37 @@
 steps:
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'YourServiceConnection'  # The ADO Service Connection configured with access to your subscription
+    azureSubscription: 'YourServiceConnection'  # The ADO Service Connection with access to your subscription
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
       # Variables
-      resourceGroupName="YourResourceGroupName"
+      sqlResourceGroupName="SqlServerResourceGroup"  # The resource group of your Azure SQL Server
+      vnetResourceGroupName="VnetResourceGroup"      # The resource group of your VNet
       privateEndpointName="YourPrivateEndpointName"
       sqlServerName="YourSqlServerName"
       vnetName="YourVirtualNetworkName"
       subnetName="YourSubnetName"
-      location="YourRegion" # Example: eastus
-      subscriptionId="YourSubscriptionId" # Add your subscription ID
+      location="YourRegion"  # Example: eastus
+      subscriptionId="YourSubscriptionId"  # Your Azure Subscription ID
 
-      # Create the private endpoint with subscription specified
+      # Create the private endpoint referencing the VNet in a different resource group
       az network private-endpoint create \
         --name $privateEndpointName \
-        --resource-group $resourceGroupName \
+        --resource-group $sqlResourceGroupName \
         --vnet-name $vnetName \
         --subnet $subnetName \
-        --private-connection-resource-id "/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.Sql/servers/$sqlServerName" \
+        --private-connection-resource-id "/subscriptions/$subscriptionId/resourceGroups/$sqlResourceGroupName/providers/Microsoft.Sql/servers/$sqlServerName" \
         --group-id sqlServer \
         --connection-name "sqlserver-private-endpoint" \
         --location $location \
-        --subscription $subscriptionId
+        --subscription $subscriptionId \
+        --vnet-resource-group $vnetResourceGroupName  # Specify the VNet's resource group here
 
       # Approve the private endpoint connection
       az sql server private-endpoint-connection approve \
         --name $privateEndpointName \
-        --resource-group $resourceGroupName \
+        --resource-group $sqlResourceGroupName \
         --server $sqlServerName \
         --description "Auto-approval via ADO pipeline" \
         --subscription $subscriptionId
