@@ -15,18 +15,19 @@ steps:
       location="YourRegion"  # Example: eastus
       subscriptionId="YourSubscriptionId"  # Your Azure Subscription ID
 
-      # Create the private endpoint referencing the VNet in a different resource group
+      # Construct the full subnet ID (for a subnet in a different resource group)
+      subnetId="/subscriptions/$subscriptionId/resourceGroups/$vnetResourceGroupName/providers/Microsoft.Network/virtualNetworks/$vnetName/subnets/$subnetName"
+
+      # Create the private endpoint with the full subnet ID
       az network private-endpoint create \
         --name $privateEndpointName \
         --resource-group $sqlResourceGroupName \
-        --vnet-name $vnetName \
-        --subnet $subnetName \
+        --subnet $subnetId \
         --private-connection-resource-id "/subscriptions/$subscriptionId/resourceGroups/$sqlResourceGroupName/providers/Microsoft.Sql/servers/$sqlServerName" \
         --group-id sqlServer \
         --connection-name "sqlserver-private-endpoint" \
         --location $location \
-        --subscription $subscriptionId \
-        --vnet-resource-group $vnetResourceGroupName  # Specify the VNet's resource group here
+        --subscription $subscriptionId
 
       # Approve the private endpoint connection
       az sql server private-endpoint-connection approve \
