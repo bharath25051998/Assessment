@@ -1,38 +1,19 @@
-steps:
-- task: AzureCLI@2
-  inputs:
-    azureSubscription: 'YourServiceConnection'  # The ADO Service Connection with access to your subscription
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      # Variables
-      sqlResourceGroupName="SqlServerResourceGroup"  # The resource group of your Azure SQL Server
-      vnetResourceGroupName="VnetResourceGroup"      # The resource group of your VNet
-      privateEndpointName="YourPrivateEndpointName"
-      sqlServerName="YourSqlServerName"
-      vnetName="YourVirtualNetworkName"
-      subnetName="YourSubnetName"
-      location="YourRegion"  # Example: eastus
-      subscriptionId="YourSubscriptionId"  # Your Azure Subscription ID
+var worksheet = package.Workbook.Worksheets.Add("Sheet1");
+worksheet.Cells["A1"].LoadFromCollection(InvenExcel, true);
 
-      # Construct the full subnet ID (for a subnet in a different resource group)
-      subnetId="/subscriptions/$subscriptionId/resourceGroups/$vnetResourceGroupName/providers/Microsoft.Network/virtualNetworks/$vnetName/subnets/$subnetName"
+// Autofit columns to fit the content
+worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
 
-      # Create the private endpoint with the full subnet ID
-      az network private-endpoint create \
-        --name $privateEndpointName \
-        --resource-group $sqlResourceGroupName \
-        --subnet $subnetId \
-        --private-connection-resource-id "/subscriptions/$subscriptionId/resourceGroups/$sqlResourceGroupName/providers/Microsoft.Sql/servers/$sqlServerName" \
-        --group-id sqlServer \
-        --connection-name "sqlserver-private-endpoint" \
-        --location $location \
-        --subscription $subscriptionId
+// Apply WrapText to all cells
+worksheet.Cells[worksheet.Dimension.Address].Style.WrapText = true;
 
-      # Approve the private endpoint connection
-      az sql server private-endpoint-connection approve \
-        --name $privateEndpointName \
-        --resource-group $sqlResourceGroupName \
-        --server $sqlServerName \
-        --description "Auto-approval via ADO pipeline" \
-        --subscription $subscriptionId
+using (var stream = new MemoryStream())
+{
+    package.SaveAs(stream);
+    stream.Position = 0;
+
+    var fileName = "Inventory.xlsx";
+    var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+    return File(stream, contentType, fileName);
+}
