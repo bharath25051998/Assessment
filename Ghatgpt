@@ -1,98 +1,106 @@
-using OfficeOpenXml;
-using OfficeOpenXml.Style;
-using HtmlAgilityPack;
-using System.IO;
-using System.Collections.Generic;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Hidden Table to Excel</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        /* Hide the table from the UI */
+        #hiddenTable {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="row">
+        <div class="container-box col-md-12">
+            <div class="row">
+                <div class="col-md-4 bordered">
+                    <div class="header">Legacy Technology Stack</div>
+                    <p id="legacyTechnologyStack">Content for Legacy Technology Stack</p>
+                </div>
+                <div class="col-md-4 bordered">
+                    <div class="header">Target Technology Stack</div>
+                    <p id="targetTechnologyStack">Content for Target Technology Stack</p>
+                </div>
+                <div class="col-md-4 bordered">
+                    <div class="header">Scope AAF</div>
+                    <p id="scopeAAF">Content for Scope AAF</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <button id="exportExcel">Export to Excel</button>
 
-public IActionResult ExportToExcelWithDynamicHtmlFormatting(int id)
-{
-    // Step 1: Retrieve the CKEditor content from the database
-    var ckeditorContent = dbContext.YourTable.Where(x => x.Id == id).Select(x => x.CkeditorContent).FirstOrDefault();
+    <!-- Hidden Table -->
+    <table id="hiddenTable">
+        <thead>
+            <tr>
+                <th>Legacy Technology Stack</th>
+                <th>Target Technology Stack</th>
+                <th>Scope AAF</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Content will be added dynamically -->
+        </tbody>
+    </table>
 
-    // Step 2: Create an Excel file using EPPlus
-    using (ExcelPackage excel = new ExcelPackage())
-    {
-        var worksheet = excel.Workbook.Worksheets.Add("Sheet1");
-        int currentRow = 1;
-        int currentColumn = 1;
+    <script>
+        $(document).ready(function () {
+            $('#exportExcel').click(function () {
+                // Populate hidden table with content
+                populateHiddenTable();
+                
+                // Export hidden table to Excel
+                exportHiddenTableToExcel();
+            });
+        });
 
-        // Step 3: Parse the HTML content
-        var doc = new HtmlDocument();
-        doc.LoadHtml(ckeditorContent);
+        function populateHiddenTable() {
+            // Collect content from visible divs
+            var legacyContent = $('#legacyTechnologyStack').text();
+            var targetContent = $('#targetTechnologyStack').text();
+            var scopeContent = $('#scopeAAF').text();
+            
+            // Add content to hidden table
+            $('#hiddenTable tbody').empty();
+            $('#hiddenTable tbody').append(
+                `<tr>
+                    <td>${legacyContent}</td>
+                    <td>${targetContent}</td>
+                    <td>${scopeContent}</td>
+                </tr>`
+            );
+        }
 
-        // Step 4: Process the HTML nodes dynamically
-        ProcessHtmlNodes(doc.DocumentNode, worksheet, ref currentRow, ref currentColumn);
+        function exportHiddenTableToExcel() {
+            // Initialize a new workbook
+            var wb = XLSX.utils.book_new();
+            
+            // Convert the hidden table to a worksheet
+            var ws = XLSX.utils.table_to_sheet(document.getElementById('hiddenTable'));
+            
+            // Add worksheet to the workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Technology Stacks');
+            
+            // Generate Excel file and save
+            var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+            saveAs(new Blob([s2ab(wbout)], { type: 'application/octet-stream' }), 'technology_stacks.xlsx');
+        }
 
-        // Auto-fit columns to content
-        worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
-
-        // Step 5: Return the Excel file as a downloadable file
-        var stream = new MemoryStream();
-        excel.SaveAs(stream);
-        stream.Position = 0;
-
-        string excelName = $"CKEditorContent-{id}.xlsx";
-        return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
-    }
-}
-
-// Recursive method to process HTML nodes
-private void ProcessHtmlNodes(HtmlNode node, ExcelWorksheet worksheet, ref int currentRow, ref int currentColumn)
-{
-    foreach (var childNode in node.ChildNodes)
-    {
-        if (childNode.NodeType == HtmlNodeType.Element)
-        {
-            switch (childNode.Name)
-            {
-                case "ul":
-                    // Handle unordered lists recursively
-                    ProcessHtmlNodes(childNode, worksheet, ref currentRow, ref currentColumn);
-                    break;
-
-                case "li":
-                    // Add bullet points for list items
-                    worksheet.Cells[currentRow, currentColumn].Value = "• " + childNode.InnerText;
-                    currentRow++;
-                    break;
-
-                case "b":
-                case "strong":
-                    // Apply bold formatting
-                    worksheet.Cells[currentRow, currentColumn].Value = childNode.InnerText;
-                    worksheet.Cells[currentRow, currentColumn].Style.Font.Bold = true;
-                    currentRow++;
-                    break;
-
-                case "i":
-                case "em":
-                    // Apply italic formatting
-                    worksheet.Cells[currentRow, currentColumn].Value = childNode.InnerText;
-                    worksheet.Cells[currentRow, currentColumn].Style.Font.Italic = true;
-                    currentRow++;
-                    break;
-
-                case "a":
-                    // Handle hyperlinks
-                    worksheet.Cells[currentRow, currentColumn].Value = childNode.InnerText;
-                    worksheet.Cells[currentRow, currentColumn].Hyperlink = new Uri(childNode.GetAttributeValue("href", ""));
-                    currentRow++;
-                    break;
-
-                // Add more cases to handle other HTML elements dynamically (e.g., <u>, <h1>, etc.)
-
-                default:
-                    // Handle general text
-                    worksheet.Cells[currentRow, currentColumn].Value = childNode.InnerText.Trim();
-                    currentRow++;
-                    break;
+        function s2ab(s) {
+            var buf = new ArrayBuffer(s.length);
+            var view = new Uint8Array(buf);
+            for (var i = 0; i < s.length; i++) {
+                view[i] = s.charCodeAt(i) & 0xFF;
             }
+            return buf;
         }
-        else if (childNode.NodeType == HtmlNodeType.Text)
-        {
-            // Handle text content
-            worksheet.Cells[currentRow, currentColumn].Value = childNode.InnerText.Trim();
-            currentRow++;
-        }
-    }
-}
+    </script>
+</body>
+</html>
