@@ -46,37 +46,21 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Content will be added dynamically -->
+            <tr>
+                <td id="hiddenLegacyTechnologyStack">Content for Legacy Technology Stack</td>
+                <td id="hiddenTargetTechnologyStack">Content for Target Technology Stack</td>
+                <td id="hiddenScopeAAF">Content for Scope AAF</td>
+            </tr>
         </tbody>
     </table>
 
     <script>
         $(document).ready(function () {
             $('#exportExcel').click(function () {
-                // Populate hidden table with content
-                populateHiddenTable();
-                
                 // Export hidden table to Excel
                 exportHiddenTableToExcel();
             });
         });
-
-        function populateHiddenTable() {
-            // Collect content from visible divs
-            var legacyContent = $('#legacyTechnologyStack').text();
-            var targetContent = $('#targetTechnologyStack').text();
-            var scopeContent = $('#scopeAAF').text();
-            
-            // Add content to hidden table
-            $('#hiddenTable tbody').empty();
-            $('#hiddenTable tbody').append(
-                `<tr>
-                    <td>${legacyContent}</td>
-                    <td>${targetContent}</td>
-                    <td>${scopeContent}</td>
-                </tr>`
-            );
-        }
 
         function exportHiddenTableToExcel() {
             // Initialize a new workbook
