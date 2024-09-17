@@ -1,8 +1,98 @@
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using HtmlAgilityPack;
+using System.IO;
+using System.Collections.Generic;
 
-public string StripHtml(string html)
+public IActionResult ExportToExcelWithDynamicHtmlFormatting(int id)
 {
-    var doc = new HtmlDocument();
-    doc.LoadHtml(html);
-    return doc.DocumentNode.InnerText;
+    // Step 1: Retrieve the CKEditor content from the database
+    var ckeditorContent = dbContext.YourTable.Where(x => x.Id == id).Select(x => x.CkeditorContent).FirstOrDefault();
+
+    // Step 2: Create an Excel file using EPPlus
+    using (ExcelPackage excel = new ExcelPackage())
+    {
+        var worksheet = excel.Workbook.Worksheets.Add("Sheet1");
+        int currentRow = 1;
+        int currentColumn = 1;
+
+        // Step 3: Parse the HTML content
+        var doc = new HtmlDocument();
+        doc.LoadHtml(ckeditorContent);
+
+        // Step 4: Process the HTML nodes dynamically
+        ProcessHtmlNodes(doc.DocumentNode, worksheet, ref currentRow, ref currentColumn);
+
+        // Auto-fit columns to content
+        worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+        // Step 5: Return the Excel file as a downloadable file
+        var stream = new MemoryStream();
+        excel.SaveAs(stream);
+        stream.Position = 0;
+
+        string excelName = $"CKEditorContent-{id}.xlsx";
+        return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
+    }
+}
+
+// Recursive method to process HTML nodes
+private void ProcessHtmlNodes(HtmlNode node, ExcelWorksheet worksheet, ref int currentRow, ref int currentColumn)
+{
+    foreach (var childNode in node.ChildNodes)
+    {
+        if (childNode.NodeType == HtmlNodeType.Element)
+        {
+            switch (childNode.Name)
+            {
+                case "ul":
+                    // Handle unordered lists recursively
+                    ProcessHtmlNodes(childNode, worksheet, ref currentRow, ref currentColumn);
+                    break;
+
+                case "li":
+                    // Add bullet points for list items
+                    worksheet.Cells[currentRow, currentColumn].Value = "• " + childNode.InnerText;
+                    currentRow++;
+                    break;
+
+                case "b":
+                case "strong":
+                    // Apply bold formatting
+                    worksheet.Cells[currentRow, currentColumn].Value = childNode.InnerText;
+                    worksheet.Cells[currentRow, currentColumn].Style.Font.Bold = true;
+                    currentRow++;
+                    break;
+
+                case "i":
+                case "em":
+                    // Apply italic formatting
+                    worksheet.Cells[currentRow, currentColumn].Value = childNode.InnerText;
+                    worksheet.Cells[currentRow, currentColumn].Style.Font.Italic = true;
+                    currentRow++;
+                    break;
+
+                case "a":
+                    // Handle hyperlinks
+                    worksheet.Cells[currentRow, currentColumn].Value = childNode.InnerText;
+                    worksheet.Cells[currentRow, currentColumn].Hyperlink = new Uri(childNode.GetAttributeValue("href", ""));
+                    currentRow++;
+                    break;
+
+                // Add more cases to handle other HTML elements dynamically (e.g., <u>, <h1>, etc.)
+
+                default:
+                    // Handle general text
+                    worksheet.Cells[currentRow, currentColumn].Value = childNode.InnerText.Trim();
+                    currentRow++;
+                    break;
+            }
+        }
+        else if (childNode.NodeType == HtmlNodeType.Text)
+        {
+            // Handle text content
+            worksheet.Cells[currentRow, currentColumn].Value = childNode.InnerText.Trim();
+            currentRow++;
+        }
+    }
 }
