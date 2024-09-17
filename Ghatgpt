@@ -1,1 +1,8 @@
-worksheet.Row(1).Style.Font.Bold = true;
+using HtmlAgilityPack;
+
+public string StripHtml(string html)
+{
+    var doc = new HtmlDocument();
+    doc.LoadHtml(html);
+    return doc.DocumentNode.InnerText;
+}
