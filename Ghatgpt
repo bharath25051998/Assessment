@@ -1,58 +1,35 @@
-function exportHiddenTableToExcel() {
-    // Initialize a new workbook
-    var wb = XLSX.utils.book_new();
-    
-    // Convert the hidden table to a worksheet
-    var ws = XLSX.utils.table_to_sheet(document.getElementById('hiddenTable'));
-
-    // Autofit and wrap text configuration
-    var colWidths = [];
-    var range = XLSX.utils.decode_range(ws['!ref']); // Get the range of the worksheet
-
-    // Iterate through columns to find the maximum length for autofit
-    for (var C = range.s.c; C <= range.e.c; ++C) {
-        var maxWidth = 10; // Set a minimum width
-        for (var R = range.s.r; R <= range.e.r; ++R) {
-            var cellAddress = { c: C, r: R };
-            var cellRef = XLSX.utils.encode_cell(cellAddress);
-            var cell = ws[cellRef];
-            if (cell && cell.v) {
-                var cellValue = cell.v.toString();
-                maxWidth = Math.max(maxWidth, cellValue.length);
-            }
-        }
-        colWidths.push({ wch: maxWidth }); // Push column width based on content length
+{
+  "name": "<DataSourceName>",
+  "description": "Data source for Azure Search using UAMI for authentication",
+  "type": "azureblob",
+  "credentials": {
+    "identity": {
+      "resourceId": "/subscriptions/<SubscriptionID>/resourceGroups/<ResourceGroupName>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/<UAMIName>"
     }
-
-    ws['!cols'] = colWidths; // Apply column widths
-
-    // Apply wrap text for all cells
-    for (var R = range.s.r; R <= range.e.r; ++R) {
-        for (var C = range.s.c; C <= range.e.c; ++C) {
-            var cellAddress = { c: C, r: R };
-            var cellRef = XLSX.utils.encode_cell(cellAddress);
-            var cell = ws[cellRef];
-            if (cell) {
-                if (!cell.s) cell.s = {}; // If cell style doesn't exist, initialize it
-                cell.s.alignment = { wrapText: true }; // Enable text wrapping
-            }
-        }
-    }
-
-    // Add worksheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, 'Technology Stacks');
-
-    // Generate Excel file and save
-    var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-    saveAs(new Blob([s2ab(wbout)], { type: 'application/octet-stream' }), 'technology_stacks.xlsx');
+  },
+  "container": {
+    "name": "<ContainerName>",
+    "query": "<Optional Query>"
+  }
 }
 
-// Helper function to convert binary string to an ArrayBuffer
-function s2ab(s) {
-    var buf = new ArrayBuffer(s.length);
-    var view = new Uint8Array(buf);
-    for (var i = 0; i < s.length; i++) {
-        view[i] = s.charCodeAt(i) & 0xFF;
-    }
-    return buf;
-}
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: '<Azure Service Connection Name>'
+    scriptType: 'ps'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      # Define variables
+      $resourceGroupName = "<Your Resource Group Name>"
+      $searchServiceName = "<Your Search Service Name>"
+      $dataSourceDefinitionFile = "definition.json"
+
+      # Read the JSON definition
+      $jsonDefinition = Get-Content -Path $dataSourceDefinitionFile -Raw
+
+      # Call Azure Search to create the data source using UAMI
+      az rest --method put `
+              --uri "https://$searchServiceName.search.windows.net/datasources/<DataSourceName>?api-version=2020-06-30" `
+              --headers "Content-Type=application/json" `
+              --body $jsonDefinition `
+              --resource "https://search.windows.net"
