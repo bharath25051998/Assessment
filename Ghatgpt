@@ -1,24 +1,44 @@
-# Install Azure CLI
-- task: Bash@3
-  displayName: 'Install Azure CLI'
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Update package lists
-      sudo apt-get update
-      # Install the latest version of Azure CLI
-      sudo apt-get install -y azure-cli
+trigger:
+- main
 
-# Create or update Azure Search data source
-- task: AzureCLI@2
-  inputs:
-    azureSubscription: '<Your-Service-Connection-Name>'
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      az search data-source create \
-        --service-name <your-search-service-name> \
-        --name <your-datasource-name> \
-        --type azureblob \
-        --connection-string "<your-storage-account-connection-string>" \
-        --identity "<your-uami-resource-id>"
+jobs:
+- job: DeployAzureSearchDataSource
+  pool:
+    vmImage: 'ubuntu-latest' # You can also use windows-latest if needed.
+
+  steps:
+  - task: AzurePowerShell@5
+    inputs:
+      azureSubscription: '<Your-Service-Connection-Name>'
+      ScriptType: 'inlineScript'
+      Inline: |
+        # Variables
+        $serviceName = "<your-search-service-name>"
+        $dataSourceName = "<your-datasource-name>"
+        $storageConnectionString = "<your-storage-account-connection-string>"
+        $uamiId = "<your-uami-resource-id>"
+        
+        # Create or update the data source
+        $dataSource = @{
+            "name" = $dataSourceName
+            "type" = "azureblob"
+            "credentials" = @{
+                "connectionString" = $storageConnectionString
+            }
+            "container" = @{
+                "name" = "<your-container-name>"
+            }
+            "identity" = @{
+                "type" = "UserAssigned"
+                "userAssignedIdentityId" = $uamiId
+            }
+        }
+
+        # Convert to JSON and create or update the data source
+        $dataSourceJson = $dataSource | ConvertTo-Json -Depth 10
+
+        # Use Azure REST API to create/update the data source
+        $uri = "https://$serviceName.search.windows.net/datasources/$dataSourceName?api-version=2021-04-30-Preview"
+        $response = Invoke-RestMethod -Uri $uri -Method Put -Body $dataSourceJson -ContentType "application/json" -Headers @{ "api-key" = "<Your-Admin-API-Key>" }
+
+        Write-Host "Data source created/updated successfully."
