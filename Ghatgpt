@@ -1,29 +1,12 @@
-- task: AzurePowerShell@5
+- task: AzureCLI@2
   inputs:
-    azureSubscription: '<Azure Service Connection Name>'
-    ScriptType: 'InlineScript'
-    Inline: |
-      $searchServiceName = "$(searchServiceName)"
-      $dataSourceName = "$(dataSourceName)"
-      $dataSourceDefinitionFile = "definition.json"
-
-      $jsonDefinition = Get-Content -Path $dataSourceDefinitionFile -Raw | ConvertFrom-Json
-      $jsonDefinitionText = $jsonDefinition | ConvertTo-Json -Compress
-
-      $uri = "https://$searchServiceName.search.windows.net/datasources/$dataSourceName?api-version=2020-06-30"
-
-      $headers = @{
-          "Content-Type" = "application/json"
-          "api-key"      = "$(searchAdminApiKey)"
-      }
-
-      try {
-          # Attempt the API call with debugging
-          Invoke-RestMethod -Uri $uri -Method Put -Headers $headers -Body $jsonDefinitionText -Debug
-      } catch {
-          Write-Output "Error: $($_.Exception.Message)"
-          Write-Output "Status Code: $($_.Exception.Response.StatusCode.Value__)"
-          Write-Output "Response Body: $(($_.Exception.Response.GetResponseStream() | 
-                              New-Object System.IO.StreamReader).ReadToEnd())"
-      }
-    azurePowerShellVersion: 'LatestVersion'
+    azureSubscription: '<Your-Service-Connection-Name>'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az search data-source create \
+        --service-name <your-search-service-name> \
+        --name <your-datasource-name> \
+        --type azureblob \
+        --connection-string "<your-storage-account-connection-string>" \
+        --identity "<your-uami-resource-id>"
