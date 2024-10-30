@@ -4,41 +4,40 @@ trigger:
 jobs:
 - job: DeployAzureSearchDataSource
   pool:
-    vmImage: 'ubuntu-latest' # You can also use windows-latest if needed.
+    vmImage: 'ubuntu-latest'
 
   steps:
-  - task: AzurePowerShell@5
-    inputs:
-      azureSubscription: '<Your-Service-Connection-Name>'
-      ScriptType: 'inlineScript'
-      Inline: |
-        # Variables
-        $serviceName = "<your-search-service-name>"
-        $dataSourceName = "<your-datasource-name>"
-        $storageConnectionString = "<your-storage-account-connection-string>"
-        $uamiId = "<your-uami-resource-id>"
-        
-        # Create or update the data source
-        $dataSource = @{
-            "name" = $dataSourceName
-            "type" = "azureblob"
-            "credentials" = @{
-                "connectionString" = $storageConnectionString
-            }
-            "container" = @{
-                "name" = "<your-container-name>"
-            }
-            "identity" = @{
-                "type" = "UserAssigned"
-                "userAssignedIdentityId" = $uamiId
-            }
-        }
+  - script: |
+      # Variables
+      serviceName="<your-search-service-name>"
+      dataSourceName="<your-datasource-name>"
+      storageConnectionString="<your-storage-account-connection-string>"
+      uamiId="<your-uami-resource-id>"
+      adminApiKey="<Your-Admin-API-Key>"
+      containerName="<your-container-name>"
+      
+      # JSON data for data source
+      jsonData=$(jq -n \
+        --arg name "$dataSourceName" \
+        --arg type "azureblob" \
+        --arg connStr "$storageConnectionString" \
+        --arg container "$containerName" \
+        --arg identity "$uamiId" \
+        '{
+          name: $name,
+          type: $type,
+          credentials: { connectionString: $connStr },
+          container: { name: $container },
+          identity: { type: "UserAssigned", userAssignedIdentityId: $identity }
+        }')
 
-        # Convert to JSON and create or update the data source
-        $dataSourceJson = $dataSource | ConvertTo-Json -Depth 10
+      # Create or update the data source using REST API
+      response=$(curl -X PUT "https://$serviceName.search.windows.net/datasources/$dataSourceName?api-version=2021-04-30-Preview" \
+        -H "Content-Type: application/json" \
+        -H "api-key: $adminApiKey" \
+        -d "$jsonData")
 
-        # Use Azure REST API to create/update the data source
-        $uri = "https://$serviceName.search.windows.net/datasources/$dataSourceName?api-version=2021-04-30-Preview"
-        $response = Invoke-RestMethod -Uri $uri -Method Put -Body $dataSourceJson -ContentType "application/json" -Headers @{ "api-key" = "<Your-Admin-API-Key>" }
-
-        Write-Host "Data source created/updated successfully."
+      echo "Response: $response"
+    displayName: 'Create/Update Azure Search Data Source'
+    env:
+      AZURE_SUBSCRIPTION_ID: $(Your-Service-Connection-Name)  # Use your service connection name
