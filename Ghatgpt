@@ -1,35 +1,55 @@
-{
-  "name": "<DataSourceName>",
-  "description": "Data source for Azure Search using UAMI for authentication",
-  "type": "azureblob",
-  "credentials": {
-    "identity": {
-      "resourceId": "/subscriptions/<SubscriptionID>/resourceGroups/<ResourceGroupName>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/<UAMIName>"
-    }
-  },
-  "container": {
-    "name": "<ContainerName>",
-    "query": "<Optional Query>"
-  }
-}
+trigger:
+  branches:
+    include:
+      - main  # Trigger on changes to main branch
 
-- task: AzureCLI@2
-  inputs:
-    azureSubscription: '<Azure Service Connection Name>'
-    scriptType: 'ps'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      # Define variables
-      $resourceGroupName = "<Your Resource Group Name>"
-      $searchServiceName = "<Your Search Service Name>"
-      $dataSourceDefinitionFile = "definition.json"
+pool:
+  vmImage: 'windows-latest'  # Using a Windows agent, or you can switch to 'ubuntu-latest'
 
-      # Read the JSON definition
-      $jsonDefinition = Get-Content -Path $dataSourceDefinitionFile -Raw
+variables:
+  searchServiceName: '<Your Search Service Name>'
+  dataSourceName: '<DataSourceName>'
+  searchAdminApiKey: $(SEARCH_ADMIN_API_KEY)  # Store your Azure Search admin API key as a secret variable
 
-      # Call Azure Search to create the data source using UAMI
-      az rest --method put `
-              --uri "https://$searchServiceName.search.windows.net/datasources/<DataSourceName>?api-version=2020-06-30" `
-              --headers "Content-Type=application/json" `
-              --body $jsonDefinition `
-              --resource "https://search.windows.net"
+jobs:
+- job: CreateDataSource
+  displayName: 'Create Data Source in Azure Cognitive Search with UAMI Authentication'
+
+  steps:
+    # Checkout the code to get access to definition.json
+    - checkout: self
+
+    # Display the contents of the definition.json to verify its availability (optional)
+    - script: type definition.json
+      displayName: 'Display definition.json contents'
+
+    # Use Azure PowerShell task to create the data source
+    - task: AzurePowerShell@5
+      inputs:
+        azureSubscription: '<Azure Service Connection Name>'
+        ScriptType: 'InlineScript'
+        Inline: |
+          # Parameters for Azure Cognitive Search
+          $searchServiceName = "$(searchServiceName)"
+          $dataSourceName = "$(dataSourceName)"
+          $dataSourceDefinitionFile = "definition.json"
+
+          # Read the JSON definition
+          $jsonDefinition = Get-Content -Path $dataSourceDefinitionFile -Raw | ConvertFrom-Json
+
+          # Convert the JSON object back to JSON text for the REST API
+          $jsonDefinitionText = $jsonDefinition | ConvertTo-Json -Compress
+
+          # Construct the URL for the data source creation
+          $uri = "https://$searchServiceName.search.windows.net/datasources/$dataSourceName?api-version=2020-06-30"
+
+          # Define headers with the admin API key
+          $headers = @{
+              "Content-Type" = "application/json"
+              "api-key"      = "$(searchAdminApiKey)"
+          }
+
+          # Call the REST API to create the data source
+          Invoke-RestMethod -Uri $uri -Method Put -Headers $headers -Body $jsonDefinitionText
+
+      azurePowerShellVersion: 'LatestVersion'
