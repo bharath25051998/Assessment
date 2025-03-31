@@ -1,43 +1,77 @@
-trigger:
-- main
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
-jobs:
-- job: DeployAzureSearchDataSource
-  pool:
-    vmImage: 'ubuntu-latest'
+public class Startup
+{
+    private readonly IConfiguration _configuration;
 
-  steps:
-  - script: |
-      # Variables
-      serviceName="<your-search-service-name>"
-      dataSourceName="<your-datasource-name>"
-      storageConnectionString="<your-storage-account-connection-string>"
-      uamiId="<your-uami-resource-id>"
-      adminApiKey="<Your-Admin-API-Key>"
-      containerName="<your-container-name>"
-      
-      # JSON data for data source
-      jsonData=$(jq -n \
-        --arg name "$dataSourceName" \
-        --arg type "azureblob" \
-        --arg connStr "$storageConnectionString" \
-        --arg container "$containerName" \
-        --arg identity "$uamiId" \
-        '{
-          name: $name,
-          type: $type,
-          credentials: { connectionString: $connStr },
-          container: { name: $container },
-          identity: { type: "UserAssigned", userAssignedIdentityId: $identity }
-        }')
+    public Startup(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
 
-      # Create or update the data source using REST API
-      response=$(curl -X PUT "https://$serviceName.search.windows.net/datasources/$dataSourceName?api-version=2021-04-30-Preview" \
-        -H "Content-Type: application/json" \
-        -H "api-key: $adminApiKey" \
-        -d "$jsonData")
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // 1. Enable session support
+        services.AddSession();
 
-      echo "Response: $response"
-    displayName: 'Create/Update Azure Search Data Source'
-    env:
-      AZURE_SUBSCRIPTION_ID: $(Your-Service-Connection-Name)  # Use your service connection name
+        // 2. Enable HttpContext access for retrieving claims
+        services.AddHttpContextAccessor();
+
+        // 3. Configure Azure AD JWT authentication
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.Authority = _configuration["AzureAd:Authority"];
+                options.Audience = _configuration["AzureAd:Audience"];
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true
+                };
+            });
+
+        // 4. Authorization policies (e.g., restrict access based on groups)
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("RequireGroup", policy =>
+                policy.RequireClaim("groups", "your-group-id")); // Replace with actual group ID
+        });
+
+        // 5. Add MVC and controllers
+        services.AddControllersWithViews();
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Home/Error");
+            app.UseHsts();
+        }
+
+        app.UseHttpsRedirection();
+        app.UseStaticFiles();
+        app.UseRouting();
+
+        // Enable session
+        app.UseSession();
+
+        // Enable authentication and authorization
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
+        });
+    }
+}
