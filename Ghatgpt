@@ -3,7 +3,7 @@ powershell -Command "Invoke-WebRequest -Uri https://github.com/adoptium/temurin1
 msiexec /i "C:\path\to\OpenJDK17U-jre_x64_windows_hotspot_17.x.x.msi" /quiet
 
 mkdir C:\Temp
-
+sc query type= service state= all | findstr /I "integration"
 
 msiexec /i C:\Temp\openjdk11.msi /quiet
 
