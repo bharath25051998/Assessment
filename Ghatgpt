@@ -10,6 +10,11 @@ msiexec /i C:\Temp\openjdk11.msi /quiet
 setx JAVA_HOME "C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
 setx PATH "%PATH%;%JAVA_HOME%\bin"
 
+setx JAVA_HOME "C:\Program Files\Eclipse Adoptium\jdk-17.0.15.6-hotspot" /M
+setx PATH "%PATH%;C:\Program Files\Eclipse Adoptium\jdk-17.0.15.6-hotspot\bin" /M
+
+
+
 
 net stop "Self-hosted Integration Runtime Service"
 net start "Self-hosted Integration Runtime Service"
