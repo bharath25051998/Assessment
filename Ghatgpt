@@ -1,6 +1,6 @@
 powershell -Command "Invoke-WebRequest -Uri https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.23%2B9/OpenJDK11U-jdk_x64_windows_hotspot_11.0.23_9.msi -OutFile C:\Temp\openjdk11.msi"
 
-
+msiexec /i "C:\path\to\OpenJDK17U-jre_x64_windows_hotspot_17.x.x.msi" /quiet
 
 mkdir C:\Temp
 
