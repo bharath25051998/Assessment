@@ -38,3 +38,33 @@ CROSS APPLY (
             ISNULL(CONVERT(NVARCHAR(30), AssessmentDate, 126), '') + '|' +
             ISNULL(LTRIM(RTRIM(AssessmentState)), '')
 ) AS CONCATENATED;
+
+
+
+
+
+WITH RawData AS (
+    SELECT 
+        ExportDate,
+        Status,
+        SourceSystemCode,
+        AssessmentDate,
+        AssessmentState
+    FROM GetLeaAssessmentExportData('2022-06-12')
+)
+SELECT 
+    ExportDate,
+    Status,
+    SourceSystemCode,
+    AssessmentDate,
+    AssessmentState,
+    CONVERT(VARCHAR(64), HASHBYTES('SHA2_256',
+        ISNULL(CONVERT(NVARCHAR(30), ExportDate, 126), '') + '|' +
+        ISNULL(LTRIM(RTRIM(Status)), '') + '|' +
+        ISNULL(LTRIM(RTRIM(SourceSystemCode)), '') + '|' +
+        ISNULL(CONVERT(NVARCHAR(30), AssessmentDate, 126), '') + '|' +
+        ISNULL(LTRIM(RTRIM(AssessmentState)), '')
+    ), 2) AS ConcatenatedHash,
+    COUNT(*) OVER() AS RowCount
+FROM RawData
+ORDER BY ExportDate;
