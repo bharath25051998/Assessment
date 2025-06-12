@@ -19,3 +19,22 @@ setx PATH "%PATH%;C:\Program Files\Eclipse Adoptium\jdk-17.0.15.6-hotspot\bin" /
 net stop "Self-hosted Integration Runtime Service"
 net start "Self-hosted Integration Runtime Service"
 
+
+SELECT 
+    ExportDate,
+    Status,
+    SourceSystemCode,
+    AssessmentDate,
+    AssessmentState,
+    CONCATENATED.ConcatenatedString,
+    CONVERT(VARCHAR(64), HASHBYTES('SHA2_256', CONCATENATED.ConcatenatedString), 2) AS ConcatenatedHash
+FROM GetLeaAssessmentExportData('2022-06-12') AS data
+CROSS APPLY (
+    SELECT 
+        ConcatenatedString = 
+            ISNULL(CONVERT(NVARCHAR(30), ExportDate, 126), '') + '|' +
+            ISNULL(LTRIM(RTRIM(Status)), '') + '|' +
+            ISNULL(LTRIM(RTRIM(SourceSystemCode)), '') + '|' +
+            ISNULL(CONVERT(NVARCHAR(30), AssessmentDate, 126), '') + '|' +
+            ISNULL(LTRIM(RTRIM(AssessmentState)), '')
+) AS CONCATENATED;
