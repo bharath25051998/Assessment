@@ -1,70 +1,7 @@
-powershell -Command "Invoke-WebRequest -Uri https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.23%2B9/OpenJDK11U-jdk_x64_windows_hotspot_11.0.23_9.msi -OutFile C:\Temp\openjdk11.msi"
+# Connect to Azure using Managed Identity
+Connect-AzAccount -Identity
 
-msiexec /i "C:\path\to\OpenJDK17U-jre_x64_windows_hotspot_17.x.x.msi" /quiet
+# Restart App Service
+Restart-AzWebApp -ResourceGroupName "your-resource-group" -Name "your-app-service-name"
 
-mkdir C:\Temp
-sc query type= service state= all | findstr /I "integration"
-
-msiexec /i C:\Temp\openjdk11.msi /quiet
-
-setx JAVA_HOME "C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
-setx PATH "%PATH%;%JAVA_HOME%\bin"
-
-setx JAVA_HOME "C:\Program Files\Eclipse Adoptium\jdk-17.0.15.6-hotspot" /M
-setx PATH "%PATH%;C:\Program Files\Eclipse Adoptium\jdk-17.0.15.6-hotspot\bin" /M
-
-
-
-
-net stop "Self-hosted Integration Runtime Service"
-net start "Self-hosted Integration Runtime Service"
-
-
-SELECT 
-    ExportDate,
-    Status,
-    SourceSystemCode,
-    AssessmentDate,
-    AssessmentState,
-    CONCATENATED.ConcatenatedString,
-    CONVERT(VARCHAR(64), HASHBYTES('SHA2_256', CONCATENATED.ConcatenatedString), 2) AS ConcatenatedHash
-FROM GetLeaAssessmentExportData('2022-06-12') AS data
-CROSS APPLY (
-    SELECT 
-        ConcatenatedString = 
-            ISNULL(CONVERT(NVARCHAR(30), ExportDate, 126), '') + '|' +
-            ISNULL(LTRIM(RTRIM(Status)), '') + '|' +
-            ISNULL(LTRIM(RTRIM(SourceSystemCode)), '') + '|' +
-            ISNULL(CONVERT(NVARCHAR(30), AssessmentDate, 126), '') + '|' +
-            ISNULL(LTRIM(RTRIM(AssessmentState)), '')
-) AS CONCATENATED;
-
-
-
-
-
-WITH RawData AS (
-    SELECT 
-        ExportDate,
-        Status,
-        SourceSystemCode,
-        AssessmentDate,
-        AssessmentState
-    FROM GetLeaAssessmentExportData('2022-06-12')
-)
-SELECT 
-    ExportDate,
-    Status,
-    SourceSystemCode,
-    AssessmentDate,
-    AssessmentState,
-    CONVERT(VARCHAR(64), HASHBYTES('SHA2_256',
-        ISNULL(CONVERT(NVARCHAR(30), ExportDate, 126), '') + '|' +
-        ISNULL(LTRIM(RTRIM(Status)), '') + '|' +
-        ISNULL(LTRIM(RTRIM(SourceSystemCode)), '') + '|' +
-        ISNULL(CONVERT(NVARCHAR(30), AssessmentDate, 126), '') + '|' +
-        ISNULL(LTRIM(RTRIM(AssessmentState)), '')
-    ), 2) AS ConcatenatedHash,
-    COUNT(*) OVER() AS RowCount
-FROM RawData
-ORDER BY ExportDate;
+Write-Output "App Service restarted at $(Get-Date)"
