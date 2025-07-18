@@ -1,63 +1,20 @@
-<#
-.SYNOPSIS
-    Azure Automation Runbook to start or restart an App Service and confirm health.
+# Variables
+$automationAccountName = "<YourAutomationAccountName>"
+$resourceGroupName = "<YourResourceGroupName>"
+$scheduleName = "Every3MinutesSchedule"
+$runbookName = "<YourRunbookName>"
 
-.DESCRIPTION
-    This runbook:
-    - Starts the target App Service if stopped
-    - Waits for the app to become healthy by polling its health endpoint
-    - Ensures alert resets for future automatic triggers
+# Create a schedule that recurs every 3 minutes
+New-AzAutomationSchedule -ResourceGroupName $resourceGroupName `
+  -AutomationAccountName $automationAccountName `
+  -Name $scheduleName `
+  -StartTime (Get-Date).ToUniversalTime() `
+  -ExpiryTime (Get-Date).AddYears(1).ToUniversalTime() `
+  -Frequency Minute `
+  -Interval 3
 
-.NOTES
-    Author: ChatGPT for your automation standard
-#>
-
-# Connect to Azure
-Write-Output "Connecting to Azure..."
-Connect-AzAccount -Identity
-
-# Variables – update these for your environment
-$resourceGroupName = "YOUR_RESOURCE_GROUP"
-$appServiceName = "YOUR_APP_SERVICE_NAME"
-$healthCheckUrl = "https://YOUR_APP.azurewebsites.net/health"
-
-# Start App Service if it's stopped
-Write-Output "Getting App Service state..."
-$appService = Get-AzWebApp -ResourceGroupName $resourceGroupName -Name $appServiceName
-
-if ($appService.State -ne "Running") {
-    Write-Output "App Service is not running. Starting..."
-    Start-AzWebApp -ResourceGroupName $resourceGroupName -Name $appServiceName
-    Write-Output "Start command issued."
-} else {
-    Write-Output "App Service is already running."
-}
-
-# Wait and check health
-Write-Output "Checking health endpoint for readiness..."
-$maxRetries = 10
-$waitSeconds = 30
-$success = $false
-
-for ($i = 0; $i -lt $maxRetries; $i++) {
-    Start-Sleep -Seconds $waitSeconds
-    try {
-        $response = Invoke-WebRequest -Uri $healthCheckUrl -UseBasicParsing -TimeoutSec 10
-        if ($response.StatusCode -eq 200) {
-            Write-Output "✅ App is healthy. Status code 200 received."
-            $success = $true
-            break
-        } else {
-            Write-Output "⚠️ Received status code $($response.StatusCode). Retrying..."
-        }
-    } catch {
-        Write-Output "⚠️ Exception while calling health endpoint: $($_.Exception.Message). Retrying..."
-    }
-}
-
-if (-not $success) {
-    Write-Output "❌ App did not become healthy after $maxRetries retries."
-    throw "App health check failed."
-}
-
-Write-Output "Runbook execution completed successfully."
+# Link the schedule to your runbook
+Register-AzAutomationScheduledRunbook -ResourceGroupName $resourceGroupName `
+  -AutomationAccountName $automationAccountName `
+  -RunbookName $runbookName `
+  -ScheduleName $scheduleName
