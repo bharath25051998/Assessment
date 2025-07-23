@@ -4,9 +4,8 @@ let StartLogs =
     | where message has "Running task"
     | extend 
         ServiceName = extract(@"Running task (\w+)", 1, message, typeof(string)),
-        EventType = "Start",
-        EventTime = timestamp
-    | project ServiceName, EventType, EventTime;
+        StartTime = timestamp
+    | project ServiceName, StartTime;
 
 let EndLogs = 
     traces
@@ -14,21 +13,17 @@ let EndLogs =
     | where message has "Task " and message has " completed"
     | extend 
         ServiceName = extract(@"Task (\w+) completed", 1, message, typeof(string)),
-        EventType = "End",
-        EventTime = timestamp
-    | project ServiceName, EventType, EventTime;
+        EndTime = timestamp
+    | project ServiceName, EndTime;
 
-(StartLogs
-| union EndLogs
-| sort by ServiceName asc, EventTime asc
-| partition by ServiceName
-(
-    serialize
-    | extend RunGroup = row_cumsum(EventType == "Start")
-)
-| summarize
-    StartTime = minif(EventTime, EventType == "Start"),
-    EndTime = minif(EventTime, EventType == "End")
-    by ServiceName, RunGroup
-| where isnotnull(StartTime)
-| order by ServiceName asc, StartTime asc)
+StartLogs
+| summarize StartTimes = make_list(StartTime) by ServiceName
+| join kind=inner (
+    EndLogs
+    | summarize EndTimes = make_list(EndTime) by ServiceName
+) on ServiceName
+| mv-expand StartTimes to typeof(datetime), EndTimes to typeof(datetime)
+| where EndTimes >= StartTimes
+| summarize EndTime = min(EndTimes) by ServiceName, StartTimes
+| project ServiceName, StartTime=StartTimes, EndTime
+| order by ServiceName asc, StartTime asc
