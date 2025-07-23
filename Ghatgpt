@@ -1,14 +1,22 @@
-traces
-| where timestamp >= ago(1d)
-| where message has "Running task" or message matches regex @"Task .+ completed"
-| extend 
-    ServiceName = extract(@"Running task (.+)", 1, message, typeof(string))
-                 ?? extract(@"Task (.+) completed", 1, message, typeof(string)),
-    Action = iff(message has "Running task", "Start", "End"),
-    Status = iff(Action == "End", "Success", "Running")
-| summarize
-    StartDate = minif(Action == "Start", timestamp, datetime(null)),
-    EndDate = maxif(Action == "End", timestamp, datetime(null)),
-    FinalStatus = any(Status)
-    by ServiceName
-| order by ServiceName asc
+let StartLogs = 
+    traces
+    | where timestamp >= ago(1d)
+    | where message matches regex @"Running task .+"
+    | extend 
+        ServiceName = extract(@"Running task (.+)", 1, message, typeof(string)),
+        StartTime = timestamp
+    | project ServiceName, StartTime;
+
+let EndLogs = 
+    traces
+    | where timestamp >= ago(1d)
+    | where message matches regex @"Task .+ completed$"
+    | extend 
+        ServiceName = extract(@"Task (.+) completed$", 1, message, typeof(string)),
+        EndTime = timestamp
+    | project ServiceName, EndTime;
+
+StartLogs
+| join kind=leftouter EndLogs on ServiceName
+| project ServiceName, StartTime, EndTime
+| order by ServiceName asc, StartTime desc
