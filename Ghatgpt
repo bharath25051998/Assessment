@@ -4,25 +4,23 @@ let StartLogs =
     | where message matches regex @"Running task .+"
     | extend 
         ServiceName = extract(@"Running task (.+)", 1, message, typeof(string)),
-        StartTime = timestamp
-    | project ServiceName, StartTime;
+        EventType = "Start",
+        EventTime = timestamp
+    | project ServiceName, EventType, EventTime;
 
 let EndLogs = 
     traces
     | where timestamp >= ago(1d)
-    | where message matches regex @"Task .+ completed$"
+    | where message matches regex @"Task .+ completed"
     | extend 
-        ServiceName = extract(@"Task (.+) completed$", 1, message, typeof(string)),
-        EndTime = timestamp
-    | project ServiceName, EndTime;
+        ServiceName = extract(@"Task (.+) completed", 1, message, typeof(string)),
+        EventType = "End",
+        EventTime = timestamp
+    | project ServiceName, EventType, EventTime;
 
-// Combine and process sequentially
 StartLogs
-| union (EndLogs)
-| sort by ServiceName asc, StartTime asc, EndTime asc
-| extend 
-    EventType = iff(isnull(StartTime), "End", "Start"),
-    EventTime = coalesce(StartTime, EndTime)
+| union EndLogs
+| sort by ServiceName asc, EventTime asc
 | serialize
 | extend RunId = row_number(1, EventType == "Start")
 | summarize 
