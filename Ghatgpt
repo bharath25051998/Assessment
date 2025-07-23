@@ -1,20 +1,9 @@
-# Variables
-$automationAccountName = "<YourAutomationAccountName>"
-$resourceGroupName = "<YourResourceGroupName>"
-$scheduleName = "Every3MinutesSchedule"
-$runbookName = "<YourRunbookName>"
-
-# Create a schedule that recurs every 3 minutes
-New-AzAutomationSchedule -ResourceGroupName $resourceGroupName `
-  -AutomationAccountName $automationAccountName `
-  -Name $scheduleName `
-  -StartTime (Get-Date).ToUniversalTime() `
-  -ExpiryTime (Get-Date).AddYears(1).ToUniversalTime() `
-  -Frequency Minute `
-  -Interval 3
-
-# Link the schedule to your runbook
-Register-AzAutomationScheduledRunbook -ResourceGroupName $resourceGroupName `
-  -AutomationAccountName $automationAccountName `
-  -RunbookName $runbookName `
-  -ScheduleName $scheduleName
+requests
+| where timestamp >= ago(1d)
+| where success == false
+| project requestTime=timestamp, requestName=name, url, resultCode, operation_Id
+| join kind=leftouter (
+    exceptions
+    | project exceptionTime=timestamp, operation_Id, type, outerMessage
+) on operation_Id
+| order by requestTime desc
