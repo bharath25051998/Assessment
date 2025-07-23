@@ -17,6 +17,12 @@ let EndLogs =
     | project ServiceName, EndTime;
 
 StartLogs
-| join kind=leftouter EndLogs on ServiceName
-| project ServiceName, StartTime, EndTime
+| join kind=leftouter (
+    EndLogs
+) on ServiceName
+| where EndTime >= StartTime
+| summarize 
+    StartTime = min(StartTime),
+    EndTime = min(EndTime)
+    by ServiceName, bin(StartTime, 1d)
 | order by ServiceName asc, StartTime desc
