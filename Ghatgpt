@@ -4,9 +4,8 @@ let StartLogs =
     | where message has "Running task"
     | extend 
         ServiceName = extract(@"Running task (\w+)", 1, message, typeof(string)),
-        EventTime = timestamp
-    | project ServiceName, EventTime
-    | order by ServiceName asc, EventTime asc;
+        StartTime = timestamp
+    | project ServiceName, StartTime;
 
 let EndLogs = 
     traces
@@ -14,14 +13,13 @@ let EndLogs =
     | where message has "Task " and message has " completed"
     | extend 
         ServiceName = extract(@"Task (\w+) completed", 1, message, typeof(string)),
-        EventTime = timestamp
-    | project ServiceName, EventTime
-    | order by ServiceName asc, EventTime asc;
+        EndTime = timestamp
+    | project ServiceName, EndTime;
 
 StartLogs
 | join kind=leftouter (
     EndLogs
 ) on ServiceName
-| where EndLogs_EventTime >= StartLogs_EventTime
-| summarize EndTime = min(EndLogs_EventTime) by ServiceName, StartTime=StartLogs_EventTime
+| where EndTime >= StartTime or isnull(EndTime)
+| summarize EndTime = minif(EndTime, EndTime >= StartTime) by ServiceName, StartTime
 | order by ServiceName asc, StartTime asc
