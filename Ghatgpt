@@ -1,5 +1,6 @@
 traces
 | where timestamp >= ago(1d)
 | where message has "Running task"
-| project timestamp, message, ServiceName = extract(@"Running task (.+)", 1, message, typeof(string))
+| extend ServiceName = extract(@"Running task (\w+)", 1, message, typeof(string))
+| project timestamp, message, ServiceName
 | order by timestamp desc
