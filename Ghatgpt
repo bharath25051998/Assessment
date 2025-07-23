@@ -18,13 +18,17 @@ let EndLogs =
         EventTime = timestamp
     | project ServiceName, EventType, EventTime;
 
-StartLogs
+(StartLogs
 | union EndLogs
 | sort by ServiceName asc, EventTime asc
-| serialize
-| extend RunId = row_number(1, EventType == "Start")
-| summarize 
+| partition by ServiceName
+(
+    serialize
+    | extend RunGroup = row_cumsum(EventType == "Start")
+)
+| summarize
     StartTime = minif(EventTime, EventType == "Start"),
     EndTime = minif(EventTime, EventType == "End")
-    by ServiceName, RunId
-| order by ServiceName asc, StartTime asc
+    by ServiceName, RunGroup
+| where isnotnull(StartTime)
+| order by ServiceName asc, StartTime asc)
