@@ -1,9 +1,14 @@
-requests
+traces
 | where timestamp >= ago(1d)
-| where success == false
-| project requestTime=timestamp, requestName=name, url, resultCode, operation_Id
-| join kind=leftouter (
-    exceptions
-    | project exceptionTime=timestamp, operation_Id, type, outerMessage
-) on operation_Id
-| order by requestTime desc
+| where message has "Running task" or message matches regex @"Task .+ completed"
+| extend 
+    ServiceName = extract(@"Running task (.+)", 1, message, typeof(string))
+                 ?? extract(@"Task (.+) completed", 1, message, typeof(string)),
+    Action = iff(message has "Running task", "Start", "End"),
+    Status = iff(Action == "End", "Success", "Running")
+| summarize
+    StartDate = minif(Action == "Start", timestamp, datetime(null)),
+    EndDate = maxif(Action == "End", timestamp, datetime(null)),
+    FinalStatus = any(Status)
+    by ServiceName
+| order by ServiceName asc
