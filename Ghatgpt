@@ -1,1 +1,4 @@
-ls /home/site/wwwroot/.python_packages/lib/site-packages/openai
+az functionapp deployment source config-zip \
+  --src functionapp.zip \
+  --name <your-function-name> \
+  --resource-group <your-rg>
