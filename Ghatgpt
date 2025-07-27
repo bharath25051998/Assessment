@@ -1,4 +1,26 @@
-az functionapp deployment source config-zip \
-  --src functionapp.zip \
-  --name <your-function-name> \
-  --resource-group <your-rg>
+import openai
+import azure.functions as func
+import os
+import json
+
+# Load the API key from Azure App Settings
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        req_body = req.get_json()
+        prompt = req_body.get("prompt", "No prompt provided.")
+
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        reply = response.choices[0].message.content
+        return func.HttpResponse(reply, status_code=200)
+
+    except Exception as e:
+        return func.HttpResponse(f"Error: {str(e)}", status_code=500)
