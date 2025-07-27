@@ -1,46 +1,54 @@
 import logging
-import openai
 import azure.functions as func
-import os
 import json
-
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+import openai  # Make sure it's in requirements.txt
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("🔔 PRReviewHandler triggered.")
+    logging.info("🚀 Azure Function triggered.")
 
     try:
-        req_body = req.get_json()
-        logging.info(f"📦 Received body: {req_body}")
-    except ValueError as e:
-        logging.error(f"❌ Invalid JSON: {e}")
-        return func.HttpResponse("❌ Invalid JSON", status_code=400)
+        # Parse request body
+        try:
+            body = req.get_json()
+            logging.info("📦 Received payload: %s", json.dumps(body))
+        except Exception as e:
+            logging.error("❌ Failed to parse request body: %s", str(e))
+            return func.HttpResponse("Invalid JSON body", status_code=400)
 
-    try:
-        resource = req_body.get("resource", {})
-        pr_id = resource.get("pullRequestId", None)
-        title = resource.get("title", "")
-        description = resource.get("description", "")
+        # Extract details safely
+        resource = body.get("resource", {})
+        pr_id = resource.get("pullRequestId")
+        repo_name = resource.get("repository", {}).get("name", "Unknown")
+        project_name = resource.get("repository", {}).get("project", {}).get("name", "Unknown")
+        pr_description = resource.get("description", "")
 
         if not pr_id:
-            return func.HttpResponse("❌ pullRequestId is missing", status_code=400)
+            logging.error("❌ pullRequestId missing in payload.")
+            return func.HttpResponse("Missing pullRequestId", status_code=400)
 
-        prompt = f"Review the following PR:\nTitle: {title}\nDescription: {description}"
+        logging.info(f"🧾 PR ID: {pr_id}, Repo: {repo_name}, Project: {project_name}")
 
-        logging.info("🧠 Sending prompt to OpenAI...")
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        logging.info(f"✅ OpenAI response received: {response}")
+        # Make OpenAI API call (dummy example)
+        try:
+            logging.info("🔗 Calling OpenAI API with description: %s", pr_description)
 
-        ai_review = response['choices'][0]['message']['content']
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are a code reviewer."},
+                    {"role": "user", "content": f"Review this pull request: {pr_description}"}
+                ],
+                max_tokens=200
+            )
+            review_comment = response['choices'][0]['message']['content']
+            logging.info("✅ OpenAI Response: %s", review_comment)
 
-        return func.HttpResponse(
-            f"✔️ Pull Request #{pr_id} analyzed. AI review:\n\n{ai_review}",
-            status_code=200
-        )
+        except Exception as e:
+            logging.error("🔥 OpenAI API call failed: %s", str(e))
+            return func.HttpResponse("OpenAI call failed", status_code=500)
 
-    except Exception as ex:
-        logging.exception("🔥 Unexpected exception in PR review handler.")
-        return func.HttpResponse(f"❌ Internal Error: {str(ex)}", status_code=500)
+        return func.HttpResponse(f"PR ID {pr_id} reviewed: {review_comment}", status_code=200)
+
+    except Exception as e:
+        logging.exception("🔥 Unhandled exception occurred:")
+        return func.HttpResponse(f"Internal server error: {str(e)}", status_code=500)
