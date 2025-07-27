@@ -1,8 +1,20 @@
 {
+  "eventType": "git.pullrequest.created",
   "resource": {
-    "title": "Fix UI bug",
-    "description": "This PR addresses the UI alignment issue",
-    "sourceRefName": "refs/heads/bugfix-ui",
-    "targetRefName": "refs/heads/main"
+    "pullRequestId": 123,
+    "title": "Fix critical bug",
+    "description": "Fixes a major issue in production",
+    "sourceRefName": "refs/heads/bugfix",
+    "targetRefName": "refs/heads/main",
+    "createdBy": {
+      "displayName": "Bharath Kumar",
+      "uniqueName": "bharath@example.com"
+    },
+    "repository": {
+      "name": "my-repo",
+      "project": {
+        "name": "MyProject"
+      }
+    }
   }
 }
