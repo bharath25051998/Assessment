@@ -1,9 +1,8 @@
 {
-  "version": "2.0",
-  "extensionBundle": {
-    "id": "Microsoft.Azure.Functions.ExtensionBundle",
-    "version": "[2.*, 3.0.0)"
+  "resource": {
+    "title": "Fix UI bug",
+    "description": "This PR addresses the UI alignment issue",
+    "sourceRefName": "refs/heads/bugfix-ui",
+    "targetRefName": "refs/heads/main"
   }
 }
-
-
