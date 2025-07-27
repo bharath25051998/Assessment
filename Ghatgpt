@@ -1,20 +1,46 @@
-{
-  "eventType": "git.pullrequest.created",
-  "resource": {
-    "pullRequestId": 123,
-    "title": "Fix critical bug",
-    "description": "Fixes a major issue in production",
-    "sourceRefName": "refs/heads/bugfix",
-    "targetRefName": "refs/heads/main",
-    "createdBy": {
-      "displayName": "Bharath Kumar",
-      "uniqueName": "bharath@example.com"
-    },
-    "repository": {
-      "name": "my-repo",
-      "project": {
-        "name": "MyProject"
-      }
-    }
-  }
-}
+import logging
+import openai
+import azure.functions as func
+import os
+import json
+
+openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("🔔 PRReviewHandler triggered.")
+
+    try:
+        req_body = req.get_json()
+        logging.info(f"📦 Received body: {req_body}")
+    except ValueError as e:
+        logging.error(f"❌ Invalid JSON: {e}")
+        return func.HttpResponse("❌ Invalid JSON", status_code=400)
+
+    try:
+        resource = req_body.get("resource", {})
+        pr_id = resource.get("pullRequestId", None)
+        title = resource.get("title", "")
+        description = resource.get("description", "")
+
+        if not pr_id:
+            return func.HttpResponse("❌ pullRequestId is missing", status_code=400)
+
+        prompt = f"Review the following PR:\nTitle: {title}\nDescription: {description}"
+
+        logging.info("🧠 Sending prompt to OpenAI...")
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        logging.info(f"✅ OpenAI response received: {response}")
+
+        ai_review = response['choices'][0]['message']['content']
+
+        return func.HttpResponse(
+            f"✔️ Pull Request #{pr_id} analyzed. AI review:\n\n{ai_review}",
+            status_code=200
+        )
+
+    except Exception as ex:
+        logging.exception("🔥 Unexpected exception in PR review handler.")
+        return func.HttpResponse(f"❌ Internal Error: {str(ex)}", status_code=500)
