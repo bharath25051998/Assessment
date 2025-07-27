@@ -1,25 +1,119 @@
-let StartLogs = 
-    traces
-    | where timestamp >= ago(1d)
-    | where message has "Running task"
-    | extend 
-        ServiceName = extract(@"Running task (\w+)", 1, message, typeof(string)),
-        StartTime = timestamp
-    | project ServiceName, StartTime;
+{
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["post"]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    }
+  ]
+}
 
-let EndLogs = 
-    traces
-    | where timestamp >= ago(1d)
-    | where message has "Task " and message has " completed"
-    | extend 
-        ServiceName = extract(@"Task (\w+) completed", 1, message, typeof(string)),
-        EndTime = timestamp
-    | project ServiceName, EndTime;
 
-StartLogs
-| join kind=leftouter (
-    EndLogs
-) on ServiceName
-| where EndTime >= StartTime or isnull(EndTime)
-| summarize EndTime = minif(EndTime, EndTime >= StartTime) by ServiceName, StartTime
-| order by ServiceName asc, StartTime asc
+
+requirements.txt
+
+azure-functions
+openai
+requests
+
+
+
+pr-ai-review/
+├── __init__.py
+├── function.json
+├── requirements.txt
+└── local.settings.json  (for local testing only)
+
+
+
+
+import openai
+import os
+import requests
+import json
+import azure.functions as func
+
+# Load secrets from environment
+openai.api_key = os.environ["OPENAI_API_KEY"]
+AZURE_DEVOPS_PAT = os.environ["AZURE_DEVOPS_PAT"]
+ORG = os.environ["AZURE_DEVOPS_ORG"]
+PROJECT = os.environ["AZURE_DEVOPS_PROJECT"]
+
+def get_diff(repo_id, pr_id):
+    url = f"https://dev.azure.com/{ORG}/{PROJECT}/_apis/git/repositories/{repo_id}/pullRequests/{pr_id}/iterations?api-version=7.0"
+    headers = {
+        "Authorization": f"Basic {os.environ['ENCODED_PAT']}"
+    }
+    response = requests.get(url, headers=headers)
+    iterations = response.json()["value"]
+    latest_iteration_id = iterations[-1]["id"]
+
+    # Get changed files in latest iteration
+    diff_url = f"https://dev.azure.com/{ORG}/{PROJECT}/_apis/git/repositories/{repo_id}/pullRequests/{pr_id}/iterations/{latest_iteration_id}/changes?api-version=7.0"
+    diff_resp = requests.get(diff_url, headers=headers)
+    changes = diff_resp.json().get("changes", [])
+    file_diffs = []
+
+    for change in changes:
+        item = change.get("item", {})
+        if item.get("path") and change.get("changeType") == "edit":
+            file_diffs.append(f"{item['path']}: {change.get('changeType')}")
+
+    return "\n".join(file_diffs)
+
+def call_gpt(code_diff):
+    prompt = f"Please review the following code changes and provide feedback:\n\n{code_diff}"
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.4
+    )
+    return response.choices[0].message.content
+
+def post_comment(repo_id, pr_id, comment_text):
+    url = f"https://dev.azure.com/{ORG}/{PROJECT}/_apis/git/repositories/{repo_id}/pullRequests/{pr_id}/threads?api-version=7.0"
+    headers = {
+        "Authorization": f"Basic {os.environ['ENCODED_PAT']}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "comments": [
+            {
+                "parentCommentId": 0,
+                "content": comment_text,
+                "commentType": 1
+            }
+        ],
+        "status": "active"
+    }
+    requests.post(url, headers=headers, data=json.dumps(payload))
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        data = req.get_json()
+        pr = data["resource"]
+        pr_id = pr["pullRequestId"]
+        repo_id = pr["repository"]["id"]
+
+        # Get code diff summary
+        diff_text = get_diff(repo_id, pr_id)
+        if not diff_text:
+            return func.HttpResponse("No code changes found", status_code=200)
+
+        # Ask GPT to review
+        feedback = call_gpt(diff_text)
+
+        # Post feedback to PR
+        post_comment(repo_id, pr_id, feedback)
+
+        return func.HttpResponse("AI review posted", status_code=200)
+
+    except Exception as e:
+        return func.HttpResponse(f"Error: {str(e)}", status_code=500)
