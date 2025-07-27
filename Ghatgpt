@@ -1,18 +1,22 @@
-import azure.functions as func
-from openai import OpenAI
 import os
 import json
+import azure.functions as func
+from openai import AzureOpenAI
 
-# Initialize OpenAI client using API key from Azure App Settings
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize Azure OpenAI client
+client = AzureOpenAI(
+    api_key=os.environ["AZURE_OPENAI_KEY"],
+    api_version="2023-12-01-preview",
+    azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"]
+)
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
         req_body = req.get_json()
-        prompt = req_body.get("prompt", "No prompt provided.")
+        prompt = req_body.get("prompt", "Hello, who are you?")
 
         response = client.chat.completions.create(
-            model="gpt-4",
+            model=os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"],
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}
