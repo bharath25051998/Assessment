@@ -1,110 +1,93 @@
-import logging
 import os
 import json
+import logging
 import base64
 import requests
-from azure.functions import HttpRequest, HttpResponse
+import azure.functions as func
 from openai import AzureOpenAI
 
 client = AzureOpenAI(
-    api_key=os.environ["AZURE_OPENAI_API_KEY"],
-    api_version=os.environ["AZURE_OPENAI_API_VERSION"],
-    azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"]
+    api_key=os.environ['AZURE_OPENAI_API_KEY'],
+    api_version=os.environ['AZURE_OPENAI_API_VERSION'],
+    azure_endpoint=os.environ['AZURE_OPENAI_ENDPOINT']
 )
 
-ORG = os.environ["AZURE_DEVOPS_ORG"]
-PROJECT = os.environ["AZURE_DEVOPS_PROJECT"]
-DEPLOYMENT = os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"]
-HEADERS = {
-    "Content-Type": "application/json",
-    "Authorization": f"Basic {os.environ['B64_PAT']}"
-}
-
-def get_changed_files(pr_id, repo_id):
-    url = f"https://dev.azure.com/{ORG}/{PROJECT}/_apis/git/repositories/{repo_id}/pullRequests/{pr_id}/iterations?api-version=7.1-preview.1"
-    iterations = requests.get(url, headers=HEADERS).json()
-    latest_id = max(i["id"] for i in iterations["value"])
-
-    url = f"https://dev.azure.com/{ORG}/{PROJECT}/_apis/git/repositories/{repo_id}/pullRequests/{pr_id}/iterations/{latest_id}/changes?api-version=7.1-preview.1"
-    changes = requests.get(url, headers=HEADERS).json()
-
-    files = []
-    for c in changes["changes"]:
-        try:
-            files.append(c["item"]["path"])
-        except:
-            pass
-    logging.info(f"Changed files: {files}")
-    return files
-
-def get_file_content(repo_id, file_path, commit_id):
-    url = f"https://dev.azure.com/{ORG}/{PROJECT}/_apis/git/repositories/{repo_id}/items?path={file_path}&versionDescriptor.version={commit_id}&includeContent=true&api-version=7.1-preview.1"
-    res = requests.get(url, headers=HEADERS)
-    return res.text
-
-def review_code(file_content, filename):
-    system_prompt = f"You are a strict code reviewer. Review the file `{filename}` and comment on improvements."
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": file_content}
-    ]
-
-    response = client.chat.completions.create(
-        model=DEPLOYMENT,
-        messages=messages,
-        temperature=0.3
-    )
-    reply = response.choices[0].message.content
-    logging.info(f"Review response for {filename}: {reply}")
-    return reply
-
-def post_comment(pr_id, repo_id, message):
-    url = f"https://dev.azure.com/{ORG}/{PROJECT}/_apis/git/repositories/{repo_id}/pullRequests/{pr_id}/threads?api-version=7.1-preview.1"
+def post_comment(pr_id, repo_id, project, message):
+    url = f"https://dev.azure.com/{project}/_apis/git/repositories/{repo_id}/pullRequests/{pr_id}/threads?api-version=7.1-preview.1"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {os.environ['B64_PAT']}"
+    }
     payload = {
-        "comments": [
-            {
-                "parentCommentId": 0,
-                "content": message,
-                "commentType": 1
-            }
-        ],
+        "comments": [{"parentCommentId": 0, "content": message, "commentType": 1}],
         "status": 1
     }
-    res = requests.post(url, headers=HEADERS, json=payload)
-    logging.info(f"Posted comment: {res.status_code}")
-    return res.status_code
+    response = requests.post(url, headers=headers, json=payload)
+    logging.info(f"[Azure DevOps] Comment Response Status: {response.status_code}, Body: {response.text}")
 
-def approve_pr(pr_id, repo_id):
-    url = f"https://dev.azure.com/{ORG}/{PROJECT}/_apis/git/repositories/{repo_id}/pullRequests/{pr_id}/reviewers/{ORG}?api-version=7.1-preview.1"
-    payload = {"vote": 10}
-    res = requests.put(url, headers=HEADERS, json=payload)
-    logging.info(f"PR approval status: {res.status_code}")
-    return res.status_code
+def approve_pr(pr_id, repo_id, project, vote):
+    url = f"https://dev.azure.com/{project}/_apis/git/repositories/{repo_id}/pullRequests/{pr_id}/reviewers/{project}%20Build%20Service?api-version=7.1-preview.1"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {os.environ['B64_PAT']}"
+    }
+    payload = {"vote": vote}
+    response = requests.put(url, headers=headers, json=payload)
+    logging.info(f"[Azure DevOps] Review Vote Status: {response.status_code}, Body: {response.text}")
 
-def main(req: HttpRequest) -> HttpResponse:
+def get_changed_files(pr_id, repo_id, project):
+    url = f"https://dev.azure.com/{project}/_apis/git/repositories/{repo_id}/pullRequests/{pr_id}/iterations/1/changes?api-version=7.1-preview.1"
+    headers = {
+        "Authorization": f"Basic {os.environ['B64_PAT']}"
+    }
+    response = requests.get(url, headers=headers)
+    logging.info(f"[Azure DevOps] Changed files fetch: {response.status_code}")
+    return response.json() if response.ok else {}
+
+def review_code(code):
+    prompt = f"Review the following code:\n\n{code}\n\nProvide feedback and whether it's acceptable."
+    response = client.chat.completions.create(
+        model=os.environ['AZURE_OPENAI_DEPLOYMENT'],
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3
+    )
+    result = response.choices[0].message.content
+    logging.info(f"[OpenAI] Review response: {result}")
+    return result
+
+def extract_code_from_patch(patch):
+    # Simplified; customize if needed
+    return patch if patch else "No patch available."
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("🔧 Pull Request Review Function triggered")
+
     try:
-        body = req.get_json()
-        logging.info(f"Webhook payload: {json.dumps(body)}")
+        data = req.get_json()
+        pr = data["resource"]
+        pr_id = pr["pullRequestId"]
+        repo_id = pr["repository"]["id"]
+        project = pr["repository"]["project"]["name"]
 
-        pr = body["resource"]["pullRequestId"]
-        repo = body["resource"]["repository"]["id"]
-        last_commit = body["resource"]["lastMergeSourceCommit"]["commitId"]
+        changes = get_changed_files(pr_id, repo_id, project)
+        overall_approval = True
 
-        files = get_changed_files(pr, repo)
-        final_comments = []
+        for change in changes.get("changes", []):
+            item = change.get("item", {})
+            file_path = item.get("path", "Unknown file")
+            patch = change.get("changeTrackingId", "")
+            code = extract_code_from_patch(patch)
 
-        for file_path in files:
-            content = get_file_content(repo, file_path, last_commit)
-            comment = review_code(content, file_path)
-            final_comments.append(comment)
-            post_comment(pr, repo, f"**{file_path}**\n\n{comment}")
+            review = review_code(code)
+            post_comment(pr_id, repo_id, project, f"**{file_path}**:\n{review}")
 
-        # Optional: decide to approve
-        if all("no issues" in c.lower() for c in final_comments):
-            approve_pr(pr, repo)
+            if "issue" in review.lower() or "reject" in review.lower():
+                overall_approval = False
 
-        return HttpResponse("Review completed", status_code=200)
+        # Vote: 10 = Approve, -10 = Reject
+        approve_pr(pr_id, repo_id, project, vote=10 if overall_approval else -10)
+        return func.HttpResponse("✅ Pull Request reviewed", status_code=200)
 
     except Exception as e:
-        logging.error(f"Error during PR review: {str(e)}")
-        return HttpResponse(f"Error: {str(e)}", status_code=500)
+        logging.exception("❌ Error during PR review")
+        return func.HttpResponse(f"Error: {str(e)}", status_code=500)
