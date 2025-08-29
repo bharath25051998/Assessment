@@ -1,1 +1,1 @@
-https://graph.microsoft.com/v1.0/groups?$filter=startswith(displayName,'Rabo')&$select=id,displayName
+https://graph.microsoft.com/v1.0/users/Michael.Janssen@rabobank.nl/memberOf/microsoft.graph.group?$select=id,displayName
