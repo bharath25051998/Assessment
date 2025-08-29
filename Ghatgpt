@@ -1,1 +1,1 @@
-GET https://dev.azure.com/{{organization}}/{{project}}/_apis/git/repositories?api-version=7.1-preview.1
+https://graph.microsoft.com/v1.0/groups?$filter=startswith(displayName,'Rabo')&$select=id,displayName
