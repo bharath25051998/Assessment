@@ -1,1 +1,129 @@
+import logging
+import requests
+import azure.functions as func
+from openai import AzureOpenAI
+import base64
+import json
 
+AZURE_OPENAI_ENDPOINT = "https://copilot-openai-poc.openai.azure.com/"
+AZURE_OPENAI_KEY = "2bde1df08ad2462c812a6402da38d6e4"
+AZURE_OPENAI_DEPLOYMENT = "gpt-4"
+AZURE_DEVOPS_ORG = "Alshaya-DevOps"
+AZURE_DEVOPS_PROJECT = "Mha_Alshaya_AgenticAI_Poc"
+REPO_ID = "716fc091-6a27-4670-8a04-67de9b003a0b"
+PAT = "Df2kp1e6K7Q4gokpDCh4slaBN9xEf2lQNSjnz16m6WdnZTfNJ8QSJQQJ99BGACAAAAAbFsp6AAASAZDO1PoN"
+
+client = AzureOpenAI(
+    api_key=AZURE_OPENAI_KEY,
+    api_version="2024-02-15-preview",
+    azure_endpoint=AZURE_OPENAI_ENDPOINT,
+)
+
+def get_basic_auth_header():
+    token = base64.b64encode(f":{PAT}".encode()).decode()
+    return {"Authorization": f"Basic {token}"}
+
+def get_changed_files(pr_id):
+    logging.info(f"Getting changed files for PR ID: {pr_id}")
+    headers = get_basic_auth_header()
+    url = f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}/iterations?api-version=7.1-preview.1"
+    try:
+        resp = requests.get(url, headers=headers)
+        resp.raise_for_status()
+        iterations = resp.json().get("value", [])
+        if not iterations:
+            logging.warning("No iterations found for PR.")
+            return []
+        last_iteration_id = iterations[-1]["id"]
+        logging.info(f"Last iteration ID: {last_iteration_id}")
+
+        url_changes = f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}/iterations/{last_iteration_id}/changes?api-version=7.1-preview.1"
+        resp_changes = requests.get(url_changes, headers=headers)
+        resp_changes.raise_for_status()
+        changes = resp_changes.json().get("changes", [])
+        changed_files = [c.get("item", {}).get("path") for c in changes if c.get("item", {}).get("path")]
+        logging.info(f"Found {len(changed_files)} changed files.")
+        return changed_files
+    except Exception as e:
+        logging.error(f"Failed to get changed files: {str(e)}")
+        return []
+
+def fetch_file_content(file_path, commit_id):
+    logging.info(f"Fetching file content for {file_path} at commit {commit_id}")
+    headers = get_basic_auth_header()
+    url = (
+        f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/"
+        f"{REPO_ID}/items?path={file_path}&versionDescriptor.version={commit_id}&includeContent=true&api-version=7.1-preview.1"
+    )
+    try:
+        resp = requests.get(url, headers=headers)
+        resp.raise_for_status()
+        content = resp.json().get("content")
+        if content:
+            logging.info(f"Content fetched for {file_path} (length: {len(content)})")
+        else:
+            logging.warning(f"No content found in {file_path}")
+        return content
+    except Exception as e:
+        logging.error(f"Failed to fetch file content for {file_path}: {str(e)}")
+        return None
+
+def post_comment(pr_id, comment_text):
+    logging.info(f"Posting comment to PR {pr_id}")
+    headers = get_basic_auth_header()
+    headers["Content-Type"] = "application/json"
+    url = (
+        f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/"
+        f"{REPO_ID}/pullRequests/{pr_id}/threads?api-version=7.1-preview.1"
+    )
+    payload = {
+        "comments": [{
+            "parentCommentId": 0,
+            "content": comment_text,
+            "commentType": "text"
+        }],
+        "status": "active"
+    }
+    try:
+        resp = requests.post(url, headers=headers, json=payload)
+        resp.raise_for_status()
+        logging.info(f"Successfully posted comment to PR {pr_id}")
+    except Exception as e:
+        logging.error(f"Failed to post comment to PR {pr_id}: {str(e)}")
+
+def review_files_and_comment(pr_id, commit_id):
+    logging.info(f"Starting review for PR {pr_id} at commit {commit_id}")
+    files = get_changed_files(pr_id)
+    if not files:
+        logging.warning("No files to review.")
+        return
+    for file_path in files:
+        content = fetch_file_content(file_path, commit_id)
+        if content:
+            try:
+                response = client.chat.completions.create(
+                    deployment_id=AZURE_OPENAI_DEPLOYMENT,
+                    messages=[{"role": "user", "content": f"Review this file:\n{content}\n"}],
+                    max_tokens=150,
+                    temperature=0.7
+                )
+                review_text = response.choices[0].message.content.strip()
+                logging.info(f"Review generated for {file_path}")
+                post_comment(pr_id, f"Review for {file_path}:\n{review_text}")
+            except Exception as e:
+                logging.error(f"OpenAI error for {file_path}: {str(e)}")
+        else:
+            logging.warning(f"Skipped review for {file_path} due to empty content.")
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("Azure Function triggered for PR review")
+    try:
+        hook_data = req.get_json()
+        pr_id = hook_data["resource"]["pullRequestId"]
+        commit_id = hook_data["resource"]["lastMergeSourceCommit"]["commitId"]
+        logging.info(f"Processing PR {pr_id} commit {commit_id}")
+        review_files_and_comment(pr_id, commit_id)
+        return func.HttpResponse("PR reviewed and comments posted.", status_code=200)
+    except Exception as e:
+        logging.error(f"Error processing PR: {str(e)}")
+        return func.HttpResponse("Error processing PR.", status_code=500)
