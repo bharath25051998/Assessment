@@ -1,1 +1,120 @@
-https://graph.microsoft.com/v1.0/users/Michael.Janssen@rabobank.nl/memberOf/microsoft.graph.group?$select=id,displayName
+import logging
+import requests
+import azure.functions as func
+from openai import AzureOpenAI
+import traceback
+import base64
+import time
+
+AZURE_OPENAI_ENDPOINT = "https://copilot-openai-poc.openai.azure.com/"
+AZURE_OPENAI_KEY = "2bde1df08ad2462c812a6402da38d6e4"
+AZURE_OPENAI_DEPLOYMENT = "gpt-4"
+AZURE_DEVOPS_ORG = "Alshaya-DevOps"
+AZURE_DEVOPS_PROJECT = "Mha_Alshaya_AgenticAI_Poc"
+REPO_ID = "716fc091-6a27-4670-8a04-67de9b003a0b"
+PAT = "Df2kp1e6K7Q4gokpDCh4slaBN9xEf2lQNSjnz16m6WdnZTfNJ8QSJQQJ99BGACAAAAAbFsp6AAASAZDO1PoN"
+
+client = AzureOpenAI(
+    api_key=AZURE_OPENAI_KEY,
+    api_version="2024-02-15-preview",
+    azure_endpoint=AZURE_OPENAI_ENDPOINT,
+)
+
+def get_basic_auth_header():
+    token = base64.b64encode(f":{PAT}".encode()).decode()
+    return {"Authorization": f"Basic {token}"}
+
+def get_pr_commit_id(pr_id):
+    url = f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}?api-version=7.1-preview.1"
+    headers = get_basic_auth_header()
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, headers=headers, timeout=10)
+            resp.raise_for_status()
+            pr_json = resp.json()
+            return pr_json.get("lastMergeSourceCommit", {}).get("commitId")
+        except requests.HTTPError as err:
+            logging.error(f"PR info error: {err}")
+            if resp.status_code == 429:
+                time.sleep(2 ** attempt)
+            else:
+                break
+        except Exception as ex:
+            logging.error(f"Network error: {ex}")
+            break
+    return None
+
+def get_changed_files(pr_id):
+    headers = get_basic_auth_header()
+    url = f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}/iterations?api-version=7.1-preview.1"
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+        iterations = resp.json().get("value", [])
+        if not iterations:
+            return []
+        last_iteration_id = iterations[-1]["id"]
+        url_changes = f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}/iterations/{last_iteration_id}/changes?api-version=7.1-preview.1"
+        resp_changes = requests.get(url_changes, headers=headers, timeout=10)
+        resp_changes.raise_for_status()
+        changes = resp_changes.json().get("changes", [])
+        return [c.get("item", {}).get("path") for c in changes if c.get("item", {}).get("path")]
+    except Exception as ex:
+        logging.error(f"Changed files error: {ex}")
+        return []
+
+def fetch_file_content(file_path, commit_id):
+    headers = get_basic_auth_header()
+    url = (
+        f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/"
+        f"{REPO_ID}/items?path={file_path}&versionDescriptor.version={commit_id}&includeContent=true&api-version=7.1-preview.1"
+    )
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+        return resp.json().get("content")
+    except Exception as ex:
+        logging.error(f"File content error: {ex}")
+        return None
+
+def process_pr(pr_id):
+    commit_id = get_pr_commit_id(pr_id)
+    if not commit_id:
+        logging.error("No commit ID found, aborting process.")
+        return
+    changed_files = get_changed_files(pr_id)
+    if not changed_files:
+        logging.error("No changed files found, aborting process.")
+        return
+    for file_path in changed_files:
+        content = fetch_file_content(file_path, commit_id)
+        if content:
+            try:
+                response = client.chat.completions.create(
+                    deployment_id=AZURE_OPENAI_DEPLOYMENT,
+                    messages=[
+                        {"role": "user", "content": content}
+                    ],
+                    max_tokens=150,
+                    temperature=0.7
+                )
+                logging.info(f"OpenAI response for {file_path}: {response.choices.message.content.strip()}")
+            except Exception as ex:
+                logging.error(f"OpenAI error for {file_path}: {ex}")
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    pr_id = req.params.get('pr_id')
+    if not pr_id:
+        return func.HttpResponse(
+            "Please pass a PR ID in the query string.",
+            status_code=400
+        )
+    try:
+        process_pr(pr_id)
+        return func.HttpResponse(f"Processed PR ID: {pr_id}", status_code=200)
+    except Exception as e:
+        logging.error(f"Error processing PR: {str(e)}")
+        return func.HttpResponse(
+            "An error occurred while processing the PR.",
+            status_code=500
+        )
