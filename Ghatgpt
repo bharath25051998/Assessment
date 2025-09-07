@@ -3,25 +3,30 @@ import requests
 import azure.functions as func
 from openai import AzureOpenAI
 import base64
-import os
 
-# ============= CONFIG (replace with your values) ====================
+# ------------------------
+# 🔧 Hardcoded Config
+# ------------------------
 AZURE_OPENAI_ENDPOINT = "https://copilot-openai-poc.openai.azure.com/"
-AZURE_OPENAI_KEY = "YOUR_OPENAI_KEY"
+AZURE_OPENAI_KEY = "2bde1df08ad2462c812a6402da38d6e4"
 AZURE_OPENAI_DEPLOYMENT = "gpt-4"
 AZURE_DEVOPS_ORG = "Alshaya-DevOps"
 AZURE_DEVOPS_PROJECT = "Mha_Alshaya_AgenticAI_Poc"
 REPO_ID = "716fc091-6a27-4670-8a04-67de9b003a0b"
-PAT = "YOUR_PAT"  # PAT owner must have repo permissions
-PAT_USER_EMAIL = "your.email@company.com"  # email of the PAT owner
-# ====================================================================
+PAT = "Df2kp1e6K7Q4gokpDCh4slaBN9xEf2lQNSjnz16m6WdnZTfNJ8QSJQQJ99BGACAAAAAbFsp6AAASAZDO1PoN"
 
+# ------------------------
+# 🔧 OpenAI Client
+# ------------------------
 client = AzureOpenAI(
     api_key=AZURE_OPENAI_KEY,
     api_version="2024-02-15-preview",
     azure_endpoint=AZURE_OPENAI_ENDPOINT,
 )
 
+# ------------------------
+# 🔧 DevOps Helper
+# ------------------------
 def get_basic_auth_header():
     token = base64.b64encode(f":{PAT}".encode()).decode()
     return {"Authorization": f"Basic {token}"}
@@ -30,141 +35,118 @@ def get_changed_files(pr_id):
     logging.info(f"[ChangedFiles] Getting changed files for PR {pr_id}")
     headers = get_basic_auth_header()
 
-    # Step 1: fetch all iterations
-    url_iter = (
-        f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}"
-        f"/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}/iterations?api-version=7.0"
-    )
-    try:
-        resp = requests.get(url_iter, headers=headers)
-        resp.raise_for_status()
-        iterations = resp.json().get("value", [])
-        if not iterations:
-            logging.warning("[ChangedFiles] No iterations found for PR.")
-            return []
-        last_iter_id = iterations[-1]["id"]
-        logging.info(f"[ChangedFiles] Last iteration ID: {last_iter_id}")
-
-        # Step 2: fetch changes for last iteration
-        url_changes = (
-            f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}"
-            f"/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}/iterations/{last_iter_id}/changes?api-version=7.0"
-        )
-        resp_changes = requests.get(url_changes, headers=headers)
-        resp_changes.raise_for_status()
-        changes = resp_changes.json().get("changes", [])
-        changed_files = [
-            c.get("item", {}).get("path") for c in changes if c.get("item", {}).get("path")
-        ]
-        logging.info(f"[ChangedFiles] Found {len(changed_files)} files: {changed_files}")
-        return changed_files
-    except Exception as e:
-        logging.error(f"[ChangedFiles] Failed to get files: {str(e)}")
+    # Step 1: Get iterations
+    url_iter = f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}/iterations?api-version=7.0"
+    resp = requests.get(url_iter, headers=headers)
+    resp.raise_for_status()
+    iterations = resp.json().get("value", [])
+    if not iterations:
+        logging.warning("[ChangedFiles] No iterations found for PR.")
         return []
 
+    last_iter = iterations[-1]
+    last_iteration_id = last_iter.get("id") or last_iter.get("iterationId")
+    logging.info(f"[ChangedFiles] Last iteration ID: {last_iteration_id}")
+
+    # Step 2: Get file changes
+    url_changes = f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}/iterations/{last_iteration_id}/changes?api-version=7.0"
+    resp_changes = requests.get(url_changes, headers=headers)
+    resp_changes.raise_for_status()
+    changes = resp_changes.json().get("changes", [])
+
+    changed_files = [
+        c.get("item", {}).get("path")
+        for c in changes if c.get("item", {}).get("path")
+    ]
+    logging.info(f"[ChangedFiles] Found {len(changed_files)} files: {changed_files}")
+    return changed_files
+
 def fetch_file_content(file_path, commit_id):
-    logging.info(f"[FetchContent] Fetching {file_path} at {commit_id}")
+    logging.info(f"[Content] Fetching file {file_path} at commit {commit_id}")
     headers = get_basic_auth_header()
     url = (
-        f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}"
-        f"/_apis/git/repositories/{REPO_ID}/items?path={file_path}"
-        f"&versionDescriptor.version={commit_id}&includeContent=true&api-version=7.0"
+        f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/"
+        f"{REPO_ID}/items?path={file_path}&versionDescriptor.version={commit_id}&includeContent=true&api-version=7.0"
     )
-    try:
-        resp = requests.get(url, headers=headers)
-        resp.raise_for_status()
-        content = resp.json().get("content")
-        if content:
-            logging.info(f"[FetchContent] Got {len(content)} chars from {file_path}")
-        else:
-            logging.warning(f"[FetchContent] No content in {file_path}")
-        return content
-    except Exception as e:
-        logging.error(f"[FetchContent] Error fetching {file_path}: {str(e)}")
-        return None
+    resp = requests.get(url, headers=headers)
+    resp.raise_for_status()
 
-def post_comment(pr_id, comment_text):
+    # API returns JSON or raw text
+    try:
+        content = resp.json().get("content")
+    except ValueError:
+        content = resp.text
+
+    if content:
+        logging.info(f"[Content] Got {len(content)} chars from {file_path}")
+    else:
+        logging.warning(f"[Content] No content for {file_path}")
+    return content
+
+def post_comment(pr_id, text):
     logging.info(f"[Comment] Posting comment to PR {pr_id}")
     headers = get_basic_auth_header()
     headers["Content-Type"] = "application/json"
     url = (
-        f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}"
-        f"/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}/threads?api-version=7.0"
+        f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}/_apis/git/repositories/"
+        f"{REPO_ID}/pullRequests/{pr_id}/threads?api-version=7.0"
     )
     payload = {
         "comments": [{
             "parentCommentId": 0,
-            "content": comment_text,
+            "content": text,
             "commentType": "text"
         }],
         "status": "active"
     }
-    try:
-        resp = requests.post(url, headers=headers, json=payload)
-        resp.raise_for_status()
-        logging.info(f"[Comment] Posted successfully")
-    except Exception as e:
-        logging.error(f"[Comment] Failed to post: {str(e)}")
+    resp = requests.post(url, headers=headers, json=payload)
+    resp.raise_for_status()
+    logging.info(f"[Comment] Successfully posted to PR {pr_id}")
 
-def set_vote(pr_id, vote_value=10):
-    """vote_value: 10 = approve, -10 = reject, 5 = approve with suggestions"""
-    logging.info(f"[Vote] Setting vote {vote_value} on PR {pr_id}")
-    headers = get_basic_auth_header()
-    headers["Content-Type"] = "application/json"
-    url = (
-        f"https://dev.azure.com/{AZURE_DEVOPS_ORG}/{AZURE_DEVOPS_PROJECT}"
-        f"/_apis/git/repositories/{REPO_ID}/pullRequests/{pr_id}/reviewers/{PAT_USER_EMAIL}?api-version=7.0"
-    )
-    payload = {"vote": vote_value}
-    try:
-        resp = requests.put(url, headers=headers, json=payload)
-        resp.raise_for_status()
-        logging.info(f"[Vote] Vote set successfully")
-    except Exception as e:
-        logging.error(f"[Vote] Failed to set vote: {str(e)}")
-
+# ------------------------
+# 🔧 Review Logic
+# ------------------------
 def review_files_and_comment(pr_id, commit_id):
     logging.info(f"[Review] Starting review for PR {pr_id} at {commit_id}")
     files = get_changed_files(pr_id)
     if not files:
-        logging.warning("[Review] No files to review.")
-        return False
+        logging.warning("[Review] No files to review")
+        return
 
     for file_path in files:
         content = fetch_file_content(file_path, commit_id)
-        if content:
-            try:
-                response = client.chat.completions.create(
-                    deployment_id=AZURE_OPENAI_DEPLOYMENT,
-                    messages=[{"role": "user", "content": f"Review this file:\n{content}\n"}],
-                    max_tokens=200,
-                    temperature=0.5
-                )
-                review_text = response.choices[0].message.content.strip()
-                logging.info(f"[Review] Got AI review for {file_path}")
-                post_comment(pr_id, f"**Review for {file_path}:**\n{review_text}")
-            except Exception as e:
-                logging.error(f"[Review] AI error for {file_path}: {str(e)}")
-        else:
-            logging.warning(f"[Review] Skipped {file_path} (empty content)")
-    return True
+        if not content:
+            continue
 
+        try:
+            logging.info(f"[OpenAI] Sending {file_path} to OpenAI for review")
+            response = client.chat.completions.create(
+                deployment_id=AZURE_OPENAI_DEPLOYMENT,
+                messages=[
+                    {"role": "system", "content": "You are a code reviewer. Prioritize correctness, security, performance, and readability issues."},
+                    {"role": "user", "content": f"Review this file: {file_path}\n\n{content}"}
+                ],
+                max_tokens=300,
+                temperature=0.4,
+            )
+            review_text = response.choices[0].message.content.strip()
+            logging.info(f"[OpenAI] Got review for {file_path} (length: {len(review_text)})")
+            post_comment(pr_id, f"**AI Review for {file_path}:**\n{review_text}")
+        except Exception as e:
+            logging.error(f"[OpenAI] Failed on {file_path}: {e}")
+
+# ------------------------
+# 🔧 Function Entry
+# ------------------------
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("[Webhook] Triggered")
     try:
-        hook_data = req.get_json()
-        pr_id = hook_data["resource"]["pullRequestId"]
-        commit_id = hook_data["resource"]["lastMergeSourceCommit"]["commitId"]
+        payload = req.get_json()
+        pr_id = payload["resource"]["pullRequestId"]
+        commit_id = payload["resource"]["lastMergeSourceCommit"]["commitId"]
         logging.info(f"[Webhook] Processing PR {pr_id} commit {commit_id}")
-
-        # Step 1: Review and comment
-        reviewed = review_files_and_comment(pr_id, commit_id)
-
-        # Step 2: Only vote after comments are posted
-        if reviewed:
-            set_vote(pr_id, vote_value=10)
-
-        return func.HttpResponse("PR reviewed, comments posted, vote set.", status_code=200)
+        review_files_and_comment(pr_id, commit_id)
+        return func.HttpResponse("✅ PR reviewed and comments posted.", status_code=200)
     except Exception as e:
-        logging.error(f"[Webhook] Error: {str(e)}")
-        return func.HttpResponse("Error processing PR.", status_code=500)
+        logging.error(f"[Webhook] Error: {e}")
+        return func.HttpResponse("❌ Error processing PR.", status_code=500)
