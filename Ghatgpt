@@ -1,13 +1,35 @@
-You have two tables with a primary–foreign key dependency:
-	•	Employee
-	•	id (int, PK)
-	•	name (varchar(max))
-	•	emailid (varchar(max))
-	•	grade (varchar(max))
-	•	CourseCompletion
-	•	empid (FK → Employee.id)
-	•	coursename (varchar(max))
-	•	coursestatus (varchar(max))
-	•	handsonstatus (varchar(max))
-
-You want dummy data that respects the relationship. 
+   Email Text (from dump folder)
+                │
+                ▼
+      ┌───────────────────┐
+      │ Python Program    │
+      │ - Read email      │
+      │ - Build prompt    │
+      │ - Send to API     │
+      └─────────┬─────────┘
+                │
+                ▼
+   ┌──────────────────────────────┐
+   │ Azure OpenAI Request (INPUT) │
+   │──────────────────────────────│
+   │ Email text                   │
+   │ Questions for classification │
+   │ Instructions for output      │
+   └────────────┬─────────────────┘
+                │ Calls API
+                ▼
+   ┌──────────────────────────────┐
+   │ Azure OpenAI Response OUTPUT │
+   │──────────────────────────────│
+   │ Category                     │
+   │ Confidence Score             │
+   │ Suspicious Lines             │
+   │ Reason                       │
+   │ Priority Score               │
+   └────────────┬─────────────────┘
+                │
+                ▼
+        ┌──────────────────┐
+        │ Save Results     │
+        │ CSV / JSON / DB  │
+        └──────────────────┘
