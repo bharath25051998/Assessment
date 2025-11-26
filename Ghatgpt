@@ -1,35 +1,85 @@
-   Email Text (from dump folder)
+┌─────────────────────────────────────────────────────┐
+│                LEGACY INPUT                        │
+│  - 3000+ lines of Java source code                 │
+│  - Provided as: upload OR pasted text              │
+└──────────────────────────────┬──────────────────────┘
+                               ▼
+
+┌─────────────────────────────────────────────────────┐
+│ 1. PRE-PROCESSING LAYER (Python Code)              │
+│  - Load all .java files or pasted code             │
+│  - Normalize text (remove extra spaces/comments    │
+│    only if needed, keep logic intact)              │
+└──────────────────────────────┬──────────────────────┘
+                               ▼
+
+┌─────────────────────────────────────────────────────┐
+│ 2. INTELLIGENT CHUNKING (Python Code)              │
+│  - Split 3K lines into logical chunks:             │
+│      • Class level chunks                          │
+│      • Method level chunks                         │
+│      • 300–600 lines per chunk                     │
+│  - Maintain order & tag chunk IDs                  │
+└──────────────────────────────┬──────────────────────┘
+                               ▼
+
+┌─────────────────────────────────────────────────────┐
+│ 3. PROMPT ORCHESTRATOR (Python)                    │
+│  - For each chunk call OpenAI GPT endpoint         │
+│  - Prompt tasks:                                   │
+│      A. Understand logic                           │
+│      B. Summarize behavior (English doc)            │
+│      C. Convert to Python code                     │
+│      D. Identify risks/uncertain lines             │
+│      E. Generate PyTest cases                      │
+│  - Store outputs per chunk                         │
+└──────────────────────────────┬──────────────────────┘
+                               ▼
+
+┌───────────────────────────────────────────────┐
+│ 4. OPENAI ENDPOINT                            │
+│  (GPT MODEL PROCESSING PER CHUNK)              │
+│  - Deep logic understanding                   │
+│  - Java → Python conversion                    │
+│  - Risk tagging                               │
+│  - Doc generation                             │
+│  - Unit test synthesis                        │
+└──────────────────────────────┬────────────────┘
+                               ▼
+
+┌─────────────────────────────────────────────────────┐
+│ 5. MERGE & ASSEMBLY LAYER (Python)                 │
+│  - Reconstruct Python code in original order        │
+│  - Ensure cross-class references are preserved      │
+│  - Combine documentation summaries into 1 doc       │
+│  - Combine all tests into 1 test suite             │
+└──────────────────────────────┬──────────────────────┘
+                               ▼
+
+┌─────────────────────────────────────────────────────┐
+│ 6. VALIDATION ENGINE (Python Local)                │
+│  - Run generated PyTest suite                      │
+│  - Capture failures with line context              │
+│  - Send failure fragments back to OpenAI for auto  │
+│    fixes (max 2–3 retry loop)                     │
+└───────────────┬─────────────────┬──────────────────┘
+                │                 │
+                ▼                 ▼
+     (if pass ✅)         (if fails after retries ❗)
+
+┌──────────────────────┐   ┌─────────────────────────────┐
+│ 7A. SUCCESS OUTPUT   │   │ 7B. HUMAN REVIEW NEEDED     │
+│  - Python code ready │   │  - Flagged risky chunks     │
+│  - Tests passed      │   │  - Partial converted code   │
+│  - 75%+ confidence  │   │  - Failure evidence for dev  │
+└──────────────────────┘   └─────────────────────────────┘
                 │
                 ▼
-      ┌───────────────────┐
-      │ Python Program    │
-      │ - Read email      │
-      │ - Build prompt    │
-      │ - Send to API     │
-      └─────────┬─────────┘
-                │
-                ▼
-   ┌──────────────────────────────┐
-   │ Azure OpenAI Request (INPUT) │
-   │──────────────────────────────│
-   │ Email text                   │
-   │ Questions for classification │
-   │ Instructions for output      │
-   └────────────┬─────────────────┘
-                │ Calls API
-                ▼
-   ┌──────────────────────────────┐
-   │ Azure OpenAI Response OUTPUT │
-   │──────────────────────────────│
-   │ Category                     │
-   │ Confidence Score             │
-   │ Suspicious Lines             │
-   │ Reason                       │
-   │ Priority Score               │
-   └────────────┬─────────────────┘
-                │
-                ▼
-        ┌──────────────────┐
-        │ Save Results     │
-        │ CSV / JSON / DB  │
-        └──────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│ 8. REVIEW DASHBOARD (Optional UI but ready output) │
+│  - Code conversion report                          │
+│  - LLM confidence per chunk                        │
+│  - Risk list                                      │
+│  - Test result summary                             │
+└─────────────────────────────────────────────────────┘
